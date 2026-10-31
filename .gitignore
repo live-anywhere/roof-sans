@@ -1,0 +1,8 @@
+refs/
+inputs/
+build/
+.venv/
+__pycache__/
+verify/flutter_specimen/assets/fonts/
+verify/flutter_specimen/build/
+verify/flutter_specimen/.dart_tool/

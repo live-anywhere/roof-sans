@@ -1,0 +1,20 @@
+[project]
+name = "roofsans"
+version = "1.0.0"
+description = "Reproducible build of the Roof Sans variable font"
+requires-python = "==3.12.*"
+dependencies = [
+    "fonttools==4.60.2",
+    "skia-python==144.1",
+    "uharfbuzz==0.57.0",
+    "opentype-sanitizer==9.2.0",
+    "pytest==9.2.0",
+]
+
+[project.scripts]
+roofsans-fetch = "roofsans.inputs:main"
+roofsans-build = "roofsans.build:main"
+
+[build-system]
+requires = ["uv_build==0.11.27"]
+build-backend = "uv_build"

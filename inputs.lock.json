@@ -1,0 +1,30 @@
+[
+  {
+    "name": "wanted",
+    "repo": "wanted-sans",
+    "path": "packages/wanted-sans/fonts/variable/WantedSansVariable.ttf",
+    "url": "https://raw.githubusercontent.com/wanteddev/wanted-sans/02c9b822349c188ada95f9e2d90c2ed18f853235/packages/wanted-sans/fonts/variable/WantedSansVariable.ttf",
+    "sha256": "9953a7cfc4a3cba4ef1242abaf89779b3cd15fd9729c2d67d9e9d37a0da967f5"
+  },
+  {
+    "name": "pretendard",
+    "repo": "pretendard",
+    "path": "packages/pretendard-jp/dist/public/variable/PretendardJPVariable.ttf",
+    "url": "https://raw.githubusercontent.com/orioncactus/pretendard/7aeb0698819be2b4097dae8ec8fe6a795e5cf3ae/packages/pretendard-jp/dist/public/variable/PretendardJPVariable.ttf",
+    "sha256": "bc1d77db0f3cb9c20986b8939aa8a28d5216552d777d082955da22f420535cbb"
+  },
+  {
+    "name": "wanted_ofl",
+    "repo": "wanted-sans",
+    "path": "OFL.txt",
+    "url": "https://raw.githubusercontent.com/wanteddev/wanted-sans/02c9b822349c188ada95f9e2d90c2ed18f853235/OFL.txt",
+    "sha256": "db345ad0216d0b73ba5dd3a540507281da6695f234e0a4e70cf2e1a8f30d4331"
+  },
+  {
+    "name": "pretendard_license",
+    "repo": "pretendard",
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/orioncactus/pretendard/7aeb0698819be2b4097dae8ec8fe6a795e5cf3ae/LICENSE",
+    "sha256": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a"
+  }
+]
