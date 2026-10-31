@@ -28,6 +28,8 @@ ROOF_FONT=build/<name>/RoofSansVariable.ttf uv run pytest -m acceptance
 
 The Flutter rendering check (design Acceptance 10) lives in `verify/flutter_specimen/`. Its own `README.md` lists its commands.
 
+The specimen web page is built with `uv run python site/build_site.py --out build/site`. If a font change alters a number the page states, the script stops; update `site/specimen.html` and `PAGE_FACTS` in `site/build_site.py` together, and regenerate `site/languages.json` with Hyperglot when language support changes.
+
 ## Rules
 
 - **No agent commits, stashes, or resets.** Do not run `git commit`, `git stash`, `git reset`, `git checkout`, `git switch`, or any other command that changes git state. The owner reviews and commits by hand.

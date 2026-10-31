@@ -31,6 +31,17 @@ uv run pytest
 - `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf`, `fonts/OFL.txt`, and `OFL.txt`. It takes 12–14 seconds. The build is deterministic: the same inputs give a byte-identical font.
 - `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copy of the font into `build/test/`. The full run takes about 4 minutes.
 
+## Specimen page
+
+`site/specimen.html` is a web page that shows the font: a weight slider, a text box to type into, the supported languages, the `ko`/`ja` locale differences, symbols, and Flutter usage. Build it from the current font and open the result in a browser:
+
+```sh
+uv run python site/build_site.py --out build/site
+open build/site/index.html
+```
+
+The script embeds `fonts/RoofSansVariable.ttf` as WOFF2, so `index.html` (about 5 MB) works offline as one file. It also checks that the numbers the page states (code points, glyphs, Hangul, hanja and kanji coverage, language counts) still match the font, and stops with the list of numbers to update if they do not. The language lists come from `site/languages.json`, produced with Hyperglot 0.8.2 on this font.
+
 ## Flutter usage
 
 Copy `fonts/RoofSansVariable.ttf` into the app and declare it as one asset with no `weight` entries:

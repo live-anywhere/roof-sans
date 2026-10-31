@@ -1,0 +1,529 @@
+<meta charset="utf-8">
+<title>Roof Sans</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500&display=swap">
+<style>
+@font-face {
+  font-family: "Roof Sans";
+  src: url("data:font/woff2;base64,__FONT_DATA__") format("woff2");
+  font-weight: 400 1000;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Layout: a specimen sheet. One left-aligned column of sections, each with a mono label
+   rail on the left at wide widths; the type is always the subject, chrome stays quiet. */
+:root {
+  --paper: #f4f5f7;
+  --ink: #121417;
+  --muted: #5d636d;
+  --rule: #d8dce2;
+  --panel: #e9ecf0;
+  --accent: #ffb400;
+  --accent-ink: #121417;
+  --ok: #1d7a4a;
+  --display: "Roof Sans", system-ui, sans-serif;
+  --text: "Roof Sans", system-ui, sans-serif;
+  --mono: "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --measure: 68ch;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1114; --ink: #eceef1; --muted: #99a0aa; --rule: #2a2f36; --panel: #181b20;
+    --accent: #ffc52e; --accent-ink: #121417; --ok: #62d39a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1114; --ink: #eceef1; --muted: #99a0aa; --rule: #2a2f36; --panel: #181b20;
+  --accent: #ffc52e; --accent-ink: #121417; --ok: #62d39a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.label {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+section {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 24px;
+  padding-block: 40px;
+  border-top: 1px solid var(--rule);
+}
+section > .label { padding-top: 6px; }
+section > .body { min-width: 0; display: grid; gap: 20px; }
+h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.2;
+  margin: 0;
+  text-wrap: balance;
+}
+p { margin: 0; max-width: var(--measure); }
+.muted { color: var(--muted); }
+
+/* Hero */
+.hero { padding-block: 48px 36px; display: grid; gap: 28px; }
+.hero .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: baseline; }
+.hero h1 {
+  font-family: var(--display);
+  font-weight: var(--w, 700);
+  font-size: clamp(64px, 15vw, 196px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.hero .sub {
+  font-family: var(--display);
+  font-weight: var(--w, 700);
+  font-size: clamp(26px, 4.6vw, 54px);
+  line-height: 1.2;
+  margin: 0;
+}
+.axis { display: grid; gap: 8px; max-width: 760px; }
+.axis-head { display: flex; justify-content: space-between; gap: 12px; }
+.axis-head output { font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.ticks { display: grid; grid-template-columns: repeat(7, 1fr); font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.ticks span { text-align: center; }
+.ticks span:first-child { text-align: left; }
+.ticks span:last-child { text-align: right; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 28px; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 28px; background: transparent; margin: 0;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) var(--fill, 50%), var(--rule) var(--fill, 50%));
+}
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--rule); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent); }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; margin-top: -8px; border-radius: 50%;
+  background: var(--ink); border: 3px solid var(--paper); box-shadow: 0 0 0 1px var(--ink);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 3px solid var(--paper);
+}
+input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+/* Tester */
+.controls { display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: end; }
+.control { display: grid; gap: 2px; min-width: 180px; flex: 1 1 180px; }
+.control .label { display: flex; justify-content: space-between; }
+.control output { font-variant-numeric: tabular-nums; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-family: var(--text); font-size: 14px; font-weight: 500;
+  border: 1px solid var(--rule); background: transparent; color: var(--ink);
+  border-radius: 999px; padding: 5px 14px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tester {
+  font-family: var(--text);
+  font-size: 44px; font-weight: 700; line-height: 1.35;
+  min-height: 3em; padding: 20px 22px; border-radius: 6px;
+  background: var(--panel); outline: none; overflow-wrap: anywhere;
+}
+.tester:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+
+/* Waterfall */
+.waterfall { display: grid; gap: 2px; }
+.wf-row {
+  display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 16px; align-items: baseline;
+  padding-block: 8px; border-bottom: 1px solid var(--rule);
+}
+.wf-row .label { white-space: nowrap; }
+.wf-row .s { font-size: clamp(22px, 3.2vw, 34px); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Comparisons */
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { background: var(--panel); border-radius: 6px; padding: 16px 18px; display: grid; gap: 8px; min-width: 0; }
+.card .s { font-size: clamp(22px, 3vw, 30px); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.card .s mark { background: var(--accent); color: var(--accent-ink); border-radius: 2px; padding: 0 1px; }
+.hanja { font-size: clamp(30px, 4.4vw, 44px) !important; letter-spacing: 0.04em; font-weight: 500 !important; }
+
+.mix { display: grid; gap: 10px; }
+.mix .s { font-size: clamp(24px, 3.6vw, 40px); line-height: 1.3; overflow-wrap: anywhere; }
+.mix .row { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+
+.glyph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.glyph-grid .card .s { font-weight: 500; }
+
+pre {
+  margin: 0; padding: 16px 18px; border-radius: 6px; background: var(--panel);
+  font-family: var(--mono); font-size: 13px; line-height: 1.6; overflow-x: auto;
+}
+code { font-family: var(--mono); font-size: 0.88em; }
+ul.notes { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: var(--measure); }
+
+/* Language support */
+.langs { display: grid; border-top: 1px solid var(--rule); }
+.lang-row {
+  display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 8px 20px;
+  padding-block: 16px; border-bottom: 1px solid var(--rule);
+}
+.lang-row h3 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3; display: grid; gap: 6px; align-content: start; }
+.lang-row .detail { min-width: 0; display: grid; gap: 6px; }
+.lang-row .names { font-size: 16px; line-height: 1.7; }
+.lang-row .note { font-size: 14px; color: var(--muted); }
+.pill {
+  justify-self: start; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  border-radius: 999px; padding: 2px 9px; border: 1px solid currentColor;
+}
+.pill.ok { color: var(--ok); }
+.pill.no { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+details { font-size: 14px; }
+details summary { cursor: pointer; color: var(--muted); font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; }
+details summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details p { max-width: none; margin-top: 8px; line-height: 1.7; color: var(--muted); }
+
+footer { border-top: 1px solid var(--rule); padding-top: 28px; display: grid; gap: 10px; font-size: 14px; color: var(--muted); }
+footer p { max-width: 90ch; }
+
+@media (max-width: 760px) {
+  .lang-row { grid-template-columns: minmax(0, 1fr); }
+  section { grid-template-columns: minmax(0, 1fr); gap: 12px; padding-block: 32px; }
+  .pair { grid-template-columns: minmax(0, 1fr); }
+  .tester { font-size: 30px; }
+  .wf-row { grid-template-columns: 84px minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
+</style>
+
+<div class="wrap">
+  <header class="hero" id="top">
+    <div class="top">
+      <span class="label">가변 폰트 · wght 400–1000</span>
+      <span class="label">Version 1.000 · SIL OFL 1.1</span>
+    </div>
+    <h1 id="hero-word">Roof Sans</h1>
+    <p class="sub" id="hero-sub">한글과 라틴은 원티드 산스, 한자와 가나는 프리텐다드 JP</p>
+    <div class="axis">
+      <div class="axis-head">
+        <label class="label" for="hero-w">굵기 축 (wght)</label>
+        <output id="hero-out" for="hero-w">700 · Bold</output>
+      </div>
+      <input id="hero-w" type="range" min="400" max="1000" step="1" value="700" aria-describedby="hero-out">
+      <div class="ticks" aria-hidden="true">
+        <span>400 Regular</span><span>500</span><span>600</span><span>700 Bold</span><span>800</span><span>900</span><span>1000</span>
+      </div>
+    </div>
+    <div class="facts">
+      <span><b>21,718</b> 코드포인트</span>
+      <span><b>22,923</b> 글리프</span>
+      <span><b>2048</b> UPM</span>
+      <span>이름 있는 굵기 <b>7</b>개</span>
+      <span>한글 <b>11,172</b>자 전부</span>
+      <span>지원 언어 <b>560</b>여 개</span>
+    </div>
+  </header>
+
+  <section id="tester-section" aria-labelledby="tester-title">
+    <span class="label">직접 써 보기</span>
+    <div class="body">
+      <h2 id="tester-title">아래 글을 지우고 원하는 문장을 입력해 보세요</h2>
+      <div class="chips" role="group" aria-label="예시 문장">
+        <button class="chip" type="button" data-sample="ko" aria-pressed="true">한국어</button>
+        <button class="chip" type="button" data-sample="ja" aria-pressed="false">日本語</button>
+        <button class="chip" type="button" data-sample="en" aria-pressed="false">English</button>
+        <button class="chip" type="button" data-sample="vi" aria-pressed="false">Tiếng Việt</button>
+        <button class="chip" type="button" data-sample="mix" aria-pressed="false">Ελληνικά · Русский</button>
+      </div>
+      <div class="controls">
+        <div class="control">
+          <div class="label"><label for="t-w">굵기</label><output id="t-w-out" for="t-w">700</output></div>
+          <input id="t-w" type="range" min="400" max="1000" step="1" value="700">
+        </div>
+        <div class="control">
+          <div class="label"><label for="t-s">크기</label><output id="t-s-out" for="t-s">44px</output></div>
+          <input id="t-s" type="range" min="14" max="120" step="1" value="44">
+        </div>
+        <div class="control" style="flex: 0 1 auto; min-width: 0;">
+          <span class="label">로케일 (lang)</span>
+          <div class="chips" role="group" aria-label="로케일">
+            <button class="chip" type="button" data-lang="ko" aria-pressed="true">ko</button>
+            <button class="chip" type="button" data-lang="ja" aria-pressed="false">ja</button>
+          </div>
+        </div>
+      </div>
+      <div id="tester" class="tester" contenteditable="true" spellcheck="false" lang="ko" role="textbox" aria-multiline="true" aria-label="입력해 볼 문장">어디서나 한 달 살기, 지붕 아래에서 시작합니다. 서울 2박 3일 ₩128,000 → 도쿄「東京」へ</div>
+      <p class="muted">입력한 내용은 이 브라우저에만 있고 어디로도 보내지 않습니다. 로케일을 ja로 바꾸면 괄호와 문장부호가 일본식 전각 모양으로 바뀝니다.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="langs-title">
+    <span class="label">지원 언어</span>
+    <div class="body">
+      <h2 id="langs-title">한국어와 일본어, 그리고 라틴·키릴·그리스 문자 560여 개 언어</h2>
+      <p>아래 목록은 폰트에 실제로 들어 있는 글자를 기준으로 계산했습니다. 라틴·키릴·그리스 문자 언어는 언어별 필수 문자 데이터베이스인 Hyperglot으로 확인했습니다. 지금 쓰이는 언어의 기본 문자 집합이 기준입니다. Hyperglot에 데이터가 없는 일본어와 한자는 국가 표준 문자표와 하나씩 비교했습니다.</p>
+      <div class="langs">
+        <div class="lang-row">
+          <h3>한국어<span class="pill ok">지원</span></h3>
+          <div class="detail">
+            <p class="names">현대 한글 음절 <span class="num">11,172</span>자 전부, KS X 1001 한자 <span class="num">4,888</span>자 전부</p>
+            <p class="note">옛한글 호환 자모(ㅥ–ㆎ 중 41자)와 KS X 1001 기호 일부(⑴ 같은 괄호 숫자, 논리·집합 기호)는 원본 폰트에도 없어 들어 있지 않습니다.</p>
+          </div>
+        </div>
+        <div class="lang-row">
+          <h3>일본어<span class="pill ok">지원</span></h3>
+          <div class="detail">
+            <p class="names">히라가나·가타카나, JIS X 0208 제1수준 한자 <span class="num">2,965</span>자와 제2수준 <span class="num">3,390</span>자 전부</p>
+            <p class="note">작은 ゕ·ゖ 2자와 JIS X 0208 기호 중 논리·집합 기호와 괘선(66자)은 원본 폰트에도 없어 들어 있지 않습니다.</p>
+          </div>
+        </div>
+        <div class="lang-row">
+          <h3>라틴 문자<span class="pill ok"><span class="num">483</span>개 언어</span></h3>
+          <div class="detail">
+            <p class="names">영어, 스페인어, 포르투갈어, 프랑스어, 독일어, 이탈리아어, 베트남어, 튀르키예어, 폴란드어, 인도네시아어, 말레이어, 타갈로그어, 네덜란드어, 스웨덴어, 노르웨이어, 덴마크어, 핀란드어, 아이슬란드어, 체코어, 슬로바키아어, 헝가리어, 루마니아어, 크로아티아어, 세르비아어, 보스니아어, 슬로베니아어, 리투아니아어, 라트비아어, 에스토니아어, 카탈루냐어, 갈리시아어, 바스크어, 아일랜드어, 웨일스어, 몰타어, 아제르바이잔어, 우즈베크어, 투르크멘어, 스와힐리어, 하우사어, 요루바어, 줄루어, 아프리칸스어 외</p>
+            <details><summary>483개 언어 전체 보기 (영문 이름)</summary><p>__LATIN_LIST__</p></details>
+          </div>
+        </div>
+        <div class="lang-row">
+          <h3>키릴 문자<span class="pill ok"><span class="num">77</span>개 언어</span></h3>
+          <div class="detail">
+            <p class="names">러시아어, 우크라이나어, 벨라루스어, 불가리아어, 세르비아어, 마케도니아어, 카자흐어, 키르기스어, 타지크어, 몽골어, 타타르어, 바시키르어, 추바시어, 야쿠트어 외</p>
+            <details><summary>77개 언어 전체 보기 (영문 이름)</summary><p>__CYRILLIC_LIST__</p></details>
+          </div>
+        </div>
+        <div class="lang-row">
+          <h3>그리스 문자<span class="pill ok">지원</span></h3>
+          <div class="detail">
+            <p class="names">현대 그리스어, 폰토스 그리스어</p>
+          </div>
+        </div>
+        <div class="lang-row">
+          <h3>중국어<span class="pill no">지원하지 않음</span></h3>
+          <div class="detail">
+            <p class="names">간체 GB 2312 제1급 한자 <span class="num">3,755</span>자 중 <span class="num">2,420</span>자(64%), 번체 Big5 상용자 <span class="num">5,401</span>자 중 <span class="num">4,611</span>자(85%)만 들어 있습니다.</p>
+            <p class="note">빠진 글자는 기기의 다른 폰트로 대체되어 섞여 보이므로, 중국어 본문에는 중국어 폰트를 쓰세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="wf-title">
+    <span class="label">이름 있는 굵기 7개</span>
+    <div class="body">
+      <h2 id="wf-title">Regular부터 ExtraBlack까지</h2>
+      <div class="waterfall" id="waterfall"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="loc-title">
+    <span class="label">로케일 · locl</span>
+    <div class="body">
+      <h2 id="loc-title">같은 문장도 언어에 맞게 그립니다</h2>
+      <p>원티드 산스가 이미 가진 괄호와 문장부호 13자는 한국어 모양이 기본입니다. 문서 언어를 일본어(<code>lang="ja"</code>)로 지정하면 프리텐다드 JP의 일본식 모양으로 바뀝니다. 강조한 글자를 비교해 보세요.</p>
+      <div class="pair">
+        <div class="card">
+          <span class="label">lang="ko"</span>
+          <div class="s" lang="ko">今日は<mark>、</mark>とても暑い<mark>。</mark><mark>「</mark>東京<mark>」</mark><mark>『</mark>確認<mark>』</mark><mark>【</mark>注意<mark>】</mark> ID<mark>「</mark>abc<mark>」</mark></div>
+        </div>
+        <div class="card">
+          <span class="label">lang="ja"</span>
+          <div class="s" lang="ja">今日は<mark>、</mark>とても暑い<mark>。</mark><mark>「</mark>東京<mark>」</mark><mark>『</mark>確認<mark>』</mark><mark>【</mark>注意<mark>】</mark> ID<mark>「</mark>abc<mark>」</mark></div>
+        </div>
+      </div>
+      <p>한자는 반대입니다. 기본은 프리텐다드 JP의 일본식 자형이고, 한국어(<code>lang="ko"</code>) 또는 <code>ss20</code>에서는 한국식 자형 537자로 바뀝니다.</p>
+      <div class="pair">
+        <div class="card">
+          <span class="label">lang="ja" · 기본 자형</span>
+          <div class="s hanja" lang="ja">福神社祖祝祈祥漢情精尊遵益隊送層勤暖輸煙</div>
+        </div>
+        <div class="card">
+          <span class="label">lang="ko" · 한국식 자형</span>
+          <div class="s hanja" lang="ko">福神社祖祝祈祥漢情精尊遵益隊送層勤暖輸煙</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="mix-title">
+    <span class="label">높이와 굵기 맞춤</span>
+    <div class="body">
+      <h2 id="mix-title">섞어 써도 높이와 굵기가 튀지 않습니다</h2>
+      <p>원티드 산스에 없는 그리스·키릴 문자는 프리텐다드에서 가져와 x-높이 1032, 대문자 높이 1448, 획 굵기를 원티드 산스에 맞췄습니다. 베트남어는 원티드 산스의 기본 글자와 부호를 조합했습니다.</p>
+      <div class="mix">
+        <div class="row"><span class="label">400</span><span class="s" style="font-weight:400">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
+        <div class="row"><span class="label">700</span><span class="s" style="font-weight:700">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
+        <div class="row"><span class="label">1000</span><span class="s" style="font-weight:1000">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sym-title">
+    <span class="label">기호와 숫자</span>
+    <div class="body">
+      <h2 id="sym-title">기호도 원티드 산스의 축에 맞췄습니다</h2>
+      <div class="glyph-grid">
+        <div class="card"><span class="label">화살표 · 중심 725</span><div class="s">→ ⇒ ↔ ← ↩ ↪ ⟶</div></div>
+        <div class="card"><span class="label">수학 · 축 540</span><div class="s">1+2≤3 ≥ ≠ ∞ ≪ ∑ √</div></div>
+        <div class="card"><span class="label">원문자</span><div class="s">①②③⑨⑩⑮⑳ ❶⓫⓴</div></div>
+        <div class="card"><span class="label">분수 · 위아래 첨자</span><div class="s">½ ⅓ ¼ ⅚ x² x⁺ x⁽ⁿ⁾ H₂O</div></div>
+        <div class="card"><span class="label">단위 · 전각</span><div class="s">5㎏ 30㎡ 12㎞ Ⅳ № ＡＢＣ１２３！？</div></div>
+        <div class="card"><span class="label">통화</span><div class="s">₩128,000 $9.99 €12 ¥500 ₫</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="flutter-title">
+    <span class="label">Flutter에서 쓰기</span>
+    <div class="body">
+      <h2 id="flutter-title">파일 하나를 등록하고 FontWeight를 그대로 씁니다</h2>
+      <pre><code>flutter:
+  fonts:
+    - family: RoofSans
+      fonts:
+        - asset: assets/fonts/RoofSansVariable.ttf</code></pre>
+      <pre><code>Text(
+  '「東京」へ行きます',
+  style: TextStyle(
+    fontFamily: 'RoofSans',
+    fontWeight: FontWeight.w700,           // Flutter 3.41 이상: wght 축으로 전달
+    locale: const Locale('ja', 'JP'),      // 일본식 괄호·문장부호
+  ),
+)</code></pre>
+      <ul class="notes">
+        <li>Flutter 3.41 이상에서는 <code>FontWeight</code>가 wght 축 값으로 전달됩니다. 그보다 오래된 버전에서는 <code>fontVariations: [FontVariation('wght', 700)]</code>을 함께 지정하세요.</li>
+        <li>굵기 축은 400부터 시작합니다. <code>w100</code>–<code>w300</code>은 400으로 그려집니다.</li>
+        <li>일본식 괄호가 필요하면 <code>TextStyle(locale: Locale('ja', 'JP'))</code>를 지정하세요. Flutter 웹에서는 앱 로케일만으로는 적용되지 않았습니다.</li>
+        <li>줄 높이는 PretendardJP와 같습니다(hhea 1950 / −494).</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <span class="label">출처와 라이선스</span>
+    <p>Roof Sans는 Wanted Sans 1.003(Copyright © 2024 Wanted Lab, Inc., The Wanted Sans Project Authors)과 Pretendard JP 1.309(Copyright © 2021 Kil Hyung-jin; Adobe; The Inter Project Authors; The M+ FONTS Project Authors)를 합친 폰트이며, SIL Open Font License 1.1로 배포합니다.</p>
+    <p>이 페이지의 글자는 모두 실제 Roof Sans 파일(RoofSansVariable, WOFF2로 압축)로 그렸습니다.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const names = { 400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black", 1000: "ExtraBlack" };
+  const nameFor = (w) => names[w] ? `${w} · ${names[w]}` : String(w);
+  const fill = (el) => {
+    const p = ((el.value - el.min) / (el.max - el.min)) * 100;
+    el.style.setProperty("--fill", p + "%");
+  };
+
+  // Hero weight axis
+  const hero = document.getElementById("top");
+  const heroRange = document.getElementById("hero-w");
+  const heroOut = document.getElementById("hero-out");
+  const setHero = (w) => {
+    hero.style.setProperty("--w", w);
+    heroRange.value = w;
+    heroOut.textContent = nameFor(Math.round(w));
+    fill(heroRange);
+  };
+  let animating = false;
+  heroRange.addEventListener("input", () => { animating = false; setHero(Number(heroRange.value)); });
+  setHero(700);
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce) {
+    animating = true;
+    const start = performance.now();
+    const keys = [[0, 700], [900, 1000], [1900, 400], [2700, 700]];
+    const step = (now) => {
+      if (!animating) return;
+      const t = now - start;
+      let w = 700;
+      for (let i = 1; i < keys.length; i++) {
+        if (t <= keys[i][0]) {
+          const [t0, w0] = keys[i - 1], [t1, w1] = keys[i];
+          const k = (t - t0) / (t1 - t0);
+          const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          w = w0 + (w1 - w0) * e;
+          break;
+        }
+      }
+      setHero(Math.round(w));
+      if (t < keys[keys.length - 1][0]) requestAnimationFrame(step); else { animating = false; setHero(700); }
+    };
+    document.fonts.ready.then(() => requestAnimationFrame(step));
+  }
+
+  // Tester
+  const samples = {
+    ko: { lang: "ko", text: "어디서나 한 달 살기, 지붕 아래에서 시작합니다. 서울 2박 3일 ₩128,000 → 도쿄「東京」へ" },
+    ja: { lang: "ja", text: "今日は、とても暑い！（テスト）『確認』【注意】東京の部屋を探しています。" },
+    en: { lang: "ko", text: "Sphinx of black quartz, judge my vow. 0123456789 ½ ⅓ → ⇒" },
+    vi: { lang: "ko", text: "Tiếng Việt: cảm ơn, Thưởng, người, Đặng Thị Ngọc Ẩn — ầ ấ ẩ ẫ ậ ờ ớ ở ỡ ợ" },
+    mix: { lang: "ko", text: "Ελληνικά λαβγδεζ · Русский: Москва, Жажда · English: Hoxen" },
+  };
+  const tester = document.getElementById("tester");
+  const tw = document.getElementById("t-w"), twOut = document.getElementById("t-w-out");
+  const ts = document.getElementById("t-s"), tsOut = document.getElementById("t-s-out");
+  const langButtons = document.querySelectorAll("[data-lang]");
+  const sampleButtons = document.querySelectorAll("[data-sample]");
+  const setLang = (lang) => {
+    tester.lang = lang;
+    langButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  };
+  tw.addEventListener("input", () => { tester.style.fontWeight = tw.value; twOut.textContent = tw.value; fill(tw); });
+  ts.addEventListener("input", () => { tester.style.fontSize = ts.value + "px"; tsOut.textContent = ts.value + "px"; fill(ts); });
+  langButtons.forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  sampleButtons.forEach((b) => b.addEventListener("click", () => {
+    const s = samples[b.dataset.sample];
+    tester.textContent = s.text;
+    setLang(s.lang);
+    sampleButtons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+  tester.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, text);
+  });
+  [tw, ts].forEach(fill);
+
+  // Waterfall
+  const wf = document.getElementById("waterfall");
+  const line = "다람쥐 헌 쳇바퀴에 타고파 Roof Sans 東京へ 0123";
+  Object.entries(names).forEach(([w, n]) => {
+    const row = document.createElement("div");
+    row.className = "wf-row";
+    const lab = document.createElement("span");
+    lab.className = "label";
+    lab.textContent = `${w} ${n}`;
+    const s = document.createElement("span");
+    s.className = "s";
+    s.lang = "ko";
+    s.style.fontWeight = w;
+    s.textContent = line;
+    row.append(lab, s);
+    wf.append(row);
+  });
+})();
+</script>
