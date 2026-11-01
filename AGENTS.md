@@ -34,7 +34,7 @@ ROOF_FONT=fonts/RoofSansVariable.ttf ROOF_WEB=build/<name>-web uv run pytest tes
 
 The Flutter rendering check (design Acceptance 10) lives in `verify/flutter_specimen/`. Its own `README.md` lists its commands.
 
-The specimen web page is built with `uv run python site/build_site.py --out build/site`. If a font change alters a number the page states, the script stops; update `site/specimen.html` and `PAGE_FACTS` in `site/build_site.py` together, and regenerate `site/languages.json` with Hyperglot when language support changes.
+The specimen web page is built with `uv run python site/build_site.py --out build/site` and served from that folder (it loads `RoofSansVariable.woff2` by a relative URL, so open it through `uv run python -m http.server -d build/site`, not as a file). `.github/workflows/pages.yml` builds it on pushes to `dev` and `main` and deploys it to GitHub Pages from `main` (<https://live-anywhere.github.io/roof-sans/>). If a font change alters a number the page states, the script stops and the workflow fails; update `site/specimen.html` and `PAGE_FACTS` in `site/build_site.py` together, and regenerate `site/languages.json` with Hyperglot when language support changes.
 
 ## Rules
 

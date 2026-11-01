@@ -1,0 +1,47 @@
+# Builds the specimen page (site/specimen.html) from the committed font and publishes it
+# to GitHub Pages. Pushes to dev only build the page, which runs the page's number checks;
+# pushes to main also deploy it.
+name: Pages
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.11.27"
+          enable-cache: true
+      - name: Install the pinned dependencies
+        run: uv sync --frozen
+      - name: Build the page
+        run: uv run python site/build_site.py --out build/site
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/site
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

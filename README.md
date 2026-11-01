@@ -38,14 +38,19 @@ uv run pytest
 
 ## Specimen page
 
-`site/specimen.html` is a web page that shows the font: a weight slider, a text box to type into, the supported languages, the `ko`/`ja` locale differences, symbols, and Flutter usage. Build it from the current font and open the result in a browser:
+The specimen page is published at <https://live-anywhere.github.io/roof-sans/>. It introduces the font and lets you try it: a text box to type into with weight, size, and `lang` controls, the weight axis and the ten named weights, the supported languages, the `ko`/`ja`/`zh-CN` differences, symbols, and web and Flutter usage. Its layout and colors follow GitHub's repository page (Primer), in light and dark themes that follow the system setting.
+
+`site/specimen.html` is the page source. Build it from the current font and open it through a local web server:
 
 ```sh
 uv run python site/build_site.py --out build/site
-open build/site/index.html
+uv run python -m http.server -d build/site 8000   # then open http://localhost:8000/
 ```
 
-The script embeds `fonts/RoofSansVariable.ttf` as WOFF2, so `index.html` (about 11 MB) works offline as one file. It also checks that the numbers the page states (code points, glyphs, the weight range and named weights, Hangul, hanja and kanji coverage, language counts) still match the font, and stops with the list of numbers to update if they do not. The language lists come from `site/languages.json`, produced with Hyperglot 0.8.2 on this font.
+- The script writes `index.html` and `RoofSansVariable.woff2` (8.15 MB). The WOFF2 file is byte-identical to `dist/web/woff2/RoofSansVariable.woff2` and the release asset. The page loads the whole font as one file rather than the dynamic subset, so it shows the shaping that crosses subset files (see "Web usage").
+- It fills in the font version, the release tag (`v` + the `pyproject.toml` version, used for the jsDelivr and download links), and the file sizes.
+- It checks that the numbers the page states (code points, glyphs, the weight range and named weights, Hangul, hanja and kanji coverage, language counts) still match the font, and stops with the list of numbers to update if they do not. The language lists come from `site/languages.json`, produced with Hyperglot 0.8.2 on this font.
+- `.github/workflows/pages.yml` runs the same build on every push to `dev` and `main`, so a stale number fails the run. A push to `main` also deploys the page to GitHub Pages (repository Settings → Pages → Source: GitHub Actions).
 
 ## Web usage
 
