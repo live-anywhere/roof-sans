@@ -38,10 +38,10 @@ WOFF2_NAME = "RoofSansVariable.woff2"
 PAGE_FACTS = {
     "code points": (24978, None),
     "glyphs": (28404, None),
-    # The page's axis label, sliders, and "이름 있는 굵기 10개" (Thin 100 … ExtraBlack 1000).
-    "wght minimum": (100, None),
+    # The page's axis range, sliders, weights tab counter, and "이름 있는 굵기 7개" (Regular 400 … ExtraBlack 1000).
+    "wght minimum": (400, None),
     "wght maximum": (1000, None),
-    "named weights": (10, None),
+    "named weights": (7, None),
     "Hangul syllables": (11172, 11172),
     "KS X 1001 hanja": (4888, 4888),
     "JIS X 0208 level 1 kanji": (2965, 2965),
@@ -118,7 +118,7 @@ def package_version() -> str:
 
 
 def font_version(font: TTFont) -> str:
-    """The version in the font's name table, such as ``1.100`` from ``Version 1.100``."""
+    """The version in the font's name table, such as ``1.200`` from ``Version 1.200``."""
     return font["name"].getDebugName(5).removeprefix("Version ").split(";")[0].strip()
 
 

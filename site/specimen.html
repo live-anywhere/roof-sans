@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Roof Sans</title>
-<meta name="description" content="Roof Sans: 원티드 산스를 바탕으로 프리텐다드 JP의 한자·가나와 소스 한 산스의 중국어 간체를 더한 가변 폰트(굵기 100–1000)">
+<meta name="description" content="Roof Sans: 원티드 산스를 바탕으로 프리텐다드 JP의 한자·가나와 소스 한 산스의 중국어 간체를 더한 가변 폰트(굵기 400–1000)">
 <link rel="preload" href="RoofSansVariable.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face {
   font-family: "Roof Sans";
   src: url("RoofSansVariable.woff2") format("woff2");
-  font-weight: 100 1000;
+  font-weight: 400 1000;
   font-style: normal;
   font-display: block;
 }
@@ -358,7 +358,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
     </div>
     <nav class="UnderlineNav" aria-label="페이지 구역">
       <a class="UnderlineNav-item" href="#preview" aria-current="page">미리보기</a>
-      <a class="UnderlineNav-item" href="#weights">굵기 <span class="Counter">10</span></a>
+      <a class="UnderlineNav-item" href="#weights">굵기 <span class="Counter">7</span></a>
       <a class="UnderlineNav-item" href="#languages">지원 언어 <span class="Counter">560+</span></a>
       <a class="UnderlineNav-item" href="#locales">한·중·일 차이</a>
       <a class="UnderlineNav-item" href="#symbols">기호</a>
@@ -387,7 +387,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
         <div class="Box-row controls">
           <div class="control">
             <label for="t-w">굵기</label>
-            <input id="t-w" type="range" min="100" max="1000" step="1" value="700">
+            <input id="t-w" type="range" min="400" max="1000" step="1" value="700">
             <output id="t-w-out" for="t-w">700</output>
           </div>
           <div class="control">
@@ -416,13 +416,12 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
         </div>
         <div class="markdown-body">
           <h1 id="h-readme">Roof Sans</h1>
-          <p>Roof Sans는 LiveAnywhere 앱과 웹 페이지를 위한 가변 폰트입니다. 파일 하나에 굵기 축(<code>wght</code>)이 있어 Thin(100)부터 ExtraBlack(1000)까지 씁니다. 바탕은 원티드 산스이고, 원티드 산스에 없는 글자를 프리텐다드 JP와 소스 한 산스로 채웠습니다.</p>
+          <p>Roof Sans는 LiveAnywhere 앱과 웹 페이지를 위한 가변 폰트입니다. 파일 하나에 굵기 축(<code>wght</code>)이 있어 Regular(400)부터 ExtraBlack(1000)까지 씁니다. 바탕은 원티드 산스이고, 원티드 산스에 없는 글자를 프리텐다드 JP와 소스 한 산스로 채웠습니다.</p>
           <ul>
             <li>원티드 산스에 있는 글자(한글, 라틴, 숫자, 문장부호, 기호)는 원티드 산스 그대로입니다.</li>
             <li>한자, 가나, 일본어 문장부호는 프리텐다드 JP 그대로입니다.</li>
             <li>프리텐다드 JP에 없는 GB 2312 한자 3,260자와 한자 2,212자의 중국어 간체 자형은 소스 한 산스 CN에서 가져와 프리텐다드 JP 한자의 크기와 굵기에 맞췄습니다. 간체 자형은 중국어로 지정한 글에만 적용됩니다.</li>
             <li>그 밖에 프리텐다드 JP가 더하는 글자(베트남어 등 라틴 확장, 그리스·키릴 문자, 화살표, 수학 기호, 단위, 원문자, 분수)는 원티드 산스의 부품으로 다시 만들거나 원티드 산스의 높이·굵기·기호 축에 맞췄습니다. 그래서 섞어 써도 튀지 않습니다.</li>
-            <li>원티드 산스에는 400보다 가는 굵기가 없습니다. 100–300은 원티드 산스의 글자마다 400에서 550으로 가는 변화를 반대쪽으로 이어 만들었고, 400 이상은 원티드 산스와 같습니다.</li>
           </ul>
         </div>
       </article>
@@ -437,21 +436,18 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
         </div>
         <div class="axis-word" lang="ko">Roof Sans 지붕</div>
         <div class="axis">
-          <input id="axis-w" type="range" min="100" max="1000" step="1" value="700" aria-label="굵기" aria-describedby="axis-out">
+          <input id="axis-w" type="range" min="400" max="1000" step="1" value="700" aria-label="굵기" aria-describedby="axis-out">
           <div class="ticks" aria-hidden="true">
-            <span>100</span><span>200</span><span>300</span><span>400</span><span>500</span><span>600</span><span>700</span><span>800</span><span>900</span><span>1000</span>
+            <span>400</span><span>500</span><span>600</span><span>700</span><span>800</span><span>900</span><span>1000</span>
           </div>
         </div>
       </div>
       <div class="Box">
         <div class="Box-header">
-          <h2 class="Box-title">이름 있는 굵기 10개</h2>
-          <p class="desc">Thin부터 ExtraBlack까지입니다.</p>
+          <h2 class="Box-title">이름 있는 굵기 7개</h2>
+          <p class="desc">Regular부터 ExtraBlack까지입니다.</p>
         </div>
         <div id="waterfall"></div>
-        <div class="Box-footer">
-          <p>원티드 산스에는 Regular(400)보다 가는 굵기가 없습니다. Thin·ExtraLight·Light(100–300)는 원티드 산스의 글자마다 400에서 550으로 가는 변화를 반대쪽으로 이어서 만들었고, 한글 획의 양이 같은 굵기의 프리텐다드 JP와 같아지는 지점에 맞췄습니다. 그래서 한자와 가나가 한글 옆에서 같은 굵기로 보입니다.</p>
-        </div>
       </div>
     </section>
 
@@ -572,7 +568,6 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
           <h2 class="Box-title" id="h-mix">섞어 써도 높이와 굵기가 튀지 않습니다</h2>
           <p class="desc">원티드 산스에 없는 그리스·키릴 문자는 프리텐다드에서 가져와 x-높이 1032, 대문자 높이 1448, 획 굵기를 원티드 산스에 맞췄습니다. 베트남어는 원티드 산스의 기본 글자와 부호를 조합했습니다.</p>
         </div>
-        <div class="mix-row"><span class="k">100</span><span class="s" style="font-weight:100">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
         <div class="mix-row"><span class="k">400</span><span class="s" style="font-weight:400">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
         <div class="mix-row"><span class="k">700</span><span class="s" style="font-weight:700">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
         <div class="mix-row"><span class="k">1000</span><span class="s" style="font-weight:1000">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
@@ -600,7 +595,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
           <div class="code"><pre><code>body { font-family: 'Roof Sans', sans-serif; }</code></pre><button class="btn copy" type="button" aria-label="복사"><svg class="octicon idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="octicon ok" aria-hidden="true"><use href="#i-check"/></svg></button></div>
           <ul>
             <li>폰트는 작은 WOFF2 파일 여러 개로 나뉘어 있고, 브라우저는 페이지에 나오는 글자가 든 파일만 받습니다.</li>
-            <li>굵기는 가변 축에서 나옵니다(<code>font-weight: 100 1000</code>). 100보다 작은 값은 100으로 그립니다.</li>
+            <li>굵기는 가변 축에서 나옵니다(<code>font-weight: 400 1000</code>). 400보다 작은 값은 400으로 그립니다.</li>
             <li>언어별 자형은 HTML <code>lang</code> 속성을 따릅니다. 일본어 문장부호는 <code>lang="ja"</code>, 중국어 간체 자형은 <code>lang="zh-CN"</code>, 한국식 한자 자형은 <code>lang="ko"</code>입니다.</li>
             <li>파일 경계를 넘는 조판 규칙은 적용되지 않습니다. 예를 들어 한글 바로 뒤의 쌍점(:)과 말줄임표(…)는 기본 높이에 그대로 있고, 기본 라틴 글자와 확장 라틴 글자 사이의 커닝(<code>T</code> + <code>ō</code> 등)이 빠집니다. 이런 부분이 중요하면 폰트 전체를 파일 하나로 불러오는 <code>roofsans.css</code>를 쓰세요. 이 페이지도 파일 하나로 불러옵니다.</li>
           </ul>
@@ -632,7 +627,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
 )</code></pre><button class="btn copy" type="button" aria-label="복사"><svg class="octicon idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="octicon ok" aria-hidden="true"><use href="#i-check"/></svg></button></div>
           <ul>
             <li>Flutter 3.41 이상에서는 <code>FontWeight</code>가 wght 축 값으로 전달됩니다. 그보다 오래된 버전에서는 <code>fontVariations: [FontVariation('wght', 700)]</code>을 함께 지정하세요.</li>
-            <li>굵기 축은 100(Thin)부터 1000(ExtraBlack)까지입니다. <code>w100</code>–<code>w300</code>은 Thin·ExtraLight·Light로 그려집니다.</li>
+            <li>굵기 축은 400(Regular)부터 1000(ExtraBlack)까지입니다. <code>w100</code>–<code>w300</code>은 400으로 그려집니다.</li>
             <li>일본식 괄호가 필요하면 <code>TextStyle(locale: Locale('ja', 'JP'))</code>를 지정하세요. Flutter 웹에서는 앱 로케일만으로는 적용되지 않았습니다.</li>
             <li>중국어 간체는 <code>TextStyle(fontFamily: 'RoofSans', locale: Locale('zh', 'CN'))</code>으로 지정하세요. 한자와 문장부호에 중국어 자형이 적용됩니다. Flutter 웹에서는 <code>TextStyle</code>에 로케일을 지정해야 하며, Android는 아직 검증하지 않았습니다.</li>
             <li>줄 높이는 PretendardJP와 같습니다(hhea 1950 / −494).</li>
@@ -650,8 +645,8 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
         <svg class="octicon" aria-hidden="true"><use href="#i-link"/></svg><span>github.com/live-anywhere/roof-sans</span>
       </a>
       <ul class="facts">
-        <li><span class="muted">굵기</span><span class="v">100–1000</span></li>
-        <li><span class="muted">이름 있는 굵기</span><span class="v">10개</span></li>
+        <li><span class="muted">굵기</span><span class="v">400–1000</span></li>
+        <li><span class="muted">이름 있는 굵기</span><span class="v">7개</span></li>
         <li><span class="muted">코드포인트</span><span class="v">24,978</span></li>
         <li><span class="muted">글리프</span><span class="v">28,404</span></li>
         <li><span class="muted">한글 음절</span><span class="v">11,172자 전부</span></li>
@@ -692,7 +687,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
 
 <script>
 (() => {
-  const names = { 100: "Thin", 200: "ExtraLight", 300: "Light", 400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black", 1000: "ExtraBlack" };
+  const names = { 400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black", 1000: "ExtraBlack" };
   const nameFor = (w) => names[w] ? `${w} · ${names[w]}` : String(w);
   const fill = (el) => {
     const p = ((el.value - el.min) / (el.max - el.min)) * 100;
