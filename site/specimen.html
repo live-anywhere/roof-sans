@@ -127,9 +127,13 @@ code, pre, .mono { font-family: var(--mono); }
 .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn[aria-pressed="true"] { background: var(--accent-muted); border-color: var(--accent); color: var(--accent); }
 
+/* The tabs scroll sideways only. overflow-x: auto alone makes overflow-y compute to auto,
+   and the active underline (bottom: -1px) then let the bar scroll down by 1px. The bar is
+   clipped vertically and reaches 1px into the header's bottom border (padding plus negative
+   margin), so the full 2px underline still covers that border inside the clip. */
 .UnderlineNav {
-  display: flex; gap: 8px; margin-top: 16px; overflow-x: auto; scrollbar-width: none;
-  margin-left: -8px; padding-left: 8px;
+  display: flex; gap: 8px; margin-top: 16px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  margin-left: -8px; padding-left: 8px; margin-bottom: -1px; padding-bottom: 1px;
 }
 .UnderlineNav::-webkit-scrollbar { display: none; }
 .UnderlineNav-item {
