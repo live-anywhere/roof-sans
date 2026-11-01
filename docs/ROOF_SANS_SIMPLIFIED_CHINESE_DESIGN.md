@@ -22,7 +22,7 @@ Assumption, not yet checked against the app: the app's Chinese strings are Simpl
 
 ## Measured facts (2026-11-01)
 
-These were measured in a scratch session against the pinned Pretendard JP input, the committed `fonts/RoofSansVariable.ttf` (11,798,960 bytes, SHA-256 `6a01839d…272325`), and Source Han Sans 2.005. The build notes gave an earlier build's size and SHA-256 (11,779,304 bytes, `9927013a…8defe`); they now record the committed value, which `roofsans-build --without-chinese` reproduces.
+These were measured in a scratch session against the pinned Pretendard JP input, the committed `fonts/RoofSansVariable.ttf` (11,798,960 bytes, SHA-256 `6a01839d…272325`), and Source Han Sans 2.005. The build notes gave an earlier build's size and SHA-256 (11,779,304 bytes, `9927013a…8defe`); they now record the committed value, which `roofsans-build --without-chinese` reproduces (since 1.2.0 with version 1.200; build notes section 14).
 
 - **Pretendard JP's kanji are Source Han Sans JP, scaled.** Simple kanji (`一 口 日 田 書`) have the same contour and point counts in both fonts. Their ink boxes match Source Han Sans × 1.92 with an x offset of about 0 (±2 units) and a y offset of about +21 (+20 to +23). 1.92 maps Source Han Sans's 1000-unit em onto Pretendard's 1920-unit Han advance. Complex kanji (`東 漢 愛`) differ by a few points, so Pretendard converted the outlines to TrueType on its own; outlines cannot be compared point by point.
 - **Weight correspondence, by ink area** over 14 kanji (`一口日田国東京語漢字書愛鬱龍`): Pretendard 400 matches Source Han Sans at 377.5–384 (median 381.25), with an ink-area ratio of 1.0000–1.0004. Pretendard 930 matches Source Han Sans 900, its maximum, with Pretendard 0.3–0.9% heavier. Pretendard 700 matches Source Han Sans at about 650–660.

@@ -4,7 +4,7 @@ These notes record how the build implements `docs/ROOF_SANS_DESIGN.md`: the inpu
 
 Labels such as "R17" are the numbers of the rulings made during implementation. They are kept so a reviewer can trace a decision. Each entry here states the decision in full; the ruling log is not needed to read it.
 
-All values are in font units (2048 per em) unless stated otherwise. "t" is the normalized Roof axis position: t = (wght − 400) / 600 at and above 400, and (wght − 400) / 300 below it (section 14).
+All values are in font units (2048 per em) unless stated otherwise. "t" is the normalized Roof axis position: t = (wght − 400) / 600.
 
 ## 1. Inputs and pinning
 
@@ -31,9 +31,9 @@ All values are in font units (2048 per em) unless stated otherwise. "t" is the n
 
 The data goes to a temporary file in `inputs/`, is checked, and is then moved into place. A mismatch removes the temporary file and raises `InputChecksumError`. Nothing is written under `refs/`. The build itself only reads `inputs/`. `ensure_files(names)` fetches only the named entries; `roofsans-web` uses it so the web build does not download the font inputs. The test fixture `inputs` calls the same function with `refs/` as the copy source, so tests copy from `refs/` when it exists and download otherwise.
 
-Python dependencies are pinned with `==` in `pyproject.toml` and locked in `uv.lock`: Python 3.12 (3.12.13 in the current `.venv`), fontTools 4.60.2, skia-python 144.1, uharfbuzz 0.57.0, opentype-sanitizer 9.2.0, pytest 9.2.0, brotli 1.2.1, and the build backend uv_build 0.11.27. brotli was added for the specimen page: fontTools needs it to write WOFF2, which keeps the self-contained page near 11 MB instead of 21 MB with the TTF (5 MB and 16 MB before the light weights). The plan's selection counts were measured with Python 3.9's Unicode 13.0 data; Python 3.12's Unicode 15.0 data gives the same count for every rule.
+Python dependencies are pinned with `==` in `pyproject.toml` and locked in `uv.lock`: Python 3.12 (3.12.13 in the current `.venv`), fontTools 4.60.2, skia-python 144.1, uharfbuzz 0.57.0, opentype-sanitizer 9.2.0, pytest 9.2.0, brotli 1.2.1, and the build backend uv_build 0.11.27. brotli was added for the specimen page: fontTools needs it to write WOFF2, which keeps the self-contained page near 5 MB instead of 16 MB with the TTF. The plan's selection counts were measured with Python 3.9's Unicode 13.0 data; Python 3.12's Unicode 15.0 data gives the same count for every rule.
 
-The package version in `pyproject.toml` follows the release (`1.1.0`; PEP 440 has no form like `1.100`). The font's own version is set by `finalize.py`: 1.100 for Roof Sans 1.1.0, the release that added the weights below 400. A `--without-light` build keeps 1.000, because it reproduces Roof Sans 1.000 byte for byte; a later release that changes anything at or above 400 has to revisit that rule and the SHA pinned in `test_a22_unchanged_above_400.py`.
+The package version in `pyproject.toml` is `1.2.0`. The font's own version, 1.200, is `VERSION` in `finalize.py`: package `X.Y.0` is font version `X.Y00`. The package does not use the font's form because PEP 440 would normalize `1.000` to `1.0`. Roof Sans 1.0.0 was font version 1.000; 1.1.0 (1.100) added weights below 400, and 1.2.0 removed them again (section 14).
 
 ## 2. What the build produces
 
@@ -67,7 +67,7 @@ The cmap has 21,718 code points and 524 variation sequences. The font has 22,923
 
 The counts above are without the Simplified Chinese extension. With it, `C1_HANZI` adds 3,260 code points, so the cmap has 24,978 code points and the font 28,404 glyphs (section 12).
 
-The build takes about 38 seconds with the light weights (section 14), about 20 seconds without them (`--without-light`), and 12–14 seconds without the Chinese extension too. The font committed before the extension (`roofsans-build --without-chinese --without-light` reproduces it) is 11,798,960 bytes with SHA-256 `6a01839de58c49b41cfa6bba64a6653ab8b66fcab74e7150ae55cd4173272325`. An earlier version of these notes gave `9927013a…8defe` (11,779,304 bytes), from a build before the last change to the committed font. Two builds from the same inputs are byte-identical (`test_build_determinism.py`).
+The build takes about 20 seconds with the extension (12–14 seconds without). The font committed before the extension (`roofsans-build --without-chinese` reproduces it) is 11,798,960 bytes with SHA-256 `6a01839de58c49b41cfa6bba64a6653ab8b66fcab74e7150ae55cd4173272325`. An earlier version of these notes gave `9927013a…8defe` (11,779,304 bytes), from a build before the last change to the committed font. Since the version became 1.200 (section 14), `roofsans-build --without-chinese` gives that font with only the version changed: 11,798,960 bytes, SHA-256 `4b4791d6815c4d6ee59bef123325db039c90691f27d1289647b29511f8ad0606`, which `test_a16_baseline.py` pins. Two builds from the same inputs are byte-identical (`test_build_determinism.py`).
 
 ## 3. Glyph naming
 
@@ -79,10 +79,10 @@ The build takes about 38 seconds with the light weights (section 14), about 20 s
 
 ## 4. Axis and variation data
 
-- The Roof axis is `wght` 100–1000, default 400. Constants are in `src/roofsans/axis.py`. Above 400, t is (wght − 400) / 600, as on Wanted Sans's own axis; below 400 it is (wght − 400) / 300, so t = −1 is wght 100. The light half is section 14.
+- The Roof axis is `wght` 400–1000, default 400. Constants are in `src/roofsans/axis.py`.
 - Pretendard JP's 930 master sits at t = 530/600, stored as F2Dot14 `14473/16384` (0.88336, `PJ_PEAK`). Wanted Sans's 750 master sits at t = 0.58331298828125 (`W_MID`), the value stored in its `gvar` regions.
-- **Copied Pretendard glyphs** keep their own `gvar` tuples. A tuple on the region (0, 1, 1) is replaced by two tuples with the same deltas: (0, `PJ_PEAK`, 1) and (`PJ_PEAK`, 1, 1). The glyph then reaches its 930 shape at `PJ_PEAK` and holds it to 1000. Pretendard's tuple on (−1, −1, 0), its 45 master, is kept with its deltas scaled by 300/355, so Roof's −1 (100) shows Pretendard at 100 (section 14); `--without-light` drops it. Any other region raises an error, so an input change cannot pass silently.
-- **Harmonized glyphs** are built as master outlines and turned into `gvar` tuples with `fontTools.varLib.models.VariationModel` (`tuples_from_masters`). H4 letters and H5 symbols use masters at t = −1, −0.5, 0, 0.5, 0.75, 1 (`H4_LOCS`, 100/250/400/700/850/1000). Composites use t = −1, −0.5, 0, 0.5, `W_MID`, 1 (`COMPOSITE_LOCS`). The enclosed numbers and sup/sub signs use t = −1, 0, `W_MID`, 1. Rules take these through `ctx.locs(...)`, which drops the negative ones for `--without-light`.
+- **Copied Pretendard glyphs** keep their own `gvar` tuples. A tuple on the region (0, 1, 1) is replaced by two tuples with the same deltas: (0, `PJ_PEAK`, 1) and (`PJ_PEAK`, 1, 1). The glyph then reaches its 930 shape at `PJ_PEAK` and holds it to 1000. Tuples with a negative peak (Pretendard's range below 400) are dropped. Any other region raises an error, so an input change cannot pass silently.
+- **Harmonized glyphs** are built as master outlines and turned into `gvar` tuples with `fontTools.varLib.models.VariationModel` (`tuples_from_masters`). H4 letters and H5 symbols use masters at t = 0, 0.5, 0.75, 1 (`H4_LOCS`, 400/700/850/1000). Composites use t = 0, 0.5, `W_MID`, 1 (`COMPOSITE_LOCS`). The enclosed numbers and sup/sub signs use t = 0, `W_MID`, 1.
 - **Sampling past 930.** `PretendardSampler` evaluates Pretendard's tuples with extrapolation, so it can sample any weight from 45 to 1100.
 - **Component transforms (R4).** 47 Pretendard composites use a 2×2 component transform: mirrors such as `parenright` (mirrored `parenleft`) and `uni3009` (mirrored `uni3008`), rotations such as `arrowdown` (`arrowup` turned 180°), and one scale (`Ю` uses `hyphen` at x-scale 0.70001220703125). The samplers decompose composites with the full transform and with the component offsets varied through `gvar`. A mirror reverses the contour direction, and the points are kept as the transform gives them. The emboldening code therefore takes orientation from the total signed area of the glyph, not from each contour.
 - **Rounding.** Delta rounding (≤ 0.5) and the IUP optimization tolerance (0.5) can add up, so a master reconstructed from `tuples_from_masters` is within 1 unit of its outline, not within 0.5 (0.749 measured over `A a zero S g` at 25-unit steps). Tests on harmonized glyphs therefore allow at least 1 unit.
@@ -293,7 +293,7 @@ Wanted's GSUB lookups 0–81 and its GPOS lookups 0–14 keep their indices and 
 - Name ID 0 is Wanted Sans's own name ID 0 ("Copyright © 2024 Wanted Lab, Inc."), followed by every upstream `Copyright` line, joined with spaces, without the Reserved Font Name clauses and their commas.
 - `OFL.txt` starts with Wanted Sans's name ID 0 notice when Wanted's `OFL.txt` header does not already contain it (it does not). Then come the header of Wanted's `OFL.txt` and the header of Pretendard's `LICENSE`, both verbatim (every copyright line, every Reserved Font Name line, and Adobe's sentence "Source is a trademark of Adobe…"), then Wanted's OFL 1.1 text. The file is written as UTF-8 with `\n` line ends.
 - The plan kept Pretendard's Inter line ("Copyright (c) 2016 The Inter Project Authors") in both places: Pretendard's Latin, Greek, and Cyrillic come from Inter, and H4 copies those drawings.
-- `head.fontRevision` 1.100 (1.000 for `--without-light`); `created` and `modified` are fixed at 2026-10-31T00:00:00Z so the build is deterministic. `OS/2.achVendID` is `ROOF`. Unicode ranges are recalculated (bits 7, 9, 24, 30, 39, 40, 49, 50, 55, 59, 61, 64, 67, 68, and 116 are added); code page bit 17 (Japanese) is added. `OS/2.xAvgCharWidth` is recalculated from every nonzero advance (R39): 1770, where Wanted's value is 1714.
+- `head.fontRevision` 1.200 (1.000 until section 14); `created` and `modified` are fixed at 2026-10-31T00:00:00Z so the build is deterministic. `OS/2.achVendID` is `ROOF`. Unicode ranges are recalculated (bits 7, 9, 24, 30, 39, 40, 49, 50, 55, 59, 61, 64, 67, 68, and 116 are added); code page bit 17 (Japanese) is added. `OS/2.xAvgCharWidth` is recalculated from every nonzero advance (R39): 1770, where Wanted's value is 1714.
 - Metrics are Wanted's, unchanged: `hhea` 1950 / −494 / 0, `OS/2` typo 1752 / −296 / 0 with `USE_TYPO_METRICS` off, win 1950 / 494, x-height 1032, cap height 1448.
 - The build writes `OFL.txt` next to the font. A default-path build also copies it to the repository root.
 
@@ -301,7 +301,7 @@ Wanted's GSUB lookups 0–81 and its GPOS lookups 0–14 keep their indices and 
 
 | Check | Tolerance | Why |
 | --- | --- | --- |
-| Wanted Sans glyphs (`test_a01`) | exact, at 400 / 750 / 1000, plus equal variable `glyf` entries and equal `gvar` tuples above 0 | the design forbids any change to them at 400–1000 |
+| Wanted Sans glyphs (`test_a01`) | exact, at 400 / 750 / 1000, plus equal variable `glyf` and `gvar` entries | the design forbids any change to them |
 | Pretendard copies and variation-sequence targets (`test_a02`, `test_a04`) | 0 at 400 and 930; 1 unit at 700 | exact at Pretendard's masters; 700 is between masters, where instance rounding differs by up to 1 |
 | Copies at 1000 | equal to 930 | the plateau |
 | Fullwidth outlines (`test_a03`) | 0.001 per point | unrounded instances carry float noise of about 1e-5 |
@@ -316,18 +316,12 @@ Wanted's GSUB lookups 0–81 and its GPOS lookups 0–14 keep their indices and 
 | Ink inside disc figures | ≤ 1 unit², rasterized at 4 px per unit | catches the knockout slivers of R27 |
 | Sup/sub sign-to-figure ratio (unit) | 2% | R18 |
 | Mark positions: decomposed vs. precomposed (`test_a07`) | ±2 units | R26 |
-| Pretendard-referenced marks below 400 (`test_a07`) | `ȓ` 52, `Ȓ` 21 units; others as above | Pretendard moves these breves far more with weight than Wanted's extrapolated anchors (R25); measured 50 and 19 at 100 |
 | Mark alignment between masters (Review Focus 5) | 1 unit | composite offsets reconstruct within 0.5 |
 | `tuples_from_masters` round trip (unit) | 1 unit (0.5 for the brief's `A` case) | delta rounding plus IUP tolerance |
 | Composite offsets (unit) | 0.5 | R20 |
 | Sampler vs. fontTools instancer (unit) | 1 unit | rounding of the instancer output |
 | H4 δy solve (unit) | F ≤ 1 at each master | R17 |
 | Outline sanity (`test_a06`) | see section 8 | |
-| Wanted Sans below 400 (`test_a23`) | 1 unit for simple glyphs, 1.5 for composites measured decomposed; advances 1 unit | delta rounding plus IUP; a composite's offsets are rounded once more (measured 0.987 and 1.305 at 100) |
-| Weight match below 400 (`test_a24`) | Hangul ink median ±1%, `l` stem ±5% against Pretendard JP | light design Acceptance 24 (measured 0.9994 and 0.971–0.976) |
-| Copies at 100 and 250 (`test_a02`, `test_a04`) | 1 unit for outlines and advances; 1.5 for composites | Pretendard's light deltas are scaled by 300/355 and rounded (measured 1.296 for `〞 〟`) |
-| H4 strokes below 250 (`test_a05_h4`) | median ±7%, each ±21% | light design L4: one δy cannot match Wanted's extrapolated contrast at Thin (measured +5.8% and −20.2% at 100) |
-| C calibration at 100 (`test_a13`) | 99% within 5 units, every glyph within 32; ink median ±1%, each ±3% | 100 is a calibrated master like 400; the same four outliers as at 400 |
 | Flutter line metrics (`verify/flutter_specimen`) | 0.01 logical px | design Acceptance 10 |
 
 ## 8. Outline sanity (Acceptance 6)
@@ -369,10 +363,10 @@ Every new same-sign overlap is in an H4 letter (Greek, Cyrillic, IPA and Latin E
 - The fresh-copy check replaces the plan's `git clone`, because the repository had no commits yet (R8). The non-ignored working tree is copied into an empty directory (`git ls-files --others --cached --exclude-standard -z | rsync --from0 --files-from=- …`). Then `uv sync`, `uv run roofsans-fetch` (network download), and `uv run roofsans-build` run there. On 2026-10-31 the copy downloaded the four inputs in 2 seconds and built the font in 14 seconds. Its SHA-256 (`9927013a…8defe`) equaled that of `fonts/RoofSansVariable.ttf` in the repository, and `uv run pytest` in the copy passed (194 tests).
 - **Language support** (stated on the specimen page, `site/`). Hyperglot 0.8.2 (`--validity preliminary`, base characters, living and constructed languages, primary orthographies) finds 483 Latin-script, 77 Cyrillic-script, and 2 Greek-script languages, plus Korean. Hyperglot has no data for Japanese, so CJK coverage is measured against national character sets decoded with Python's codecs: Hangul syllables 11,172 of 11,172; KS X 1001 hanja 4,888 of 4,888; JIS X 0208 level 1 and 2 kanji 2,965 and 3,390, all present; before the Simplified Chinese extension, GB 2312 level 1 hanzi 2,420 of 3,755 (64%) and Big5 frequent hanzi 4,611 of 5,401 (85%), so Chinese was listed as not supported. With it, GB 2312 levels 1 and 2 are 3,755 of 3,755 and 3,008 of 3,008, Big5 frequent hanzi 5,034 of 5,401, and the page lists Simplified Chinese (GB 2312) as supported; Traditional Chinese is not. The missing kana `ゕ ゖ`, JIS logic and set symbols, box drawing, and parenthesized numbers such as `⑴` are absent from both inputs too; no non-PUA input code point is missing from Roof Sans. `site/build_site.py` re-measures these numbers on every page build.
 - The visual review (Acceptance 9) uses the specimen sheet from `verify/specimen.py` and `verify/specimen_lines.json`. Besides the design's seven lines, it has two lines for the decisions above (R32): stacked capitals, horn letters, Greek and Cyrillic accents (line 8); notch and aperture glyphs, two-digit enclosed numbers, off-axis symbols, fractions, and unit squares (line 9).
-- The Flutter check (Acceptance 10) is the app in `verify/flutter_specimen/` (Flutter 3.44.9 through FVM). It draws w100–w900 through `fontWeight` and through the `wght` axis (w300–w900 before the light weights), and it compares line metrics with PretendardJP.
+- The Flutter check (Acceptance 10) is the app in `verify/flutter_specimen/` (Flutter 3.44.9 through FVM). It draws w300–w900 through `fontWeight` and through the `wght` axis, and it compares line metrics with PretendardJP.
 - **Acceptance 10 on an Android emulator is outstanding.** The AVD `Medium_Phone_API_36.1` does not boot: its system image folder lacks `system.img` and `vendor.img` ("No initial system image"), and the disk is 99% full (8 GB free). Reinstalling the image is the owner's call.
 - **Flutter web proxy (CanvasKit).** As substitute evidence, the specimen app ran on Flutter web (Flutter 3.44.9, font `9927013a…8defe`). CanvasKit uses the same FreeType-based Skia and SkParagraph as Android, but this is not the Android check. Results:
-  - The `fontWeight` lines match the `wght` lines at w300–w900, so the weights are real (w300 rendered as 400 then; this run predates the light weights).
+  - The `fontWeight` lines match the `wght` lines at w300–w900, so the weights are real (w300 renders as 400).
   - No glyph is hollow, including the lines where SkParagraph applies fake bold (bold-text setting on, the wght 500 line).
   - Line heights equal PretendardJP's at 12, 16, and 24 px. The ascent differs by 1 font unit (Roof `hhea` 1950; the static PretendardJP's typo ascender 1949 with `USE_TYPO_METRICS`), which is 0.012 px at 24 px.
   - `locl` JAN applies through `TextStyle(locale:)` (the `ja` line is 71 px wider) but not through `Text.locale` or `Localizations` on Flutter web (that line is unchanged). On native Android, Flutter's `ParagraphBuilder` passes the paragraph locale down to text styles; that path is unverified without an emulator. README recommends `TextStyle(locale:)`.
@@ -448,9 +442,9 @@ One set of values for every glyph, solved at build time and cached on the contex
 | dx400, dy400 | −0.020, +21.649 | median of Pretendard ink-box edge − 1.92 × Source Han Sans edge |
 | dx930, dy930 | −0.160, +21.440 | the same at 930 |
 
-- Ink boxes in the C rules are true curve bounds (`ink_bounds`, now in `measure.py` and re-exported by `c_hanzi.py`), not `Outline.bounds()`, which includes off-curve points. With control boxes, `戊 戍` missed by 15.6 units at 930.
+- Ink boxes in the C rules are true curve bounds (a helper in `c_hanzi.py`), not `Outline.bounds()`, which includes off-curve points. With control boxes, `戊 戍` missed by 15.6 units at 930.
 - The calibration raises an error if `w400` lands on either search bound or `w930` on its lower bound.
-- New glyphs have two masters (400 and 930) and the copied Han regions `(0, PJ_PEAK, 1)` and `(PJ_PEAK, 1, 1)`: linear to 930, held to 1000. With the light weights they have a third master at 100 on (−1, −1, 0) (section 14).
+- New glyphs have two masters (400 and 930) and the copied Han regions `(0, PJ_PEAK, 1)` and `(PJ_PEAK, 1, 1)`: linear to 930, held to 1000.
 
 Acceptance 13 on the 1,291 calibration hanzi, built from the JP subset with these values (edge = worst ink-box edge error per glyph, in units):
 
@@ -486,6 +480,7 @@ The outliers at 400 come from small shape differences between Pretendard's Sourc
 - Output: 16,230,096 bytes, SHA-256 `da7a7fe8197d2b5209cac0a9b6a313e42a975762f2015ab26b5be3dc7e75b87d`, about 20 seconds to build. The pre-extension font was 11,798,960 bytes; the estimate was 15.9 MB.
 - The specimen page is 7.7 MB (WOFF2 inside).
 - Tests: `uv run pytest` passed 302 tests in 5 minutes 5 seconds on 2026-11-01. It built `build/test/` (`da7a7fe8…`, equal to the default-path build) and `build/test-baseline/` (`6a01839d…`).
+- These hashes are Roof Sans 1.000's. Version 1.200 changes only `head` and `name` (section 14); the font is now SHA-256 `13c1e443…eb8c9af`.
 - Reviews: a Codex builder check of the design; a Claude review of the implementation (no blocker; its findings are fixed or recorded above).
 - Visual review (Acceptance 17): the specimen sheets at 400, 700, and 1000 show no jump in size, position, or weight between C1 hanzi and present hanzi under `zh-CN`.
 - Flutter web (Acceptance 18, Flutter 3.44.9, CanvasKit): `TextStyle(locale: Locale('zh', 'CN'))` applies the C2 forms and the Chinese punctuation; untagged Chinese text draws every hanzi from Roof Sans with the Japanese forms; line metrics still match PretendardJP. Android is still outstanding (section 11).
@@ -494,71 +489,38 @@ The outliers at 400 come from small shape differences between Pretendard's Sourc
 
 `roofsans-web` (`src/roofsans/web.py`) writes `dist/web/`: the whole font as WOFF2, a dynamic subset of 245 WOFF2 files, and a CSS file for each. The design, the split, the measured download sizes, and the known cross-file limits are in `docs/ROOF_SANS_WEB_DISTRIBUTION.md`. Facts the tests rely on:
 
-- The split reads only the built font and the three `slices_*` inputs. It does not change the font, so the font's SHA-256 stays that of `fonts/RoofSansVariable.ttf` (`88fe63a1…0bc81b` for 1.1.0).
+- The split reads only the built font and the three `slices_*` inputs. It does not change the font, so the font's SHA-256 stays `13c1e443…eb8c9af` (section 14).
 - The output is deterministic: two runs give byte-identical files. `test_committed_dist_matches_a_fresh_build` compares a fresh build of the committed font with the committed `dist/web/`, so a font change without a new `roofsans-web` run fails the tests.
 - Each subset file's cmap is its `unicode-range` plus the bidi mirror of any bracket in it (fontTools' default `bidi_closure`), so a mirrored bracket in right-to-left text comes from the same file.
 - Each subset file also holds the variation sequences (format 14 cmap) of its base characters. Requesting only the bases dropped all 524 sequences; `subset_request` adds the selectors.
 
-## 14. Light weights (wght 100–400)
+## 14. Weights below 400: added in 1.1.0, removed in 1.2.0
 
-`docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md` specifies the rules (L1–L5) and Acceptance 21–29. This section records how the build does it and what it measured.
+Roof Sans 1.1.0 (font version 1.100, tag `v1.1.0`) extended the axis to 100–1000. Each Wanted Sans glyph continued its own 400 → 550 movement below 400, Pretendard copies kept their light tuples, and Thin, ExtraLight, and Light became named instances. That design (rules L1–L5, Acceptance 21–29) is `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md` at that tag.
 
-### Code
+On 2026-11-01 the owner decided to remove them in 1.2.0. In use, only 400 and above is needed, and the light weights made every file about a third larger:
 
-- `src/roofsans/light.py` solves the Wanted Sans light data once per build (`solve`) and adds it to a Wanted Sans `TTFont` (`extend_wanted`). `make_context` applies it to the context's Wanted Sans before any rule runs, so `WantedSampler`, H2's reading of Wanted's composite offsets, and H2's reading of Wanted's GPOS anchors all see Wanted Sans down to 100 with no rule-specific code. `build.py` applies the same data to the output font.
-- `build(..., light=False)` (`--without-light`) skips all of it: `ctx.light` is None, `ctx.locs(...)` drops the negative master locations, Pretendard's light tuples and kerning deltas are dropped, the C calibration has no 100 master, the kana thresholds clamp to 0 as before, and no instances are added. The result is byte-identical to the font committed before this extension (SHA-256 `da7a7fe8197d2b5209cac0a9b6a313e42a975762f2015ab26b5be3dc7e75b87d`); with `--without-chinese` too it is the pre-Chinese font (`6a01839d…272325`).
-- `ink_area` and `ink_bounds` moved from `rules/c_hanzi.py` to `measure.py`, because `light.py` needs `ink_area`; `c_hanzi` re-exports both.
+| File | 1.0.0 | 1.1.0 | 1.2.0 |
+| --- | --- | --- | --- |
+| `fonts/RoofSansVariable.ttf` | 16,230,096 | 21,013,072 | 16,230,096 |
+| `dist/web/woff2/RoofSansVariable.woff2` | 5,740,256 | 8,154,880 | 5,740,140 |
+| `dist/web/woff2-dynamic-subset/` (245 files) | 7,798,008 | 10,745,224 | 7,799,040 |
 
-### Wanted Sans extrapolation (L2)
+How it was removed:
 
-- Every Wanted Sans region is (0, 1, 1), (0, 0.583, 1), or (0.583, 1, 1); `light.solve` raises an error on any other region, in `gvar` or in GDEF, because the 400 → 550 slope would then not be one straight segment.
-- **E = 126.0.** The ink-area median of the 2,350 KS X 1001 syllables (Wanted extrapolated / Pretendard at 100) is solved by bisection in [50, 400] and rounded to 0.25. An outline's area is quadratic in the extrapolation weight, so each syllable's area is fitted exactly from three samples (400, 550, and 250 on the line); the solve takes about 1 second.
-- **Clamped glyphs:** `끓` (uniB053) at 127, `끕` (uniB055) and `끛` (uniB05B) at 130. Each is the lightest whole weight from E upward whose stored outline (rounded, IUP-optimized deltas) passes `sanity.check_outline` against the glyph's 550 outline. At E, a 48-unit vertical edge at the top of the first ㄱ of ㄲ shrinks past zero and folds by about one unit. `꿈` and `끈` fold at 125 but pass at 126.
-- **The `r` superior and inferior forms** (`r.numr`, `r.dnom`, `ʳ`, `ᵣ`) cross themselves at every weight except exactly 400, inside 400–1000 too. Checked against their 550 outline, which crosses the same way, they are not clamped.
-- 12,608 Wanted Sans glyphs get a light tuple (every glyph that varies). Deltas are rounded, and simple glyphs' deltas are IUP-optimized with tolerance 0.5.
-- **GDEF rows.** 147 rows of Wanted Sans's variation store have a non-zero 400 → 550 movement (its kerning and mark anchors). Each VarData that holds one gets a column on (−1, −1, 0) and is re-optimized (`VarData.optimize`). That reorders columns (wider ones first) and would drop an all-zero column; every added column has non-zero rows, and the rows keep their order, so every Device keeps its index.
+- The code and test changes of the light weights (commit `cac7059`) and their documentation (`d2ab2bd`) were reversed. `src/`, `tests/`, and `verify/` are again those of 1.0.0, except the version in `finalize.py` and its tests, the hash in `test_a16_baseline.py`, and `test_site.py` from the later site restyle. `roofsans-build --without-light` no longer exists.
+- The specimen page restyle and the GitHub Pages workflow, which came after the light weights, stay. Their light-weight content was removed by hand. The page facts still check the axis range and the named-weight count, now 400–1000 and 7.
+- The version is 1.200, not 1.000 again, so that a 1.2.0 file is newer than a 1.1.0 file wherever versions are compared. Under strict semantic versioning, removing weights is a breaking change; the owner chose 1.2.0. 1.1.0 had been out for only a few hours.
 
-### Pretendard JP and the derived glyphs (L3–L5)
+Result, compared table by table with fontTools against the committed Roof Sans 1.000 (`da7a7fe8…e75b87d`):
 
-- Copies: Pretendard's light tuple × 300/355, explicit deltas rounded, omitted points kept omitted. A copied composite can then differ from Pretendard by up to 1.3 units at 100 (`〞 〟`, measured decomposed), because its components and its offsets are each rounded.
-- Kana alternates: Pretendard's conditions at normalized −0.47607, −0.09576, and −0.09296 (wght 231.0, 366.0, 367.0) become Roof conditions at −0.56335, −0.11334, and −0.10999 (F2Dot14). Before, they were clamped to 0, so all three sets were on from 400 up; they still are.
-- Pretendard kerning: each pair's delta on Pretendard's light region, × 300/355, on (−1, −1, 0).
-- H4 and H5 at the light masters:
+- Every table except `head` and `name` is byte-identical.
+- `head` differs only in `fontRevision` (1.200) and `checkSumAdjustment`.
+- `name` differs only in IDs 3 (`1.200;ROOF;RoofSans-Regular`) and 5 (`Version 1.200`), on both platforms.
+- The font is 16,230,096 bytes, SHA-256 `13c1e443d08c6d88bf9d6e4ee64f04230d1df09473cea265873e5aaeeb8c9af`.
+- `--without-chinese` gives the committed pre-Chinese font (`6a01839d…272325`) with the same three differences: SHA-256 `4b4791d6…8ad0606` (section 2).
+- In `dist/web/`, only the version comment in the two CSS files changes. Each WOFF2 file differs from 1.0.0's by −172 to +240 bytes, because WOFF2 compression varies with the changed bytes. The download sizes in `docs/ROOF_SANS_WEB_DISTRIBUTION.md` are re-measured on 1.2.0.
+- Tests: `uv run pytest` passed 349 tests in 5 minutes 39 seconds on 2026-11-01. `build/test/` equals the default-path build (`13c1e443…`), and `build/test-baseline/` is `4b4791d6…`.
+- In Chrome, the specimen page's weights tab, sliders, and named-weight list show 400–1000 and seven weights.
 
-  | Master | H4 `w′` | H4 δy | H4 score | H5 arrow sample, scale | H5 math sample, scale |
-  | --- | --- | --- | --- | --- | --- |
-  | 100 (t = −1) | 94.97 | 10.78 | 2.006 | 162.97, 0.9399 | 131.80, 1.1802 |
-  | 250 (t = −0.5) | 241.78 | 8.80 | 0.809 | 275.78, 0.9692 | 238.18, 1.1555 |
-
-  The score is Acceptance 5's stroke check as one number (≤ 1 passes), computed by the solver on unrounded masters. On the built font at 100 the reference median is +5.8%, the worst reference stroke +16.7% (`H` bar), and the worst letter stroke −20.2% (`ε` top), against limits of ±7% and ±21%: Wanted Sans's extrapolated strokes keep their contrast (`e` top 94, `H` bar 60, `o` top 69), while Pretendard's Thin strokes are all 61–62. At 175 the score is 1.26, at 250 0.81. The light design's Acceptance 26 sets the limits below 250 from these values.
-- C calibration at 100: `w100` = 254.0 in the window [250, 300], dx100 = +0.103, dy100 = +21.474. The four calibration hanzi over 5 units at 100 are `熙` 31.3, `摹` 15.4, `蔓` 11.9, `荻` 8.0, the same glyphs as at 400.
-- Measured weight match (Wanted extrapolated against Pretendard JP at the same weight): `l` stem 62.0 / 63.8 at 100, 97.3 / 99.9 at 200, 132.7 / 135.9 at 300; Hangul ink median ratio 0.9994 / 0.9994 / 0.9993 at 100 / 200 / 300.
-
-### Size and time
-
-- `fonts/RoofSansVariable.ttf` grows from 16,230,096 to 21,013,072 bytes. In the font, 26,669 glyphs have one light tuple, 1,675 (H4, H5, and composites with a 250 master) have two, and 60 have none.
-- The build takes about 38 seconds: `light.solve` takes about 11 seconds, most of it the per-glyph sanity check, and the H4/H5 light masters most of the rest.
-
-### Verification of "unchanged above 400"
-
-- Against the font committed before this branch: all 28,404 glyphs have the same default outline, advance, and tuples on regions above 0; `cmap`, `OS/2`, `hhea`, and `post` are byte-identical.
-- HarfBuzz shaping of the specimen lines and a kerning, mark, kana, and Chinese sample, at 400, 450, 550, 650, 700, 750, 850, 930, and 1000 under no locale, `ko`, `ja`, and `zh-CN`: 0 of 684 runs differ.
-- `--without-light` reproduces the committed font byte for byte (`test_a22_unchanged_above_400.py`).
-
-### Review, allowances, and status
-
-A fresh reviewer (Claude worker, `claude-opus-5-5`, high) checked the branch read-only. It confirmed the extrapolation, the E solve, the clamp loop, all 147 GDEF rows, and the carried Pretendard kerning against independent computations. Its findings and what was done:
-
-- The calibration unit test's fake context had no `light`; it now covers both builds and the 100 master's search bounds.
-- `WantedSampler` used to return the 400 outline below 400 for the input file. It now refuses weights below the font's own axis minimum (400 for the input, 100 after `extend_wanted`). Two unit tests that relied on the silent fallback were changed.
-- New checks: Wanted Sans's GDEF rows at t = −1 and −0.5 (`test_a23`), the carried Pretendard kerning at 100–930 (`test_a02`), mark placement at 100 and 250 against a light-extended Wanted Sans (`test_a07`), side bearings at 100 and 250 (`test_a09`), and FeatureVariations compared by what applies at each t ≥ 0 (`test_a22`). A03 and A05-H4 take their Wanted Sans reference from the input file at 400 and above.
-- `site/build_site.py` now also checks the axis range and the number of named weights, so a page that states 100–1000 cannot be built from a 400–1000 font.
-- Allowed below 400, with the measured values in the tests: `ȓ Ȓ` marks against Pretendard's (above), and side bearings of `Ĭ` (−40 a side at 100, −42/−44 at 250), `ĭ` (−50 a side), `ǰ` (left −120), and `ḧ` (left −65) at 100. Wanted Sans's marks narrow more slowly than its stems, so on narrow bases they reach past the advance, as `Ȉ ȉ` do at every weight; the placement is Wanted Sans's own GPOS.
-- Kept: composites with Wanted Sans parts only (R3, H3 fractions, C3) still take a 250 master. For most of them the second light tuple is linear within a unit and could go, but the saving is a few kilobytes.
-
-Verification of the light build (21,013,072 bytes, SHA-256 `836e664b…5764e8` before the version change; Roof Sans 1.1.0 as committed, with version 1.100, is SHA-256 `88fe63a13db41b680f4b5ed112615bc4bfce2b4def7c2aa9ee89daf8ed0bc81b`, same size):
-
-- `uv run pytest`: 441 passed and 2 failed in 10 minutes 31 seconds, before the two last fixes above (the `test_harmonize` fallback and the A09 allowances at 100); after them both files pass (9 passed). The run includes `test_build_determinism.py`, `test_committed_dist_matches_a_fresh_build`, and the site test.
-- `dist/web/` was rebuilt from the 1.1.0 font: 245 subset files, 10,745,224 bytes; the whole font as WOFF2 is 8,154,880 bytes.
-- Acceptance 28: the specimen sheets at 100 and 200 (`verify/specimen.py --weights 100,200,300`) show no jump in weight, x-height, baseline, or symbol axis between Hangul, Latin, Greek, Cyrillic, Han, kana, Simplified Chinese, and symbols. In Chrome, the specimen page's ten named weights render with the light weights (the same line measures 942 / 948 / 954 / 960 px at 100 / 200 / 300 / 400). The `e` contrast at Thin (top bar 94 against stem 62) is left to the owner's review.
-- Acceptance 29: `verify/flutter_specimen` now draws w100–w900, and `fvm flutter analyze` passes. It has not run on a device or on Flutter web; it stays outstanding with Acceptance 10.
+To bring the light weights back, start from tag `v1.1.0` or the `feature/light-weights` branch, and re-measure every value in this section.
