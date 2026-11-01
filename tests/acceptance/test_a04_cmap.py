@@ -8,6 +8,7 @@ from copies import COPY_WEIGHTS, differing_copies, pj_names  # noqa: F401 (fixtu
 
 from roofsans.assemble import planned_cmap
 from roofsans.rules.h6_copy import format14_sequences
+from roofsans.selection import WANTED_LOGO
 
 pytestmark = pytest.mark.acceptance
 
@@ -37,6 +38,14 @@ def test_cmap_equals_plan(ctx, roof, plan):
 def test_no_private_use(roof, plan):
     assert not [cp for cp in roof.getBestCmap() if 0xE000 <= cp <= 0xF8FF]
     assert not [cp for cp in plan if 0xE000 <= cp <= 0xF8FF]
+
+
+def test_no_wanted_logo(roof, plan, wanted):
+    """Wanted Sans's logo code points and their glyphs are left out (design selection rule 1)."""
+    logo_glyphs = {wanted.getBestCmap()[cp] for cp in WANTED_LOGO}
+    assert len(logo_glyphs) == 4
+    assert not [cp for cp in WANTED_LOGO if cp in roof.getBestCmap() or cp in plan]
+    assert not logo_glyphs & set(roof.getGlyphOrder())
 
 
 def test_format4_size_limit(roof):

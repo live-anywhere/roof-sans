@@ -69,7 +69,7 @@ def test_zhs_switches(ctx, roof_path):
 
 def test_zhs_shared_non_gb_codepoints(roof, roof_path):
     cmap = roof.getBestCmap()
-    mapping = roof['GSUB'].table.LookupList.Lookup[99].SubTable[0].mapping
+    mapping = roof['GSUB'].table.LookupList.Lookup[96].SubTable[0].mapping
     gb = set(gb2312_hanzi())
     shared = {cp for cp, glyph in cmap.items() if cp not in gb and glyph in mapping}
     assert shared == set(NON_GB_SHARED_C2)

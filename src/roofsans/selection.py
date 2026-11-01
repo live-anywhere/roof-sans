@@ -28,6 +28,7 @@ class Rule(StrEnum):
     H4_LETTER = "H4_LETTER"
     H5_SYMBOL = "H5_SYMBOL"
     EXCLUDED_PUA = "EXCLUDED_PUA"
+    EXCLUDED_LOGO = "EXCLUDED_LOGO"
 
 
 class SymbolCategory(StrEnum):
@@ -42,6 +43,11 @@ class Zone(StrEnum):
     LOWER = "LOWER"
     CAPITAL = "CAPITAL"
 
+
+# Design selection rule 1 exception: Wanted Sans's logo glyphs (its trademark), left out.
+# U+F0000 is the logo lockup, U+F0001 the symbol, U+F0002 the wordmark, and U+F0003 the
+# divider its `liga` puts after the logo; Pretendard JP maps none of them.
+WANTED_LOGO: tuple[int, ...] = tuple(range(0xF0000, 0xF0004))
 
 # The CJK space and brackets both fonts map; H1 gives them Japanese alternates under `locl`.
 JAN_SHARED: tuple[int, ...] = (0x3000, *range(0x3008, 0x3012), 0x3014, 0x3015)
@@ -149,6 +155,8 @@ def select(wanted: TTFont, pretendard: TTFont, shs_cn: TTFont, chinese: bool = T
     zone: dict[int, Zone] = {}
 
     def classify(cp: int) -> Rule:
+        if cp in WANTED_LOGO:
+            return Rule.EXCLUDED_LOGO
         if cp in wanted_cmap:
             return Rule.WANTED
         if _within(cp, _PUA):

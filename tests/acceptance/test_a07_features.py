@@ -105,6 +105,15 @@ def test_wanted_behavior_unchanged(inputs, roof_path):
     assert not bad, bad[:10]
 
 
+@pytest.mark.parametrize("text", ["wanted_logo", "wanted_logo × X", "wanted_logo | Y"])
+def test_no_logo_ligature(inputs, roof, roof_path, text):
+    """Wanted Sans's `liga` (its logo and the divider after it) is gone; the text stays text."""
+    assert "liga" not in {r.FeatureTag for r in roof["GSUB"].table.FeatureList.FeatureRecord}
+    assert names(inputs.wanted, text)[0] == "uF0000"
+    for wght in (400, 1000):
+        assert shape(roof_path, text, wght) == shape(inputs.wanted, text, wght, {"liga": False})
+
+
 def test_kor_hanja(pretendard, pj_names, reach, roof_path):  # noqa: F811
     mapping = _mapping(pretendard, PJ_KOR)
     assert len(mapping) == 537

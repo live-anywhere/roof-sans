@@ -17,5 +17,5 @@ def test_a11_gb2312(ctx, roof, baseline_path):
     assert set(gb2312_hanzi()) <= new.keys()
     assert new.keys() - old.keys() == c1
     assert all(new[cp] == name for cp, name in old.items())
-    assert len(new) == 24978
-    assert len(roof.getGlyphOrder()) == 28404
+    assert len(new) == 24974
+    assert len(roof.getGlyphOrder()) == 28400

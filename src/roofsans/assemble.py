@@ -1,13 +1,14 @@
-"""Insert new glyphs into the Wanted Sans base and rebuild its cmap."""
+"""Prepare the Wanted Sans base, insert new glyphs into it, and rebuild its cmap."""
 
 from __future__ import annotations
 
+from fontTools import subset
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 
 from roofsans.newglyph import NewGlyph
 from roofsans.rules.h6_copy import format14_sequences
-from roofsans.selection import Rule, roof_glyph_name
+from roofsans.selection import WANTED_LOGO, Rule, roof_glyph_name
 
 # Wanted Sans maps ➀–➈ to ①–⑨'s glyphs; ➉ follows ⑩ the same way.
 SHARED_GLYPH = {0x2789: 0x2469}
@@ -15,16 +16,64 @@ SHARED_GLYPH = {0x2789: 0x2469}
 # (format, platformID, platEncID), in the spec's sort order.
 _SUBTABLES = ((4, 0, 3), (12, 0, 4), (14, 0, 5), (4, 3, 1), (12, 3, 10))
 
+# Wanted Sans's `liga` holds only the logo: `wanted_logo` → U+F0000, then " × " or " | "
+# after the logo → the U+F0003 divider. No other feature reaches the logo glyphs.
+LOGO_FEATURE = "liga"
+
+
+def _keep_all_options(features: set[str]) -> subset.Options:
+    """Subsetter options that keep every table, name, glyph name, and hint, and ``features``."""
+    options = subset.Options()
+    options.layout_features = sorted(features)
+    options.layout_scripts = ["*"]
+    options.name_IDs = ["*"]
+    options.name_languages = ["*"]
+    options.name_legacy = True
+    options.glyph_names = True
+    options.legacy_cmap = True
+    options.symbol_cmap = True
+    options.notdef_outline = True
+    options.prune_unicode_ranges = False
+    options.prune_codepage_ranges = False
+    options.drop_tables = []
+    options.passthrough_tables = True
+    return options
+
+
+def drop_wanted_logo(font: TTFont) -> None:
+    """Remove Wanted Sans's logo glyphs and the `liga` feature that forms them from ``font``.
+
+    The logo is Wanted Lab's trademark; the OFL licenses the font, not the mark. Every other
+    glyph, lookup, and value stays: the subsetter keeps all glyphs but the logo's, every
+    other feature, and every table, and drops only lookups no remaining feature reaches.
+    """
+    cmap = font.getBestCmap()
+    logo = {cmap[cp] for cp in WANTED_LOGO}
+    features = {
+        record.FeatureTag
+        for tag in ("GSUB", "GPOS")
+        for record in font[tag].table.FeatureList.FeatureRecord
+    }
+    subsetter = subset.Subsetter(_keep_all_options(features - {LOGO_FEATURE}))
+    subsetter.populate(
+        glyphs=[g for g in font.getGlyphOrder() if g not in logo],
+        unicodes=[cp for cp in cmap if cp not in WANTED_LOGO],
+    )
+    subsetter.subset(font)
+    left = logo & set(font.getGlyphOrder())
+    if left:
+        raise ValueError(f"logo glyphs survived the subset: {sorted(left)}")
+
 
 def planned_cmap(ctx) -> dict[int, str]:
     """The Roof cmap: Wanted Sans's, then copies for H6, then a new name per other rule."""
     if not ctx.pj_names:
         raise ValueError("planned_cmap needs ctx.pj_names; run copy_closure first")
-    cmap = dict(ctx.wanted.getBestCmap())
+    cmap = {cp: g for cp, g in ctx.wanted.getBestCmap().items() if ctx.selection.rules[cp] is Rule.WANTED}
     pcmap = ctx.pretendard.getBestCmap()
     taken = set(ctx.wanted.getGlyphOrder()) | set(ctx.pj_names.values())
     for cp, rule in sorted(ctx.selection.rules.items()):
-        if rule in (Rule.WANTED, Rule.EXCLUDED_PUA):
+        if rule in (Rule.WANTED, Rule.EXCLUDED_PUA, Rule.EXCLUDED_LOGO):
             continue
         if rule is Rule.H6_COPY:
             cmap[cp] = ctx.pj_names[pcmap[cp]]

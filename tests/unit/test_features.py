@@ -153,13 +153,14 @@ def test_append_store_keeps_existing_rows_and_shares_regions():
 @pytest.fixture(scope='module')
 def chinese_gsub(ctx, inputs):
     from fontTools.ttLib import TTFont
-    from roofsans.assemble import planned_cmap
+    from roofsans.assemble import drop_wanted_logo, planned_cmap
     from roofsans.features.gsub import carry
     from roofsans.rules import c_hanzi, c_punct, h6_copy
 
     h6_copy.copy_closure(ctx)
     ctx.cmap = planned_cmap(ctx)
     font = TTFont(inputs.wanted)
+    drop_wanted_logo(font)  # as the build does, so the lookup indices match the font
     names = set(font.getGlyphOrder()) | set(ctx.pj_names.values()) | set(ctx.cmap.values())
     names.update(f'uni{cp:04X}.zhs' for cp in (*c_hanzi.zhs_forms(ctx), *c_punct.ZHS_SIGNS, *c_punct.ZHS_QUOTES))
     order = font.getGlyphOrder()
@@ -170,8 +171,8 @@ def chinese_gsub(ctx, inputs):
 
 def test_zhs_lookup_order(chinese_gsub):
     lookups = chinese_gsub.LookupList.Lookup
-    assert len(lookups) == 103
-    mappings = [lookups[i].SubTable[0].mapping for i in (99, 100, 102)]
+    assert len(lookups) == 100
+    mappings = [lookups[i].SubTable[0].mapping for i in (96, 97, 99)]
     assert [len(m) for m in mappings] == [2212, 17, 5]
     assert mappings[0]['uni76F4'] == 'uni76F4.zhs'
     assert mappings[1]['uniFF01'] == 'uniFF01.zhs'
@@ -181,7 +182,7 @@ def test_zhs_lookup_order(chinese_gsub):
 def test_zhs_quote_context(chinese_gsub, ctx):
     import unicodedata
 
-    lookup = chinese_gsub.LookupList.Lookup[101]
+    lookup = chinese_gsub.LookupList.Lookup[98]
     assert lookup.LookupType == 6 and lookup.LookupFlag == 0
     exception, substitution = lookup.SubTable
     assert exception.Format == substitution.Format == 3
@@ -196,8 +197,8 @@ def test_zhs_quote_context(chinese_gsub, ctx):
     assert set(substitution.InputCoverage[0].glyphs) == {
         ctx.cmap[cp] for cp in (0x2018, 0x2019, 0x201C, 0x201D, 0x00B7)}
     (record,) = substitution.SubstLookupRecord
-    assert (record.SequenceIndex, record.LookupListIndex) == (0, 102)
-    assert all(102 not in fr.Feature.LookupListIndex for fr in chinese_gsub.FeatureList.FeatureRecord)
+    assert (record.SequenceIndex, record.LookupListIndex) == (0, 99)
+    assert all(99 not in fr.Feature.LookupListIndex for fr in chinese_gsub.FeatureList.FeatureRecord)
 
 
 def test_zhs_language_systems(chinese_gsub, wanted):
@@ -213,10 +214,11 @@ def test_zhs_language_systems(chinese_gsub, wanted):
         assert len(added) == 1
         (index,) = added
         assert records[index].FeatureTag == 'locl'
-        assert records[index].Feature.LookupListIndex == ([99, 100, 101] if tag == 'hani' else [100, 101])
+        assert records[index].Feature.LookupListIndex == ([96, 97, 98] if tag == 'hani' else [97, 98])
     original = wanted['GSUB'].table
     for sr in original.ScriptList.ScriptRecord:
         for lr in sr.Script.LangSysRecord:
             current = next(r.LangSys for r in scripts[sr.ScriptTag].LangSysRecord if r.LangSysTag == lr.LangSysTag)
-            assert [records[i].FeatureTag for i in current.FeatureIndex] == [
-                original.FeatureList.FeatureRecord[i].FeatureTag for i in lr.LangSys.FeatureIndex]
+            original_tags = [original.FeatureList.FeatureRecord[i].FeatureTag for i in lr.LangSys.FeatureIndex]
+            # Wanted Sans's `liga` (its logo) is the one feature Roof Sans drops.
+            assert [records[i].FeatureTag for i in current.FeatureIndex] == [t for t in original_tags if t != 'liga']

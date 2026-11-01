@@ -10,7 +10,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 
 from roofsans import features, finalize
-from roofsans.assemble import insert, planned_cmap, planned_uvs, write_cmap
+from roofsans.assemble import drop_wanted_logo, insert, planned_cmap, planned_uvs, write_cmap
 from roofsans.context import make_context
 from roofsans.inputs import Inputs, ensure_inputs
 from roofsans.rules import (
@@ -49,6 +49,7 @@ def build(out: Path, inputs: Inputs | None = None, chinese: bool = True) -> Path
             ctx.contributed[g.name] = g
 
     font = TTFont(inputs.wanted, recalcTimestamp=False)
+    drop_wanted_logo(font)
     insert(font, list(ctx.contributed.values()))
     names = set(font.getGlyphOrder())
     missing = Counter(ctx.selection.rules[cp] for cp, g in ctx.cmap.items() if g not in names)

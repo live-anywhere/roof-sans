@@ -1,10 +1,13 @@
-from roofsans.selection import Rule, SymbolCategory, Zone, roof_glyph_name, select
+from roofsans.selection import WANTED_LOGO, Rule, SymbolCategory, Zone, roof_glyph_name, select
+
+EXCLUDED = (Rule.EXCLUDED_PUA, Rule.EXCLUDED_LOGO)
 
 
 def test_counts(wanted, pretendard, shs_cn):
     s = select(wanted, pretendard, shs_cn)
     n = lambda r: len(s.codepoints(r))
-    assert n(Rule.WANTED) == 12032 and n(Rule.EXCLUDED_PUA) == 382
+    assert n(Rule.WANTED) == 12028 and n(Rule.EXCLUDED_PUA) == 382
+    assert s.codepoints(Rule.EXCLUDED_LOGO) == list(WANTED_LOGO)
     assert n(Rule.R3_FULLWIDTH) == 62 and n(Rule.R3_SIGN) == 23 and n(Rule.H2_COMPOSE) == 228
     assert n(Rule.C1_HANZI) == 3260
     assert n(Rule.C2_FORM) == n(Rule.C3_PUNCT) == 0
@@ -12,7 +15,7 @@ def test_counts(wanted, pretendard, shs_cn):
     assert n(Rule.H3_SEQUENCE) == 127   # 80 unit squares + 47
     assert n(Rule.H3_ENCLOSED) == 23 and n(Rule.H3_SUPSUB) == 10
     assert n(Rule.H3_FRACTION) == 7 and n(Rule.H4_LETTER) == 1012 and n(Rule.H5_SYMBOL) == 208
-    assert sum(1 for r in s.rules.values() if r is not Rule.EXCLUDED_PUA) == 24978
+    assert sum(1 for r in s.rules.values() if r not in EXCLUDED) == 24974
 
 
 def test_examples(wanted, pretendard, shs_cn):
@@ -32,7 +35,7 @@ def test_examples(wanted, pretendard, shs_cn):
 def test_without_chinese_preserves_original_selection(wanted, pretendard, shs_cn):
     selection = select(wanted, pretendard, shs_cn, chinese=False)
     assert not selection.codepoints(Rule.C1_HANZI)
-    assert sum(rule is not Rule.EXCLUDED_PUA for rule in selection.rules.values()) == 21718
+    assert sum(rule not in EXCLUDED for rule in selection.rules.values()) == 21714
 
 
 def test_naming():

@@ -1,6 +1,8 @@
-"""Acceptance 1: every code point Wanted Sans maps keeps Wanted Sans's glyph."""
+"""Acceptance 1: every code point Wanted Sans maps, except its logo, keeps Wanted Sans's glyph."""
 
 import pytest
+
+from roofsans.selection import WANTED_LOGO
 
 pytestmark = pytest.mark.acceptance
 
@@ -24,6 +26,8 @@ def test_static_outlines_and_advances(static, wanted, wght):
     rcmap = r.getBestCmap()
     bad = []
     for cp, name in sorted(wanted.getBestCmap().items()):
+        if cp in WANTED_LOGO:
+            continue
         if rcmap.get(cp) != name:
             bad.append((hex(cp), "cmap", rcmap.get(cp)))
             continue
@@ -37,7 +41,7 @@ def test_static_outlines_and_advances(static, wanted, wght):
 
 
 def test_variable_glyf_and_gvar_unchanged(wanted, roof):
-    names = sorted(set(wanted.getBestCmap().values()))
+    names = sorted({name for cp, name in wanted.getBestCmap().items() if cp not in WANTED_LOGO})
     wglyf, rglyf = wanted["glyf"], roof["glyf"]
     wgvar, rgvar = wanted["gvar"].variations, roof["gvar"].variations
     bad = [n for n in names if structure(wglyf[n]) != structure(rglyf[n])]
