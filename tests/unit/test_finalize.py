@@ -3,9 +3,30 @@ import re
 import pytest
 from fontTools.misc.timeTools import timestampFromString
 
-from roofsans.finalize import copyright_lines, wanted_notice, write_license
+from roofsans.finalize import (
+    ROOF_COPYRIGHT,
+    copyright_lines,
+    copyright_notice,
+    font_notice,
+    states,
+    trademark_notices,
+    wanted_notice,
+    write_license,
+)
 
 WANTED_NOTICE = "Copyright \u00a9 2024 Wanted Lab, Inc."
+# Pretendard JP's name ID 0; its LICENSE file says 2021.
+PRETENDARD_NOTICE = "Copyright \u00a9 2023 Kil Hyung-jin"
+LIVEANYWHERE = "Copyright 2026 LiveAnywhere Inc. (https://github.com/live-anywhere/roof-sans)"
+TRADEMARKS = [
+    "Wanted Sans Variable is a trademark of Wanted Lab, Inc.",
+    "Wanted Logo is a trademark of Wanted Lab, Inc.",
+    "Source is a trademark of Adobe in the United States and/or other countries.",
+    "Pretendard is a trademark of Kil Hyung-jin.",
+    "Inter UI and Inter is a trademark of rsms.",
+]
+# The notices the copied license headers do not already state.
+ADDED_TRADEMARKS = "".join(f"{t}\n" for t in TRADEMARKS if not t.startswith("Source")) + "\n"
 
 COPYRIGHT_HOLDERS = [
     "The Wanted Sans Project Authors",
@@ -36,6 +57,36 @@ def test_wanted_notice(inputs):
     assert wanted_notice(inputs) == WANTED_NOTICE
 
 
+def test_font_notices(inputs):
+    assert font_notice(inputs.pretendard) == PRETENDARD_NOTICE
+    shs = font_notice(inputs.shs_cn)
+    assert shs.startswith("\u00a9 2014-2025 Adobe") and states(inputs.shs_license.read_text(encoding="utf-8"), shs)
+    assert not states(inputs.pretendard_license.read_text(encoding="utf-8"), PRETENDARD_NOTICE)
+
+
+def test_every_input_notice_is_kept(tmp_path, inputs):
+    """Each input font's own name ID 0 is stated in OFL.txt and in Roof Sans's name ID 0."""
+    path = tmp_path / "OFL.txt"
+    for chinese in (True, False):
+        write_license(path, inputs, chinese=chinese)
+        text, name0 = path.read_text(encoding="utf-8"), copyright_notice(inputs, chinese=chinese)
+        fonts = (inputs.wanted, inputs.pretendard) + ((inputs.shs_cn,) if chinese else ())
+        for font in fonts:
+            assert states(text, font_notice(font)) and states(name0, font_notice(font)), font.name
+        for line in copyright_lines(inputs, chinese=chinese):
+            assert line in text
+
+
+def test_roof_copyright():
+    assert ROOF_COPYRIGHT == LIVEANYWHERE
+
+
+def test_trademark_notices(inputs):
+    """Every sentence of the inputs' name ID 7, once, in input order (OFL FAQ 3.7)."""
+    assert trademark_notices(inputs) == TRADEMARKS
+    assert trademark_notices(inputs, chinese=False) == TRADEMARKS
+
+
 def test_write_license(tmp_path, inputs):
     path = tmp_path / "OFL.txt"
     write_license(path, inputs)
@@ -45,8 +96,10 @@ def test_write_license(tmp_path, inputs):
     headers = [t[: t.index("This Font Software is licensed")] for t in sources]
     assert WANTED_NOTICE not in headers[0]
     body = sources[0][len(headers[0]) :]
-    assert text == f"{WANTED_NOTICE}\n{headers[0]}{headers[1]}{headers[2]}{body}"
-    assert "Source is a trademark of Adobe in the United States and/or other countries." in text
+    assert text == (
+        f"{WANTED_NOTICE}\n{headers[0]}{PRETENDARD_NOTICE}\n{headers[1]}{headers[2]}{LIVEANYWHERE}\n\n{ADDED_TRADEMARKS}{body}"
+    )
+    assert all(notice in text for notice in TRADEMARKS)
     assert text.count("SIL OPEN FONT LICENSE Version 1.1") == 1
 
 
@@ -56,21 +109,23 @@ def test_write_license_without_chinese(tmp_path, inputs):
     sources = [p.read_text(encoding="utf-8") for p in (inputs.wanted_ofl, inputs.pretendard_license)]
     headers = [text[:text.index("This Font Software is licensed")] for text in sources]
     body = sources[0][len(headers[0]):]
-    assert path.read_bytes().decode("utf-8") == f"{WANTED_NOTICE}\n{headers[0]}{headers[1]}{body}"
+    expected = f"{WANTED_NOTICE}\n{headers[0]}{PRETENDARD_NOTICE}\n{headers[1]}{LIVEANYWHERE}\n\n{ADDED_TRADEMARKS}{body}"
+    assert path.read_bytes().decode("utf-8") == expected
     assert not any("2014-2025" in line for line in copyright_lines(inputs, chinese=False))
 
 
 @pytest.mark.acceptance
 def test_names(roof):
     n = roof["name"]
-    assert n.getDebugName(1) == "Roof Sans" and n.getDebugName(5) == "Version 1.200"
+    assert n.getDebugName(1) == "Roof Sans" and n.getDebugName(5) == "Version 1.300"
     for rec in n.names:
-        if rec.nameID not in (0, 13, 14):
+        if rec.nameID not in (0, 7, 13, 14):
             assert not re.search(r"Pretendard|Source|Inter|M PLUS 1|Wanted Sans", rec.toUnicode())
     assert "Copyright 2014-2025 Adobe (http://www.adobe.com/)" in n.getDebugName(0)
     assert "Reserved Font" not in n.getDebugName(0)
     assert "Copyright 2014-2021 Adobe" in n.getDebugName(0)
     assert "Kil Hyung-jin" in n.getDebugName(0) and "M+ FONTS" in n.getDebugName(0) and "Inter Project" in n.getDebugName(0)
+    assert n.getDebugName(0).endswith(LIVEANYWHERE)
 
 
 @pytest.mark.acceptance
@@ -78,14 +133,25 @@ def test_name_records(roof, inputs):
     n = roof["name"]
     expected = {
         0: " ".join(
-            [WANTED_NOTICE, *(line.split(", with Reserved Font", 1)[0].removesuffix(",") for line in copyright_lines(inputs) if not line.startswith("with "))]
+            [
+                WANTED_NOTICE,
+                "Copyright 2024 The Wanted Sans Project Authors (https://github.com/wanteddev/wanted-sans)",
+                PRETENDARD_NOTICE,
+                "Copyright (c) 2021, Kil Hyung-jin (https://github.com/orioncactus/pretendard)",
+                "Copyright 2014-2021 Adobe (http://www.adobe.com/)",
+                "Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)",
+                "Copyright 2021 The M+ FONTS Project Authors (https://github.com/coz-m/MPLUS_FONTS)",
+                "Copyright 2014-2025 Adobe (http://www.adobe.com/)",
+                LIVEANYWHERE,
+            ]
         ),
         1: "Roof Sans",
         2: "Regular",
-        3: "1.200;ROOF;RoofSans-Regular",
+        3: "1.300;ROOF;RoofSans-Regular",
         4: "Roof Sans Regular",
-        5: "Version 1.200",
+        5: "Version 1.300",
         6: "RoofSans-Regular",
+        7: " ".join(TRADEMARKS),
         13: "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
         14: "https://openfontlicense.org",
         25: "RoofSans",
@@ -98,15 +164,15 @@ def test_name_records(roof, inputs):
     assert [n.getDebugName(i.postscriptNameID) for i in fvar.instances] == [
         f"RoofSans-{style}" for style in ("Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black", "ExtraBlack")
     ]
-    assert not [rec for rec in n.names if rec.nameID != 0 and "Wanted" in rec.toUnicode()]
+    assert not [rec for rec in n.names if rec.nameID not in (0, 7) and "Wanted" in rec.toUnicode()]
 
 
 @pytest.mark.acceptance
 def test_head(roof):
     head = roof["head"]
     stamp = timestampFromString("Sat Oct 31 00:00:00 2026")
-    # Version 1.200 (Roof Sans 1.2.0), stored as 16.16 fixed point.
-    assert head.fontRevision == pytest.approx(1.2, abs=1e-4) and head.created == head.modified == stamp
+    # Version 1.300 (Roof Sans 1.3.0), stored as 16.16 fixed point.
+    assert head.fontRevision == pytest.approx(1.3, abs=1e-4) and head.created == head.modified == stamp
 
 
 @pytest.mark.acceptance
