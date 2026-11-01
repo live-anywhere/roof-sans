@@ -15,9 +15,8 @@ from roofsans.newglyph import NewGlyph, Part, composite_glyph, newglyph_outline,
 from roofsans.outline import Outline, combine
 from roofsans.selection import Rule
 
-# Wanted Sans's masters (400, 750, 1000) and its light end (100); every part here is a
-# Wanted Sans glyph, and those vary linearly below 400.
-W_LOCS = (-1.0, 0.0, W_MID, 1.0)
+# Wanted Sans's masters (400, 750, 1000); every part here is a Wanted Sans glyph.
+W_LOCS = (0.0, W_MID, 1.0)
 
 RING = "roof.ring"
 DISC = "roof.disc"
@@ -196,7 +195,7 @@ def _helpers(ctx) -> tuple[list[NewGlyph], dict[str, dict[float, Outline]]]:
         _sliced_glyph(ctx, RING, RING_SOURCE, {0, 1}),
         _sliced_glyph(ctx, DISC, DISC_SOURCE, _enclosure(ctx.outline(DISC_SOURCE, 0.0), DISC)),
     ]
-    return glyphs, {g.name: {t: newglyph_outline(g, t, ctx.outline) for t in ctx.locs(W_LOCS)} for g in glyphs}
+    return glyphs, {g.name: {t: newglyph_outline(g, t, ctx.outline) for t in W_LOCS} for g in glyphs}
 
 
 def _centered(outline: Outline, pair: Outline) -> tuple[float, float]:
@@ -210,7 +209,7 @@ def _enclosed(ctx, cp: int, number: int, helper: str, outlines: dict[float, Outl
     """The enclosed glyph for ``number``: ``helper`` plus a helper glyph of fitted figures."""
     name = f"roof.pair.{number}" if helper == RING else f"roof.knockpair.{number}"
     masters, parts = {}, {}
-    for t in outlines:
+    for t in W_LOCS:
         # Figures are only scaled: restored strokes clog small ring figures, and emboldening
         # folds that show as ink inside a disc's white figures (R27).
         fitted, _ = fitted_pair(_pair(ctx, helper, number, t), pair_limit(ctx, helper, outlines[t], t))
@@ -218,7 +217,7 @@ def _enclosed(ctx, cp: int, number: int, helper: str, outlines: dict[float, Outl
         parts[t] = [(helper, 0, 0), (name, *_centered(outlines[t], fitted))]
     cmap = ctx.wanted.getBestCmap()
     figures = "+".join(cmap[FIGURES[helper][int(c)]] for c in str(number))
-    advance = {t: o.advance() for t, o in outlines.items()}
+    advance = {t: outlines[t].advance() for t in W_LOCS}
     unicodes = (cp, ALSO_MAPPED[cp]) if cp in ALSO_MAPPED else (cp,)
     source = RING_SOURCE if helper == RING else DISC_SOURCE
     return [
@@ -231,7 +230,7 @@ def _supsub(ctx, name: str, cp: int, source: str, dy: float) -> NewGlyph:
     zero_dnom, zero = ctx.outline("zero.dnom", 0.0).bounds(), ctx.outline("zero", 0.0).bounds()
     k = (zero_dnom[3] - zero_dnom[1]) / (zero[3] - zero[1])
     masters = {}
-    for t in ctx.locs(W_LOCS):
+    for t in W_LOCS:
         src = ctx.outline(source, t)
         k_s = figure_stem(ctx.outline("one.dnom", t)) / figure_stem(ctx.outline("one", t))
         strength = (k_s - k) * sign_stroke(src, source)

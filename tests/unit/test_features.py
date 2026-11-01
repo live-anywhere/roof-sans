@@ -35,9 +35,7 @@ PJ_RECORDS = [
 
 def test_fv_conditions_remap():
     assert to_roof_t(0.69244384765625) == pytest.approx((400 + 0.69244384765625 * 530 - 400) / 600, abs=1e-4)
-    # Below 400 the same weight lands on Roof's light half: 400 − 0.476 × 355 ≈ 231 → (231 − 400) / 300.
-    assert to_roof_t(-0.47607421875) == pytest.approx(-0.47607421875 * 355 / 300, abs=1e-4)
-    assert to_roof_t(-1.0) == -1.0
+    assert to_roof_t(-0.47607421875) == 0.0
     # Pretendard's 930 master lands on PJ_PEAK; conditions keep their maximum of 1.0.
     assert to_roof_t(1.0) == PJ_PEAK
     assert to_roof_t(0.18865966796875) * 16384 == round(to_roof_t(0.18865966796875) * 16384)
@@ -48,16 +46,14 @@ def test_merge_variations_descends_and_adds_wanted_above_its_threshold():
     merged = merge_variations([(0.41668701171875, [35, 74])], pj)
     ts = [t for t, _ in merged]
     assert ts == sorted(set(ts), reverse=True)
-    assert ts[0] == to_roof_t(0.69244384765625) and ts[-1] == to_roof_t(-0.47607421875)
+    assert ts[0] == to_roof_t(0.69244384765625) and ts[-1] == 0.0
     by_t = dict(merged)
     assert by_t[ts[0]] == [35, 74, *range(89, 98)]
     assert by_t[0.41668701171875] == [35, 74, *range(89, 96)]
     assert by_t[to_roof_t(0.43963623046875)] == list(range(89, 96))
-    # The three thresholds below 400 stay apart on the light half of the axis.
-    assert by_t[to_roof_t(-0.09295654296875)] == [89, 90, 91]
-    assert by_t[to_roof_t(-0.09576416015625)] == [89, 90]
-    assert by_t[to_roof_t(-0.47607421875)] == [89]
-    assert len(merged) == 10
+    # The three negative thresholds clamp to 0; the first of them (77–79) wins.
+    assert by_t[0.0] == [89, 90, 91]
+    assert len(merged) == 8
 
 
 def test_width_mapping_goes_through_code_points():

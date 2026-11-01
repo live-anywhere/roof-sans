@@ -21,7 +21,7 @@ from roofsans.selection import Rule, Zone
 
 pytestmark = pytest.mark.acceptance
 
-WEIGHTS = (100, 175, 250, 300, 400, 550, 700, 850, 1000)
+WEIGHTS = (400, 550, 700, 850, 1000)
 
 # (Roof letter, its edge, Wanted Sans glyph, its edge): bounds index 1 is the bottom, 3 the top.
 HEIGHTS = (
@@ -53,19 +53,13 @@ def low_stem(o: Outline) -> float:
 def check_strokes(pairs, outline_of, ws, wght):
     ratios = {(q.char, q.stroke): stroke(outline_of(q), q.stroke) / stroke(ws.outline(q.wanted, wght), q.stroke) - 1 for q in pairs}
     median = statistics.median(ratios.values())
-    median_limit = 0.07 if wght < 250 else MEDIAN_TOLERANCE
-    each_limit = 0.21 if wght < 250 else EACH_TOLERANCE
-    group = "reference" if pairs == REFERENCE_STROKES else "letters"
-    print(f"H4_STROKES wght={wght} group={group} median={median:+.8f} worst={max(ratios.values(), key=abs):+.8f} ratios={ratios}")
-    assert abs(median) <= median_limit, f"median {median:+.2%} at {wght}: {ratios}"
-    bad = {k: f"{r:+.2%}" for k, r in ratios.items() if abs(r) > each_limit}
-    assert not bad, f"strokes exceed tolerance at {wght}: {bad}"
+    assert abs(median) <= MEDIAN_TOLERANCE, f"median {median:+.2%} at {wght}: {ratios}"
+    bad = {k: f"{r:+.2%}" for k, r in ratios.items() if abs(r) > EACH_TOLERANCE}
+    assert not bad, f"strokes off by more than 10% at {wght}: {bad}"
 
 
 @pytest.mark.parametrize("wght", WEIGHTS)
-def test_heights(static, ctx, ws, wght):
-    # The input Wanted Sans from 400; below it the build's extended copy (A23 checks that one).
-    ws = ws if wght >= 400 else ctx.ws
+def test_heights(static, ws, wght):
     roof = static("roof", wght)
     bad = []
     for char, i, wanted, j in HEIGHTS:
@@ -77,7 +71,6 @@ def test_heights(static, ctx, ws, wght):
 
 @pytest.mark.parametrize("wght", WEIGHTS)
 def test_letter_weights(static, ctx, ws, wght):
-    ws = ws if wght >= 400 else ctx.ws
     roof = static("roof", wght)
     # Pretendard draws н and п with thinner stems than n; H4 keeps that ratio (R19).
     w_prime = solve_w_prime(ctx.ps, ws, wght)
@@ -105,8 +98,6 @@ def references(ctx):
 
 @pytest.mark.parametrize("wght", WEIGHTS)
 def test_reference_weights(references, ctx, ws, wght):
-    ws = ws if wght >= 400 else ctx.ws
-
     def at(name):
         return newglyph_outline(references[name], roof_norm(wght), ctx.outline)
 

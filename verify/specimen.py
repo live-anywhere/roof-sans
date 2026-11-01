@@ -6,8 +6,7 @@ font's outlines at HarfBuzz positions. The naive row takes each character from W
 maps it, else from Pretendard JP at ``min(w, 930)`` (tinted), unshaped. Guide lines
 mark the baseline, the x-height (1032), and the cap height (1448).
 
-Usage: ``uv run python verify/specimen.py --out build/specimen`` (add ``--weights 100,200,300`` for the light weights).
-Below 400 the naive row's Wanted Sans glyphs stay at 400, because Wanted Sans has no lighter master.
+Usage: ``uv run python verify/specimen.py --out build/specimen``
 """
 
 from __future__ import annotations
@@ -247,14 +246,8 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Render the Roof Sans specimen sheet against the naive merge.")
     parser.add_argument("--out", type=Path, required=True, help="output directory for the PNGs")
     parser.add_argument("--font", type=Path, default=DEFAULT_ROOF, help="built Roof Sans font")
-    parser.add_argument(
-        "--weights",
-        type=lambda text: tuple(int(w) for w in text.split(",")),
-        default=WEIGHTS,
-        help="comma-separated weights (default 400,700,1000; the light review uses 100,200,300)",
-    )
     args = parser.parse_args(argv)
-    for path in render_specimen(args.font, ensure_inputs(refs_root=Path("refs")), args.out, args.weights):
+    for path in render_specimen(args.font, ensure_inputs(refs_root=Path("refs")), args.out):
         print(path)
 
 

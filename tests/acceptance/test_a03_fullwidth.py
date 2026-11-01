@@ -1,7 +1,5 @@
 """Acceptance 3 and design decision 11: fullwidth letters, digits, and signs."""
 
-import math
-
 import pytest
 
 from roofsans.axis import roof_norm, roof_wght
@@ -9,7 +7,7 @@ from roofsans.selection import Rule
 
 pytestmark = pytest.mark.acceptance
 
-WEIGHTS = (100, 175, 250, 300, 400, 750, 1000)
+WEIGHTS = (400, 750, 1000)
 FULLWIDTH_ADVANCE = 1920
 FLOAT_SLACK = 1e-3
 
@@ -48,11 +46,8 @@ def ink_center_x(pts):
 
 
 @pytest.mark.parametrize("wght", WEIGHTS)
-def test_a03_fullwidth(static, ctx, wanted, ws, wght):
-    r = static("roof", wght)
-    # From 400 the reference is the input Wanted Sans; below it, the build's extended copy
-    # (the input stops at 400; A23 checks the extension against the input on its own).
-    w, sampler = (wanted, ws) if wght >= 400 else (ctx.wanted, ctx.ws)
+def test_a03_fullwidth(static, ctx, ws, wght):
+    w, r = static("wanted", wght), static("roof", wght)
     wcmap, rcmap = w.getBestCmap(), r.getBestCmap()
     codepoints = ctx.selection.codepoints(Rule.R3_FULLWIDTH)
     assert len(codepoints) == 62
@@ -63,26 +58,22 @@ def test_a03_fullwidth(static, ctx, wanted, ws, wght):
             continue
         base = wcmap[cp - 0xFEE0]
         rc, rend, radv = outline(r, rcmap[cp])
-        source = sampler.outline(base, instance_wght(wght))
-        wc, wend = source.points, source.end_pts
+        wc, wend, _ = outline(w, base)
         # The instance's hmtx rounds Wanted Sans's advance, so take it unrounded.
-        wadv = sampler.advance(base, instance_wght(wght))
+        wadv = ws.advance(base, instance_wght(wght))
         dx = shift_of(rc, rend, wc, wend)
         if dx is None:
             bad.append((hex(cp), "outline"))
-        else:
-            gap_error = abs(dx - (FULLWIDTH_ADVANCE - wadv - dx))
-            # Unrounded IUP samples can make an exact 1-unit gap read 1 + 1e-13.
-            if gap_error > 1 and not math.isclose(gap_error, 1, rel_tol=0, abs_tol=1e-9):
-                bad.append((hex(cp), "gaps", dx, FULLWIDTH_ADVANCE - wadv - dx))
+        elif abs(dx - (FULLWIDTH_ADVANCE - wadv - dx)) > 1:
+            bad.append((hex(cp), "gaps", dx, FULLWIDTH_ADVANCE - wadv - dx))
         if radv != FULLWIDTH_ADVANCE:
             bad.append((hex(cp), "advance", radv))
     assert not bad, f"{len(bad)} differ at {wght}: {bad[:10]}"
 
 
 @pytest.mark.parametrize("wght", WEIGHTS)
-def test_a03_fullwidth_signs(static, ctx, ws, wght):
-    r, p = static("roof", wght), static("pretendard", min(wght, 930))
+def test_a03_fullwidth_signs(static, ctx, wght):
+    w, r, p = static("wanted", wght), static("roof", wght), static("pretendard", min(wght, 930))
     pcmap, rcmap = ctx.pretendard.getBestCmap(), r.getBestCmap()
     pglyf = ctx.pretendard["glyf"]
     codepoints = ctx.selection.codepoints(Rule.R3_SIGN)
@@ -94,8 +85,7 @@ def test_a03_fullwidth_signs(static, ctx, ws, wght):
             continue
         (component,) = pglyf[pcmap[cp]].components
         rc, rend, radv = outline(r, rcmap[cp])
-        source = (ws if wght >= 400 else ctx.ws).outline(component.glyphName, instance_wght(wght))
-        wc, wend = source.points, source.end_pts
+        wc, wend, _ = outline(w, component.glyphName)
         pc, _, _ = outline(p, pcmap[cp])
         if shift_of(rc, rend, wc, wend) is None:
             bad.append((hex(cp), "outline"))

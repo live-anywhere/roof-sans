@@ -12,19 +12,14 @@ ZHS_QUOTES = (0x2018, 0x2019, 0x201C, 0x201D, 0x00B7)
 
 
 def target_center(ctx, cp: int, t: float) -> float:
-    """The ink center x of the calibrated Source Han Sans sign at Roof ``t``: linear from the
-    100 master to the 400 master to the 930 master, then held, like the C1 hanzi."""
     c = calibrate(ctx)
+    fraction = min(t / PJ_PEAK, 1)
     source = ctx.shs_cn.getBestCmap()[cp]
-
-    def center(weight: float, dx: float) -> float:
-        x0, _, x1, _ = ink_bounds(ctx.cs.outline(source, weight))
-        return c.scale * (x0 + x1) / 2 + dx
-
-    regular = center(c.w400, c.dx400)
-    if t < 0:
-        return regular + (center(c.w100, c.dx100) - regular) * -t
-    return regular + (center(c.w930, c.dx930) - regular) * min(t / PJ_PEAK, 1)
+    a = ink_bounds(ctx.cs.outline(source, c.w400))
+    b = ink_bounds(ctx.cs.outline(source, c.w930))
+    left = c.scale * (a[0] + a[2]) / 2 + c.dx400
+    right = c.scale * (b[0] + b[2]) / 2 + c.dx930
+    return left + (right - left) * fraction
 
 
 def contribute(ctx) -> list[NewGlyph]:
@@ -36,11 +31,10 @@ def contribute(ctx) -> list[NewGlyph]:
         else:
             base = ctx.cmap[cp]
         parts = {}
-        locs = ctx.locs(COMPOSITE_LOCS)
-        for t in locs:
+        for t in COMPOSITE_LOCS:
             x0, _, x1, _ = ink_bounds(ctx.outline(base, t))
             parts[t] = [(base, target_center(ctx, cp, t) - (x0 + x1) / 2, 0)]
         out.append(composite_glyph(f'uni{cp:04X}.zhs', parts,
-                                  {t: 1920 for t in locs}, (),
+                                  {t: 1920 for t in COMPOSITE_LOCS}, (),
                                   Rule.C3_PUNCT, ctx.shs_cn.getBestCmap()[cp]))
     return out

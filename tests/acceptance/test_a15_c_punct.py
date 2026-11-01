@@ -10,7 +10,7 @@ from roofsans.rules.c_punct import ZHS_QUOTES, ZHS_SIGNS
 pytestmark = pytest.mark.acceptance
 
 
-@pytest.mark.parametrize('w', [100, 175, 250, 300, 400, 750, 1000])
+@pytest.mark.parametrize('w', [400, 750, 1000])
 def test_a15_c_punct_placement(ctx, static, w):
     calibration = calibrate(ctx)
     font = static('roof', w)
@@ -33,11 +33,6 @@ def test_a15_c_punct_placement(ctx, static, w):
         b = ink_bounds(ctx.cs.outline(source, calibration.w930))
         left = calibration.scale * (a[0] + a[2]) / 2 + calibration.dx400
         right = calibration.scale * (b[0] + b[2]) / 2 + calibration.dx930
-        if w < 400:
-            light = ink_bounds(ctx.cs.outline(source, calibration.w100))
-            light_center = calibration.scale * (light[0] + light[2]) / 2 + calibration.dx100
-            expected = left + (light_center - left) * -roof_norm(w)
-        else:
-            expected = left + (right - left) * min(roof_norm(w) / PJ_PEAK, 1)
+        expected = left + (right - left) * min(roof_norm(w) / PJ_PEAK, 1)
         assert (pen.bounds[0] + pen.bounds[2]) / 2 == pytest.approx(expected, abs=1)
         assert font['hmtx'][name][0] == 1920

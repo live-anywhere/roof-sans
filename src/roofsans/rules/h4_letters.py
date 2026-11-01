@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import weakref
 
-from roofsans.axis import H4_LOCS
 from roofsans.harmonize import MasterParams, outline_masters, solve_masters
 from roofsans.newglyph import NewGlyph, simple_glyph
 from roofsans.selection import Rule
@@ -18,7 +17,7 @@ def params(ctx) -> dict[float, MasterParams]:
     key = id(ctx)
     entry = _PARAMS.get(key)
     if entry is None or entry[0]() is not ctx:
-        entry = (weakref.ref(ctx, lambda _: _PARAMS.pop(key, None)), solve_masters(ctx.ps, ctx.ws, ctx.locs(H4_LOCS)))
+        entry = (weakref.ref(ctx, lambda _: _PARAMS.pop(key, None)), solve_masters(ctx.ps, ctx.ws))
         _PARAMS[key] = entry
     return entry[1]
 

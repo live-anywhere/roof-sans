@@ -42,8 +42,5 @@ def test_variable_glyf_and_gvar_unchanged(wanted, roof):
     wgvar, rgvar = wanted["gvar"].variations, roof["gvar"].variations
     bad = [n for n in names if structure(wglyf[n]) != structure(rglyf[n])]
     assert not bad, f"glyf differs for {len(bad)} glyphs: {bad[:10]}"
-    # The new negative tuple must not change any of Wanted's positive-region tuples.
-    bad = [n for n in names if wgvar.get(n, []) != [tv for tv in rgvar.get(n, []) if tv.axes["wght"][1] >= 0]]
-    assert all(tv.axes == {"wght": (-1, -1, 0)}
-               for n in names for tv in rgvar.get(n, []) if tv.axes["wght"][1] < 0)
+    bad = [n for n in names if wgvar.get(n, []) != rgvar.get(n, [])]
     assert not bad, f"gvar differs for {len(bad)} glyphs: {bad[:10]}"

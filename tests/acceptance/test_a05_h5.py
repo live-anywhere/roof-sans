@@ -10,7 +10,7 @@ from roofsans.selection import SymbolCategory
 
 pytestmark = pytest.mark.acceptance
 
-WEIGHTS = (100, 175, 250, 300, 400, 550, 700, 850, 1000)
+WEIGHTS = (400, 550, 700, 850, 1000)
 
 # The design's axes and the reference each category is moved by.
 AXIS = {SymbolCategory.ARROW: 725, SymbolCategory.MATH: 540}

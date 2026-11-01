@@ -55,23 +55,19 @@ def test_c_hanzi_masters(ctx, hanzi):
     assert sum(bool(g.unicodes) for g in hanzi.values()) == 3260
 
 
-# ``thin`` is the light master's target; None builds without the light weights.
-@pytest.mark.parametrize('regular, heavy, thin, master, bound', [
-    (350, 1000, None, 400, 350), (420, 1000, None, 400, 420),
-    (350.01, 1000, None, 400, 350), (419.99, 1000, None, 400, 420),
-    (381.5, 850, None, 930, 850),
-    (381.5, 1000, 250, 100, 250), (381.5, 1000, 300, 100, 300),
-    (381.5, 1000, 250.01, 100, 250), (381.5, 1000, 299.99, 100, 300),
+@pytest.mark.parametrize('regular, heavy, master, bound', [
+    (350, 1000, 400, 350), (420, 1000, 400, 420),
+    (350.01, 1000, 400, 350), (419.99, 1000, 400, 420),
+    (381.5, 850, 930, 850),
 ])
-def test_calibration_rejects_search_bounds(monkeypatch, regular, heavy, thin, master, bound):
+def test_calibration_rejects_search_bounds(monkeypatch, regular, heavy, master, bound):
     from types import SimpleNamespace
     from roofsans.rules import c_hanzi
 
     font = SimpleNamespace(getBestCmap=lambda: {0x7530: 'test'})
     ctx = SimpleNamespace(
         calibration=None, pretendard=font, shs_jp=font,
-        light=None if thin is None else object(),
-        ps=SimpleNamespace(outline=lambda _, w: {100: thin, 400: regular, 930: heavy}[w] * 1.92**2),
+        ps=SimpleNamespace(outline=lambda _, w: {400: regular, 930: heavy}[w] * 1.92**2),
         js=SimpleNamespace(outline=lambda _, w: w),
     )
     monkeypatch.setattr(c_hanzi, 'calibration_set', lambda _: (0x7530,))

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from fontTools.ttLib import TTFont
 
 from roofsans.axis import PJ_PEAK, roof_wght
-from roofsans import light as light_mod
 from roofsans.inputs import Inputs
 from roofsans.newglyph import NewGlyph, newglyph_outline
 from roofsans.outline import Outline
@@ -20,10 +19,7 @@ if TYPE_CHECKING:
 
 
 def pretendard_wght(norm: float) -> float:
-    """The Pretendard weight a copied glyph shows at Roof ``norm``: the same weight up to
-    930, then the 930 plateau."""
-    if norm < 0:
-        return roof_wght(norm)
+    """The Pretendard weight a copied glyph shows at Roof ``norm`` (930 plateau)."""
     return 400 + 530 * min(norm / PJ_PEAK, 1.0)
 
 
@@ -39,8 +35,6 @@ class BuildContext:
     selection: Selection
     ws: WantedSampler
     ps: PretendardSampler
-    # None when the build leaves out the light weights (``--without-light``).
-    light: light_mod.LightData | None
     chinese: bool = True
     cmap: dict[int, str] = field(default_factory=dict)
     pj_names: dict[str, str] = field(default_factory=dict)
@@ -54,10 +48,6 @@ class BuildContext:
         if len(self._pj_sources) != len(self.pj_names):
             self._pj_sources = {roof: pj for pj, roof in self.pj_names.items()}
         return self._pj_sources.get(name)
-
-    def locs(self, locs: tuple[float, ...]) -> tuple[float, ...]:
-        """Master locations ``locs``, without the light ones (t < 0) when the build has none."""
-        return locs if self.light is not None else tuple(t for t in locs if t >= 0)
 
     def outline(self, name: str, norm: float) -> Outline:
         """Roof glyph ``name`` at Roof normalized ``norm``, decomposed."""
@@ -78,15 +68,9 @@ class BuildContext:
         return self.ws.advance(name, roof_wght(norm))
 
 
-def make_context(inputs: Inputs, chinese: bool = True, light: bool = True) -> BuildContext:
-    """The build state. With ``light``, ``wanted`` is Wanted Sans with the light tuples added
-    in memory, so every rule reads its glyphs, offsets, and anchors down to 100. Without it,
-    the build is the 400–1000 font from before the light weights."""
+def make_context(inputs: Inputs, chinese: bool = True) -> BuildContext:
     wanted = TTFont(inputs.wanted)
     pretendard = TTFont(inputs.pretendard)
-    light_data = light_mod.solve(wanted, pretendard) if light else None
-    if light_data is not None:
-        light_mod.extend_wanted(wanted, light_data)
     shs_cn = TTFont(inputs.shs_cn)
     shs_jp = TTFont(inputs.shs_jp)
     return BuildContext(
@@ -100,6 +84,5 @@ def make_context(inputs: Inputs, chinese: bool = True, light: bool = True) -> Bu
         selection=select(wanted, pretendard, shs_cn, chinese=chinese),
         ws=WantedSampler(wanted),
         ps=PretendardSampler(pretendard),
-        light=light_data,
         chinese=chinese,
     )

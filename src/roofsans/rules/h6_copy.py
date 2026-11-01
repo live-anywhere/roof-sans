@@ -92,7 +92,7 @@ def contribute(ctx) -> list[NewGlyph]:
                 name=name,
                 glyph=glyph,
                 advance=hmtx[source][0],
-                variations=remap_pretendard_tuples(gvar.get(source, []), light=ctx.light is not None),
+                variations=remap_pretendard_tuples(gvar.get(source, [])),
                 unicodes=tuple(unicodes.get(source, ())),
                 rule=Rule.H6_COPY,
                 source=source,

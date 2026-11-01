@@ -25,12 +25,6 @@ ALLOWED = {
     # R3 centers Wanted's W and % in the fullwidth cell unscaled; Pretendard's Ｗ overhangs too
     # (−94 at 930). Reported for a decision outside this test.
     0xFF37: "fullwidth W", 0xFF05: "fullwidth percent",
-    # Below 400 Wanted's marks narrow more slowly than its stems, so on narrow bases they reach
-    # past the advance, as `Ȉ ȉ` do at every weight; the placement is Wanted's own GPOS
-    # (test_decomposed_marks). `Ĭ` −40 a side at 100 (Pretendard 51) and −42/−44 at 250 (3/1);
-    # at 100 only: `ĭ` −50 a side (Pretendard 23), `ǰ` left −120 (−71), `ḧ` left −65 (−6).
-    0x012C: "Ĭ breve (light weights)", 0x012D: "ĭ breve (light weights)",
-    0x01F0: "ǰ caron (light weights)", 0x1E27: "ḧ diaeresis (light weights)",
 }
 
 
@@ -42,7 +36,7 @@ def bearings(font, glyph_set, name):
     return pen.bounds[0], font["hmtx"][name][0] - pen.bounds[2]
 
 
-@pytest.mark.parametrize("wght", [100, 250, 400, 1000])
+@pytest.mark.parametrize("wght", [400, 1000])
 def test_a09_side_bearings(ctx, roof, static, wght):
     roof_static, pretendard = static("roof", wght), static("pretendard", min(wght, 930))
     rcmap, pcmap = roof.getBestCmap(), pretendard.getBestCmap()

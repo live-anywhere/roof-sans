@@ -92,9 +92,8 @@ def contribute(ctx) -> list[NewGlyph]:
             if not all(_available(ctx, p) for p in parts):
                 skipped.append(cp)
                 continue
-            locs = ctx.locs(COMPOSITE_LOCS)
-            placed = {t: fraction_offsets(ctx, parts, t) for t in locs}
-            advance = {t: sum(ctx.advance(p, t) for p in parts) for t in locs}
+            placed = {t: fraction_offsets(ctx, parts, t) for t in COMPOSITE_LOCS}
+            advance = {t: sum(ctx.advance(p, t) for p in parts) for t in COMPOSITE_LOCS}
             out.append(composite_glyph(ctx.cmap[cp], placed, advance, (cp,), rule, pcmap[cp]))
         if skipped:
             listed = " ".join(f"U+{cp:04X}" for cp in skipped)

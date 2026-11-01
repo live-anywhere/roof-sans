@@ -172,7 +172,7 @@ def contribute(ctx) -> list[NewGlyph]:
     for cp in ctx.selection.codepoints(Rule.H5_SYMBOL):
         source = pcmap[cp]
         masters = {}
-        for t in ctx.locs(H4_LOCS):
+        for t in H4_LOCS:
             tr = symbol_transform(ctx, cp, t)
             masters[t] = symbol_outline(ctx.ps.outline(source, tr.sample_wght), tr)
         out.append(simple_glyph(ctx.cmap[cp], masters, [cp], Rule.H5_SYMBOL, source))

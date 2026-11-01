@@ -21,8 +21,8 @@ def _center_x(outline) -> float:
 def _composite(ctx, cp: int, base: str, dx: dict[float, float], rule: Rule, source: str) -> NewGlyph:
     return composite_glyph(
         ctx.cmap[cp],
-        {t: [(base, dx[t], 0)] for t in dx},
-        {t: FULLWIDTH_ADVANCE for t in dx},
+        {t: [(base, dx[t], 0)] for t in COMPOSITE_LOCS},
+        {t: FULLWIDTH_ADVANCE for t in COMPOSITE_LOCS},
         (cp,),
         rule,
         source,
@@ -35,7 +35,7 @@ def contribute(ctx) -> list[NewGlyph]:
     out = []
     for cp in ctx.selection.codepoints(Rule.R3_FULLWIDTH):
         base = wcmap[cp - _FULLWIDTH_OFFSET]
-        dx = {t: (FULLWIDTH_ADVANCE - ctx.advance(base, t)) / 2 for t in ctx.locs(COMPOSITE_LOCS)}
+        dx = {t: (FULLWIDTH_ADVANCE - ctx.advance(base, t)) / 2 for t in COMPOSITE_LOCS}
         out.append(_composite(ctx, cp, base, dx, Rule.R3_FULLWIDTH, pcmap[cp]))
     # Design decision 11: the Wanted Sans glyph goes where Pretendard puts its own.
     for cp in ctx.selection.codepoints(Rule.R3_SIGN):
@@ -45,7 +45,7 @@ def contribute(ctx) -> list[NewGlyph]:
         dx = {
             t: _center_x(ctx.ps.outline(source, min(roof_wght(t), _PRETENDARD_MAX)))
             - _center_x(ctx.outline(base, t))
-            for t in ctx.locs(COMPOSITE_LOCS)
+            for t in COMPOSITE_LOCS
         }
         out.append(_composite(ctx, cp, base, dx, Rule.R3_SIGN, source))
     return out

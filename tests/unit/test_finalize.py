@@ -63,7 +63,7 @@ def test_write_license_without_chinese(tmp_path, inputs):
 @pytest.mark.acceptance
 def test_names(roof):
     n = roof["name"]
-    assert n.getDebugName(1) == "Roof Sans" and n.getDebugName(5) == "Version 1.100"
+    assert n.getDebugName(1) == "Roof Sans" and n.getDebugName(5) == "Version 1.200"
     for rec in n.names:
         if rec.nameID not in (0, 13, 14):
             assert not re.search(r"Pretendard|Source|Inter|M PLUS 1|Wanted Sans", rec.toUnicode())
@@ -82,9 +82,9 @@ def test_name_records(roof, inputs):
         ),
         1: "Roof Sans",
         2: "Regular",
-        3: "1.100;ROOF;RoofSans-Regular",
+        3: "1.200;ROOF;RoofSans-Regular",
         4: "Roof Sans Regular",
-        5: "Version 1.100",
+        5: "Version 1.200",
         6: "RoofSans-Regular",
         13: "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
         14: "https://openfontlicense.org",
@@ -96,7 +96,7 @@ def test_name_records(roof, inputs):
         assert {rec.toUnicode() for rec in n.names if rec.nameID == name_id} == {value}, name_id
     fvar = roof["fvar"]
     assert [n.getDebugName(i.postscriptNameID) for i in fvar.instances] == [
-        f"RoofSans-{style}" for style in ("Thin", "ExtraLight", "Light", "Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black", "ExtraBlack")
+        f"RoofSans-{style}" for style in ("Regular", "Medium", "SemiBold", "Bold", "ExtraBold", "Black", "ExtraBlack")
     ]
     assert not [rec for rec in n.names if rec.nameID != 0 and "Wanted" in rec.toUnicode()]
 
@@ -105,8 +105,8 @@ def test_name_records(roof, inputs):
 def test_head(roof):
     head = roof["head"]
     stamp = timestampFromString("Sat Oct 31 00:00:00 2026")
-    # Version 1.100 (Roof Sans 1.1.0), stored as 16.16 fixed point.
-    assert head.fontRevision == pytest.approx(1.1, abs=1e-4) and head.created == head.modified == stamp
+    # Version 1.200 (Roof Sans 1.2.0), stored as 16.16 fixed point.
+    assert head.fontRevision == pytest.approx(1.2, abs=1e-4) and head.created == head.modified == stamp
 
 
 @pytest.mark.acceptance
@@ -146,7 +146,7 @@ def test_metrics(roof):
     assert (o.sTypoAscender, o.sTypoDescender, o.sTypoLineGap, o.usWinAscent, o.usWinDescent) == (1752, -296, 0, 1950, 494)
     assert not o.fsSelection & (1 << 7) and (o.sxHeight, o.sCapHeight) == (1032, 1448)
     a = roof["fvar"].axes[0]
-    assert (a.axisTag, a.minValue, a.defaultValue, a.maxValue) == ("wght", 100, 400, 1000)
+    assert (a.axisTag, a.minValue, a.defaultValue, a.maxValue) == ("wght", 400, 400, 1000)
 
 
 def test_build_fails_on_missing_planned_glyph(monkeypatch, tmp_path, inputs):

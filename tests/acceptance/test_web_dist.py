@@ -150,7 +150,7 @@ def test_variation_sequences_shape_like_the_font(roof, roof_path, chunk_of, wght
 def test_css_declares_the_weight_range(web_dir):
     for name in (web.FULL_CSS, web.SUBSET_CSS):
         css = (web_dir / name).read_text(encoding="utf-8")
-        assert css.count("font-weight: 100 1000;") == css.count("@font-face"), name
+        assert css.count("font-weight: 400 1000;") == css.count("@font-face"), name
         assert "font-family: 'Roof Sans';" in css
 
 

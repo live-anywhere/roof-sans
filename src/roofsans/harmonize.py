@@ -170,12 +170,10 @@ def solve_dy(ps: PretendardSampler, ws: WantedSampler, wght: float, w_prime: flo
     return _minimize(_Master(ps, ws, wght, w_prime).score)
 
 
-def solve_masters(
-    ps: PretendardSampler, ws: WantedSampler, locs: tuple[float, ...] = H4_LOCS
-) -> dict[float, MasterParams]:
-    """H4 parameters at each Roof master location in ``locs``."""
+def solve_masters(ps: PretendardSampler, ws: WantedSampler) -> dict[float, MasterParams]:
+    """H4 parameters at each Roof master location in ``H4_LOCS``."""
     out = {}
-    for norm in locs:
+    for norm in H4_LOCS:
         wght = roof_wght(norm)
         master = _Master(ps, ws, wght, solve_w_prime(ps, ws, wght))
         out[norm] = master.params(_minimize(master.score))

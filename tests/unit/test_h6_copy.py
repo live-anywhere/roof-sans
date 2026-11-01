@@ -7,7 +7,7 @@ def test_closure_renames_and_plateaus(ctx):
     assert names["uni300C"] == "uni300C.pj" and names["uni6F22"] == "uni6F22"
     assert all(names[n] for n in ("uni4E73.loclJAN", "uni30AC.varAlt01", "uni4E08.uv018"))
     g = {x.name: x for x in contribute(ctx)}["uni6F22"]
-    assert {tuple(round(v, 4) for v in tv.axes["wght"]) for tv in g.variations} == {(-1.0, -1.0, 0.0), (0.0, 0.8834, 1.0), (0.8834, 1.0, 1.0)}
+    assert {tuple(round(v, 4) for v in tv.axes["wght"]) for tv in g.variations} == {(0.0, 0.8834, 1.0), (0.8834, 1.0, 1.0)}
 
 
 def test_closure_covers_jan_shared_and_components(ctx):

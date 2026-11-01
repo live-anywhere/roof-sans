@@ -33,14 +33,7 @@ def wanted_component_offsets(font, name, t):
 def test_fraction_rule_reproduces_wanted_onehalf(ctx):
     for t in COMPOSITE_LOCS:
         parts = fraction_offsets(ctx, ("one.numr", "fraction", "two.dnom"), t)
-        wanted = wanted_component_offsets(ctx.wanted, "onehalf", t)
-        if t >= 0:
-            assert parts == [(n, x, 0) for n, x in wanted]
-        else:
-            # Below 400 each glyph's light deltas are rounded on their own, so the advances
-            # and Wanted's own offsets can part by a unit.
-            assert [n for n, _, _ in parts] == [n for n, _ in wanted]
-            assert all(abs(x - w) <= 1 for (_, x, _), (_, w) in zip(parts, wanted))
+        assert parts == [(n, x, 0) for n, x in wanted_component_offsets(ctx.wanted, "onehalf", t)]
 
 
 def test_sequence_unit_square_uses_wanted_k_g(ctx):

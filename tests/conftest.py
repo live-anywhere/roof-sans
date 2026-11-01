@@ -88,7 +88,7 @@ def baseline_path(inputs):
         return Path(os.environ["ROOF_BASELINE"])
     from roofsans.build import build
 
-    return build(Path("build/test-baseline/RoofSansVariable.ttf"), inputs, chinese=False, light=False)
+    return build(Path("build/test-baseline/RoofSansVariable.ttf"), inputs, chinese=False)
 
 
 @pytest.fixture(scope="session")
