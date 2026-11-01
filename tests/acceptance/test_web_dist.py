@@ -154,6 +154,13 @@ def test_css_declares_the_weight_range(web_dir):
         assert "font-family: 'Roof Sans';" in css
 
 
+def test_license_ships_with_the_web_fonts(roof_path, web_dir):
+    """The web files carry the font's OFL.txt (copyright, trademark notices, license text)."""
+    assert (web_dir / web.LICENSE_NAME).read_bytes() == (roof_path.parent / web.LICENSE_NAME).read_bytes()
+    for name in (web.FULL_CSS, web.SUBSET_CSS):
+        assert f"see {web.LICENSE_NAME}" in (web_dir / name).read_text(encoding="utf-8").split("\n", 2)[1]
+
+
 def test_full_woff2_is_the_font(roof, roof_path, web_dir):
     woff2 = TTFont(web_dir / web.FULL_WOFF2)
     assert woff2.flavor == "woff2"
