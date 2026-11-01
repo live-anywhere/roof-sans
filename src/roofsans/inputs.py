@@ -32,6 +32,9 @@ class Inputs:
     shs_cn: Path
     shs_jp: Path
     shs_license: Path
+    slices_ja: Path
+    slices_ko: Path
+    slices_zhs: Path
 
 
 def _sha256(path: Path) -> str:
@@ -64,8 +67,10 @@ def _fetch(entry: dict, dest: Path, refs_root: Path | None) -> None:
         tmp.unlink(missing_ok=True)
 
 
-def ensure_inputs(cache_dir: Path = Path("inputs"), refs_root: Path | None = None) -> Inputs:
-    """Return verified local copies of the pinned inputs.
+def ensure_files(
+    names: set[str] | None = None, cache_dir: Path = Path("inputs"), refs_root: Path | None = None
+) -> dict[str, Path]:
+    """Return verified local copies of the pinned inputs in ``names`` (all when ``None``).
 
     A cached file whose SHA-256 matches the lock is reused. Otherwise the file is
     copied from ``refs_root/<repo>/<path>`` when that exists, else downloaded from
@@ -74,11 +79,20 @@ def ensure_inputs(cache_dir: Path = Path("inputs"), refs_root: Path | None = Non
     cache_dir.mkdir(parents=True, exist_ok=True)
     paths: dict[str, Path] = {}
     for entry in json.loads(LOCK_PATH.read_text()):
+        if names is not None and entry["name"] not in names:
+            continue
         dest = cache_dir / Path(entry["path"]).name
         if not (dest.is_file() and _sha256(dest) == entry["sha256"]):
             _fetch(entry, dest, refs_root)
         paths[entry["name"]] = dest
-    return Inputs(**paths)
+    if names is not None and set(paths) != names:
+        raise KeyError(f"not in inputs.lock.json: {sorted(names - set(paths))}")
+    return paths
+
+
+def ensure_inputs(cache_dir: Path = Path("inputs"), refs_root: Path | None = None) -> Inputs:
+    """Return verified local copies of every pinned input (see ``ensure_files``)."""
+    return Inputs(**ensure_files(None, cache_dir, refs_root))
 
 
 def main(argv: list[str] | None = None) -> None:

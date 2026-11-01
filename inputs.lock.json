@@ -47,5 +47,26 @@
     "path": "LICENSE.txt",
     "url": "https://raw.githubusercontent.com/adobe-fonts/source-han-sans/a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2/LICENSE.txt",
     "sha256": "fcac737e761ec63dbfbdce11030a1780161920d80315edba9c8beff1c2bac5a2"
+  },
+  {
+    "name": "slices_ja",
+    "repo": "nam-files",
+    "path": "slices/japanese_default.txt",
+    "url": "https://raw.githubusercontent.com/googlefonts/nam-files/2a68014b16056e965c18fd47de1f3fde9a5b0095/slices/japanese_default.txt",
+    "sha256": "3032f27de94485ab2885c14b927b35d12e31a281ad4eb287b9ec28fe45b8509d"
+  },
+  {
+    "name": "slices_ko",
+    "repo": "nam-files",
+    "path": "slices/korean_default.txt",
+    "url": "https://raw.githubusercontent.com/googlefonts/nam-files/2a68014b16056e965c18fd47de1f3fde9a5b0095/slices/korean_default.txt",
+    "sha256": "100b9a96251ce947eb4475e84a94de9d12ef6cd4b2662f516f2c42014e64807b"
+  },
+  {
+    "name": "slices_zhs",
+    "repo": "nam-files",
+    "path": "slices/simplified-chinese_default.txt",
+    "url": "https://raw.githubusercontent.com/googlefonts/nam-files/2a68014b16056e965c18fd47de1f3fde9a5b0095/slices/simplified-chinese_default.txt",
+    "sha256": "cd022036048744a478b2d261131a90400bacbb9098b83efd0360f1e44122c2c1"
   }
 ]
