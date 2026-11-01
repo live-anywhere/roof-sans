@@ -39,6 +39,7 @@ def test_dy(ps, ws):
 
 
 def test_zone_map_hits_wanted_heights(ps, ws):
-    p = solve_masters(ps, ws)[1.0]
+    # The input Wanted Sans stops at 400, so solve only the master this test reads.
+    p = solve_masters(ps, ws, locs=(1.0,))[1.0]
     x = harmonize_outline(ps.outline("x", p.w_prime), Zone.LOWER, p)
     assert x.bounds()[3] == pytest.approx(1032, abs=1)

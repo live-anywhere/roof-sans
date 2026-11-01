@@ -18,6 +18,8 @@ const metricsSizes = <double>[12, 16, 24];
 const metricsTolerance = 0.01;
 
 const weights = [
+  FontWeight.w100,
+  FontWeight.w200,
   FontWeight.w300,
   FontWeight.w400,
   FontWeight.w500,

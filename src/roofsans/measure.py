@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from itertools import groupby
 from typing import Literal
 
+from fontTools.pens.areaPen import AreaPen
+from fontTools.pens.boundsPen import BoundsPen
+from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+
 from roofsans.outline import Outline, Point
 
 Stroke = Literal["l_stem", "o_top", "o_bottom", "e_top", "H_bar", "n_arch"]
@@ -116,3 +120,21 @@ def zones_of(outline_of: Callable[[str], Outline]) -> Zones:
         lower=(y_min["g"], y_min["p"], y_min["o"], 0.0, y_max["x"], y_max["o"], y_max["l"]),
         capital=(y_min["O"], 0.0, y_max["H"], y_max["O"]),
     )
+
+
+def ink_bounds(outline: Outline) -> tuple[float, float, float, float]:
+    """True curve ink bounds; the global Outline.bounds includes control points."""
+    glyph = outline.to_glyph()
+    glyph.coordinates = GlyphCoordinates(outline.points)
+    pen = BoundsPen(None)
+    glyph.draw(pen, None)
+    return pen.bounds or (0.0, 0.0, 0.0, 0.0)
+
+
+def ink_area(outline: Outline) -> float:
+    """Absolute signed curve area, without rounding the sampled outline."""
+    glyph = outline.to_glyph()
+    glyph.coordinates = GlyphCoordinates(outline.points)
+    pen = AreaPen(None)
+    glyph.draw(pen, None)
+    return abs(pen.value)

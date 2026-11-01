@@ -62,6 +62,9 @@ def test_weight_range_checked(ps, ws):
     with pytest.raises(ValueError):
         ps.outline("l", 1101)
     with pytest.raises(ValueError):
+        ws.outline("A", 99)
+    # The input Wanted Sans stops at 400; only a font with the light tuples goes lower.
+    with pytest.raises(ValueError):
         ws.outline("A", 399)
 
 

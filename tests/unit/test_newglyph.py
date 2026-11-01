@@ -6,24 +6,30 @@ from roofsans.sampling import WantedSampler
 from roofsans.selection import Rule
 
 
+def wanted_wght(t: float) -> float:
+    """The input Wanted Sans has no light tuples, so below 400 its components are sampled at 400;
+    the composites still get masters at every ``COMPOSITE_LOCS`` location."""
+    return max(roof_wght(t), 400)
+
+
 def test_composite_offsets_vary(wanted):
     ws = WantedSampler(wanted)
-    adv = {t: ws.advance("zero", roof_wght(t)) for t in COMPOSITE_LOCS}
+    adv = {t: ws.advance("zero", wanted_wght(t)) for t in COMPOSITE_LOCS}
     g = composite_glyph("t", {t: [("zero", (1920 - adv[t]) / 2, 0)] for t in COMPOSITE_LOCS},
                         {t: 1920 for t in COMPOSITE_LOCS}, (), Rule.R3_FULLWIDTH, "test")
-    o = newglyph_outline(g, 1.0, lambda n, t: ws.outline(n, roof_wght(t)))
+    o = newglyph_outline(g, 1.0, lambda n, t: ws.outline(n, wanted_wght(t)))
     assert o.advance() == 1920 and o.bounds()[0] == pytest.approx(ws.outline("zero", 1000).bounds()[0] + 240, abs=0.5)
 
 
 def test_composite_offsets_land_within_half_unit(wanted):
     # Ruling R20: deltas come from the unrounded masters, so 750's fractional offset holds.
     ws = WantedSampler(wanted)
-    dx = {t: (1920 - ws.advance("zero", roof_wght(t))) / 2 for t in COMPOSITE_LOCS}
+    dx = {t: (1920 - ws.advance("zero", wanted_wght(t))) / 2 for t in COMPOSITE_LOCS}
     g = composite_glyph("t", {t: [("zero", dx[t], 0)] for t in COMPOSITE_LOCS},
                         {t: 1920 for t in COMPOSITE_LOCS}, (), Rule.R3_FULLWIDTH, "test")
     for t in COMPOSITE_LOCS:
-        o = newglyph_outline(g, t, lambda n, u: ws.outline(n, roof_wght(u)))
-        assert o.bounds()[0] == pytest.approx(ws.outline("zero", roof_wght(t)).bounds()[0] + dx[t], abs=0.5)
+        o = newglyph_outline(g, t, lambda n, u: ws.outline(n, wanted_wght(u)))
+        assert o.bounds()[0] == pytest.approx(ws.outline("zero", wanted_wght(t)).bounds()[0] + dx[t], abs=0.5)
         assert o.advance() == pytest.approx(1920, abs=0.5)
 
 

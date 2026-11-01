@@ -20,7 +20,7 @@ from roofsans.sanity import check_outline
 
 pytestmark = pytest.mark.acceptance
 
-WEIGHTS = (400, 550, 700, 850, 1000)
+WEIGHTS = (100, 175, 250, 300, 400, 550, 700, 850, 1000)
 PAIR_PREFIXES = ("roof.pair.", "roof.knockpair.")
 
 

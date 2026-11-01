@@ -1,4 +1,4 @@
-"""Acceptance 16: the pre-Chinese baseline remains independently reproducible."""
+"""Acceptance 16: the pre-Chinese, pre-light baseline remains independently reproducible."""
 
 import hashlib
 

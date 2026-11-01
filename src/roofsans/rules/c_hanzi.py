@@ -7,18 +7,16 @@ from dataclasses import dataclass
 from statistics import median
 
 from fontTools.misc.roundTools import otRound
-from fontTools.pens.areaPen import AreaPen
-from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.recordingPen import DecomposingRecordingPen
-from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 from fontTools.ttLib.tables.TupleVariation import TupleVariation
 from fontTools.varLib.iup import iup_delta_optimize
 
 from roofsans.chinese import gb2312_hanzi
+from roofsans.measure import ink_area, ink_bounds  # noqa: F401 (re-exported)
 from roofsans.newglyph import NewGlyph
 from roofsans.outline import Outline
 from roofsans.selection import Rule
-from roofsans.variations import remap_pretendard_tuples
+from roofsans.variations import LIGHT_REGION, remap_pretendard_tuples
 
 
 @dataclass(frozen=True)
@@ -30,6 +28,15 @@ class Calibration:
     dy400: float
     dx930: float
     dy930: float
+    # None when the build has no light weights.
+    w100: float | None = None
+    dx100: float | None = None
+    dy100: float | None = None
+
+
+# Pretendard JP master → the Source Han Sans JP weights searched for it. The 100 window
+# starts at Source Han Sans's lightest master, 250.
+CALIBRATION_WINDOWS = ((400, 350.0, 420.0), (930, 850.0, 900.0), (100, 250.0, 300.0))
 
 
 def _form_sets(ctx) -> tuple[tuple[int, ...], tuple[int, ...]]:
@@ -60,24 +67,6 @@ def zhs_forms(ctx) -> tuple[int, ...]:
     return _form_sets(ctx)[1]
 
 
-def ink_bounds(outline: Outline) -> tuple[float, float, float, float]:
-    """True curve ink bounds; the global Outline.bounds includes control points."""
-    glyph = outline.to_glyph()
-    glyph.coordinates = GlyphCoordinates(outline.points)
-    pen = BoundsPen(None)
-    glyph.draw(pen, None)
-    return pen.bounds or (0.0, 0.0, 0.0, 0.0)
-
-
-def ink_area(outline: Outline) -> float:
-    """Absolute signed curve area, without rounding the sampled outline."""
-    glyph = outline.to_glyph()
-    glyph.coordinates = GlyphCoordinates(outline.points)
-    pen = AreaPen(None)
-    glyph.draw(pen, None)
-    return abs(pen.value)
-
-
 def transform(outline: Outline, scale: float, dx: float, dy: float) -> Outline:
     moved = outline.transformed(lambda x, y: (scale * x + dx, scale * y + dy))
     moved.coords[-4:] = [(0, 0), (1920, 0), (0, 0), (0, 0)]
@@ -90,8 +79,9 @@ def calibrate(ctx) -> Calibration:
     points = calibration_set(ctx)
     pcmap, jcmap = ctx.pretendard.getBestCmap(), ctx.shs_jp.getBestCmap()
     scale = 1.92
-    values = []
-    for master, lower, upper in ((400, 350.0, 420.0), (930, 850.0, 900.0)):
+    values = {}
+    windows = CALIBRATION_WINDOWS if ctx.light is not None else CALIBRATION_WINDOWS[:2]
+    for master, lower, upper in windows:
         lo, hi = lower, upper
         targets = [ctx.ps.outline(pcmap[cp], master) for cp in points]
         areas = [ink_area(o) for o in targets]
@@ -112,7 +102,7 @@ def calibrate(ctx) -> Calibration:
                 else:
                     hi = mid
             weight = round((lo + hi) / 2 * 4) / 4
-        if (master == 400 and weight in (lower, upper)) or (master == 930 and weight == lower):
+        if (master in (100, 400) and weight in (lower, upper)) or (master == 930 and weight == lower):
             raise ValueError(
                 f'Han calibration w{master} reached search bound {weight:g} in [{lower:g}, {upper:g}]'
             )
@@ -122,16 +112,18 @@ def calibrate(ctx) -> Calibration:
             b = ink_bounds(ctx.js.outline(jcmap[cp], weight))
             xs.extend(a[i] - scale * b[i] for i in (0, 2))
             ys.extend(a[i] - scale * b[i] for i in (1, 3))
-        values.append((weight, median(xs), median(ys)))
-    (w400, dx400, dy400), (w930, dx930, dy930) = values
-    ctx.calibration = Calibration(w400, w930, scale, dx400, dy400, dx930, dy930)
+        values[master] = (weight, median(xs), median(ys))
+    (w400, dx400, dy400), (w930, dx930, dy930) = values[400], values[930]
+    ctx.calibration = Calibration(w400, w930, scale, dx400, dy400, dx930, dy930, *values.get(100, (None,) * 3))
     print(f'C hanzi calibration: {ctx.calibration}', file=sys.stderr)
     return ctx.calibration
 
 
 def hanzi_master(ctx, cp: int, master: int) -> Outline:
     c = calibrate(ctx)
-    if master == 400:
+    if master == 100:
+        weight, dx, dy = c.w100, c.dx100, c.dy100
+    elif master == 400:
         weight, dx, dy = c.w400, c.dx400, c.dy400
     elif master == 930:
         weight, dx, dy = c.w930, c.dx930, c.dy930
@@ -145,13 +137,22 @@ def contribute(ctx) -> list[NewGlyph]:
     cn = ctx.shs_cn.getBestCmap()
     out = []
     for cp, alternate in [(cp, False) for cp in c1] + [(cp, True) for cp in zhs_forms(ctx)]:
-        a, b = hanzi_master(ctx, cp, 400), hanzi_master(ctx, cp, 930)
-        if a.end_pts != b.end_pts or a.flags != b.flags:
+        masters = [hanzi_master(ctx, cp, 400), hanzi_master(ctx, cp, 930)]
+        if ctx.light is not None:
+            masters.append(hanzi_master(ctx, cp, 100))
+        a = masters[0]
+        if any(o.end_pts != a.end_pts or o.flags != a.flags for o in masters[1:]):
             raise ValueError(f'U+{cp:04X}: incompatible Source Han Sans masters')
-        coords = [[(otRound(x), otRound(y)) for x, y in o.coords] for o in (a, b)]
-        deltas = [(q[0] - p[0], q[1] - p[1]) for p, q in zip(*coords)]
-        deltas = iup_delta_optimize(deltas, coords[0], a.end_pts, tolerance=0.5)
-        variations = remap_pretendard_tuples([TupleVariation({'wght': (0.0, 1.0, 1.0)}, deltas)])
+        coords = [[(otRound(x), otRound(y)) for x, y in o.coords] for o in masters]
+        deltas = [
+            iup_delta_optimize([(q[0] - p[0], q[1] - p[1]) for p, q in zip(coords[0], m)], coords[0], a.end_pts,
+                               tolerance=0.5)
+            for m in coords[1:]
+        ]
+        # The 930 master follows Pretendard's two regions; the 100 master is already on the
+        # Roof axis, where Roof's −1 is wght 100.
+        variations = [TupleVariation({'wght': LIGHT_REGION}, d) for d in deltas[1:]]
+        variations += remap_pretendard_tuples([TupleVariation({'wght': (0.0, 1.0, 1.0)}, deltas[0])])
         name = f'uni{cp:04X}.zhs' if alternate else ctx.cmap.get(cp, f'uni{cp:04X}')
         out.append(NewGlyph(name, a.to_glyph(), 1920, variations,
                             () if alternate else (cp,),

@@ -10,6 +10,7 @@ from fontTools.otlLib.builder import buildCoverage, buildLookup, buildSingleSubs
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables import otTables
 
+from roofsans.axis import roof_norm
 from roofsans.rules.c_hanzi import zhs_forms
 from roofsans.rules.c_punct import ZHS_QUOTES, ZHS_SIGNS
 from roofsans.selection import JAN_SHARED
@@ -36,10 +37,11 @@ RLIG = "rlig"
 _F2DOT14 = 1 << 14
 
 
-def to_roof_t(s: float) -> float:
-    """Pretendard JP normalized ``s`` → Roof normalized t, clamped to [0, 1], as F2Dot14."""
+def to_roof_t(s: float, light: bool = True) -> float:
+    """Pretendard JP normalized ``s`` → Roof normalized t at the same weight, clamped to
+    [−1, 1] (to [0, 1] without the light weights), as F2Dot14."""
     wght = 400 + (530 if s >= 0 else 355) * s
-    t = min(max((wght - 400) / 600, 0.0), 1.0)
+    t = min(max(roof_norm(wght), -1.0 if light else 0.0), 1.0)
     return round(t * _F2DOT14) / _F2DOT14
 
 
@@ -344,7 +346,7 @@ def carry(font: TTFont, ctx) -> None:
 
     rlig = next(i for i, fr in enumerate(records) if fr.FeatureTag == RLIG)
     kana = {p: new[f"kana{p}"] for p in PJ_KANA}
-    pj = [(to_roof_t(s), [kana[i] for i in ls]) for s, ls in _variation_records(pgsub, p_rlig)]
+    pj = [(to_roof_t(s, ctx.light is not None), [kana[i] for i in ls]) for s, ls in _variation_records(pgsub, p_rlig)]
     _write_variations(gsub, rlig, merge_variations(_variation_records(gsub, rlig), pj))
     sort_features(gsub)
 

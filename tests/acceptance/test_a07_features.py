@@ -26,7 +26,7 @@ WANTED_FEATURES = [
     *({tag: True} for tag in ("frac", "sups", "subs", "tnum", "zero", "case")),
 ]
 JAN_TEXT = "あ　〈〉《》「」『』【】〔〕あ"
-KANA_WEIGHTS = (400, 500, 600, 700, 767, 800, 900, 930, 1000)
+KANA_WEIGHTS = (100, 230, 232, 365.5, 366.5, 367.5, 400, 500, 600, 700, 767, 800, 900, 930, 1000)
 
 
 @cache
@@ -191,8 +191,15 @@ def test_kana_weight_alternates(pretendard, pj_names, reach, inputs, roof_path):
         texts[g] = reach[src]
     # 42 mappings; one glyph is the input of two lookups.
     assert sum(len(_mapping(pretendard, index)) for index in PJ_KANA) == 42
+    # Input FV minima correspond to 230.99365, 366.00372, and 367.00043;
+    # 230/232, 365.5/366.5, and 366.5/367.5 straddle all three after F2Dot14 remapping.
+    kana_string = "".join(sorted(set(texts.values())))
     bad = []
     for wght in KANA_WEIGHTS:
+        want = [pj_names[n] for n in names(inputs.pretendard, kana_string, wght=min(wght, 930))]
+        got = names(roof_path, kana_string, wght=wght)
+        if got != want:
+            bad.append((wght, "full kana string", got, want))
         for g, text in sorted(texts.items()):
             want = [pj_names[n] for n in names(inputs.pretendard, text, wght=min(wght, 930))]
             got = names(roof_path, text, wght=wght)
@@ -233,6 +240,23 @@ NO_SOURCE_MATCH = "ǣǽẛ"
 # turns the ogonek after a capital into `uni0328.case`, and `ae` has no Wanted anchor.
 NO_DECOMPOSED_MATCH = "ȋỉǰǪǣǽǢǼ"
 HORN = 0x031B
+# Below 400 Pretendard moves the breve of `ȓ Ȓ` far more with weight than Wanted's extrapolated
+# `r R` anchors move (R25 keeps Wanted's), so the gap to Pretendard grows past 18 toward Thin:
+# measured 50 (`ȓ`) and 19 (`Ȓ`) units at 100. The other letters stay within their limits.
+LIGHT_ANCHOR_LIMITS = {"ȓ": 52, "Ȓ": 21}
+MARK_WEIGHTS = [100, 250, 400, 700, 1000]
+
+
+@pytest.fixture(scope="module")
+def wanted_light_path(ctx, inputs, tmp_path_factory):
+    """Wanted Sans with the build's light tuples, as a file HarfBuzz can shape below 400."""
+    from roofsans.light import extend_wanted
+
+    font = TTFont(inputs.wanted)
+    extend_wanted(font, ctx.light)
+    path = tmp_path_factory.mktemp("wanted-light") / "WantedSansLight.ttf"
+    font.save(path)
+    return path
 
 
 def _w_prime(ctx, wght):
@@ -274,8 +298,8 @@ def _roof_parts(roof, glyph, wght):
     return out
 
 
-@pytest.mark.parametrize("wght", [400, 700, 1000])
-def test_decomposed_marks(ctx, inputs, roof, roof_path, wght):
+@pytest.mark.parametrize("wght", MARK_WEIGHTS)
+def test_decomposed_marks(ctx, inputs, roof, roof_path, wanted_light_path, wght):
     """Ruling R35: every H2 mark sits where its source font puts it, and GPOS agrees.
 
     A Wanted mark on a Wanted letter matches Wanted Sans's own GPOS placement; a mark with an
@@ -284,6 +308,8 @@ def test_decomposed_marks(ctx, inputs, roof, roof_path, wght):
     test_h2_compose). Decomposed single-mark input shapes like the precomposed H2 glyph.
     """
     cmap, wcmap = roof.getBestCmap(), wanted_cmap(inputs)
+    # The input Wanted Sans stops at 400; below it the reference carries the light tuples.
+    wanted_path = wanted_light_path if wght < 400 else inputs.wanted
     bad, counts = [], {"wanted": 0, "pretendard": 0, "decomposed": 0}
     for cp in ctx.selection.codepoints(Rule.H2_COMPOSE):
         ch = chr(cp)
@@ -302,7 +328,7 @@ def test_decomposed_marks(ctx, inputs, roof, roof_path, wght):
                 pair = chars[0] + mark_char
                 composed = unicodedata.normalize("NFC", pair)
                 hidden = frozenset({ord(composed)}) if len(composed) == 1 else frozenset()
-                out = shape(inputs.wanted, pair, wght, hidden=hidden)
+                out = shape(wanted_path, pair, wght, hidden=hidden)
                 if len(out) == 2 and out[1][0] == mark:
                     counts["wanted"] += 1
                     want = (out[0][1] + out[1][3], out[1][4])
@@ -312,6 +338,8 @@ def test_decomposed_marks(ctx, inputs, roof, roof_path, wght):
             counts["pretendard"] += 1
             want = _pretendard_mark_offset(ctx, ch, ord(mark_char), _w_prime(ctx, wght))
             tolerance = 18 if ch in ANCHOR_DESIGN_DIFFERS else 4
+            if wght < 400:
+                tolerance = LIGHT_ANCHOR_LIMITS.get(ch, tolerance)
             if abs(center - base_center - want) > tolerance:
                 bad.append(("pretendard", wght, ch, round(center - base_center), round(want)))
         if len(chars) != 2 or ch in NO_DECOMPOSED_MATCH:
@@ -351,7 +379,7 @@ def _shaped_marks(path, wght, text):
     return mark - base, (m0 - b1) if unicodedata.combining(text[1]) == 230 else (b0 - m1)
 
 
-@pytest.mark.parametrize("wght", [400, 700, 1000])
+@pytest.mark.parametrize("wght", MARK_WEIGHTS)
 def test_marks_on_h4_bases(inputs, roof_path, wght):
     """A mark on an H4 letter sits as on ``o``, measured from the ink, the way Pretendard JP's
     letters relate to its ``o``; on letters Pretendard leaves without anchors, as on ``o``."""

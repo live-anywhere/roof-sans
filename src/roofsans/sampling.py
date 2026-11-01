@@ -7,7 +7,7 @@ from fontTools.ttLib.tables._g_l_y_f import OVERLAP_COMPOUND
 from fontTools.varLib.iup import iup_delta
 from fontTools.varLib.models import piecewiseLinearMap, supportScalar
 
-from roofsans.axis import roof_norm
+from roofsans.axis import ROOF_MAX, roof_norm
 from roofsans.outline import Outline, Point, combine
 
 
@@ -96,11 +96,21 @@ class PretendardSampler(_Sampler):
 
 
 class WantedSampler(_Sampler):
-    """Wanted Sans (masters 400/750/1000); its axis is the Roof axis."""
+    """Wanted Sans (masters 400/750/1000) on the Roof axis.
+
+    The lightest weight is the font's own axis minimum: 400 for the input file, 100 after
+    ``light.extend_wanted`` has added the light tuples. Asking the input file for a lighter
+    weight raises instead of silently returning its 400 outline.
+    """
+
+    def __init__(self, font: TTFont) -> None:
+        super().__init__(font)
+        (axis,) = (a for a in font["fvar"].axes if a.axisTag == "wght")
+        self.min_wght = axis.minValue
 
     def _norm(self, wght: float) -> float:
-        if not 400 <= wght <= 1000:
-            raise ValueError(f"Wanted Sans weight {wght} is outside 400–1000")
+        if not self.min_wght <= wght <= ROOF_MAX:
+            raise ValueError(f"Wanted Sans weight {wght} is outside {self.min_wght:g}–{ROOF_MAX}")
         return roof_norm(wght)
 
 

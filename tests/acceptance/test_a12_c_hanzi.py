@@ -18,11 +18,12 @@ def test_a12_source_fidelity(ctx, static):
     glyphs = [(cp, f'uni{cp:04X}') for cp in ctx.selection.codepoints(Rule.C1_HANZI)]
     glyphs += [(cp, f'uni{cp:04X}.zhs') for cp in zhs_forms(ctx)]
     bad = []
-    for w, master in ((400, 400), (930, 930), (1000, 930)):
+    for w, master in ((100, 100), (400, 400), (930, 930), (1000, 930)):
         font = static('roof', w)
         for cp, name in glyphs:
             weight, dx, dy = (
-                (calibration.w400, calibration.dx400, calibration.dy400) if master == 400
+                (calibration.w100, calibration.dx100, calibration.dy100) if master == 100
+                else (calibration.w400, calibration.dx400, calibration.dy400) if master == 400
                 else (calibration.w930, calibration.dx930, calibration.dy930)
             )
             source = ctx.cs.outline(source_cmap[cp], weight)
@@ -36,7 +37,7 @@ def test_a12_source_fidelity(ctx, static):
             if error > 1:
                 bad.append((w, name, error))
             assert list(font['glyf'][name].endPtsOfContours) == source.end_pts
-    for w in (400, 750, 1000):
+    for w in (100, 175, 250, 300, 400, 750, 1000):
         font = static('roof', w)
         assert all(font['hmtx'][name][0] == 1920 for _, name in glyphs)
     assert not bad, bad[:20]

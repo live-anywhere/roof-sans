@@ -17,7 +17,7 @@ pytestmark = pytest.mark.acceptance
 
 # Acceptance 5's weights, 930 (Pretendard JP's master), and every master: H4 and H5 at
 # 400/700/850/1000, the sup/sub signs at Wanted Sans's 400/750/1000.
-WEIGHTS = (400, 550, 700, 750, 850, 930, 1000)
+WEIGHTS = (100, 175, 250, 300, 400, 550, 700, 750, 850, 930, 1000)
 RULES = (Rule.H4_LETTER, Rule.H5_SYMBOL, Rule.H3_SUPSUB)
 
 
@@ -77,3 +77,14 @@ def test_harmonized_outlines_are_sane(static, roof, ctx, wght):
         print(f"  {fold}")
     print(f"{wght}: failed crossings: {failed}; failed glyphs: {len(bad)}")
     assert not bad, f"{len(bad)} glyphs fail at {wght}: {bad}"
+
+
+@pytest.mark.parametrize("wght", (100, 175, 250, 300))
+def test_all_wanted_light_outlines_are_sane(roof, wanted, ws, wght):
+    from roofsans.sampling import WantedSampler
+
+    sampler = WantedSampler(roof)
+    # Input Wanted at 550 is the independent contour reference, including its four r forms.
+    bad = [(name, failures) for name in wanted.getGlyphOrder()
+           if (failures := check_outline(sampler.outline(name, wght), ws.outline(name, 550)))]
+    assert not bad, f"{len(bad)} Wanted glyphs fail at {wght}: {bad[:20]}"

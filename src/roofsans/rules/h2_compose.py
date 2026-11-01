@@ -167,6 +167,8 @@ class _Anchors:
         self.h4_codepoints = {ctx.cmap[cp]: cp for cp in ctx.selection.codepoints(Rule.H4_LETTER)}
         self._wanted_at = {}
         self._pretendard_at = {}
+        # The H4 masters this build solves (no light ones without the light weights).
+        self.h4_locs = ctx.locs(H4_LOCS)
 
     # Anchors with their device deltas.
 
@@ -187,8 +189,9 @@ class _Anchors:
     def _h4_interpolated(self, f, t: float) -> tuple[float, ...]:
         """``f(loc, w′)`` at each H4 master, interpolated to ``t`` as the H4 glyphs are."""
         params = h4_letters.params(self.ctx)
-        values = [f(loc, params[loc].w_prime) for loc in H4_LOCS]
-        return tuple(_interpolate(H4_LOCS, list(v), t) for v in zip(*values))
+        locs = self.h4_locs
+        values = [f(loc, params[loc].w_prime) for loc in locs]
+        return tuple(_interpolate(locs, list(v), t) for v in zip(*values))
 
     def letter_anchor(self, base: str, cls: MarkClass, t: float) -> tuple[float, float] | None:
         anchor = self.letters.base_anchors[base][self.letters.class_index(cls)]
@@ -281,7 +284,7 @@ class _Anchors:
         dot keeps Pretendard's raw gap over its ``ſ`` at w′, measured from the Roof ``ſ``'s top.
         """
         out = []
-        for loc in H4_LOCS:
+        for loc in self.h4_locs:
             drawn = self.ctx.ps.outline(self.pcmap[_LONG_S_DOT], h4_letters.params(self.ctx)[loc].w_prime)
             contours = drawn.contours()
             dot = max(contours, key=lambda c: min(y for _, y in c))
@@ -294,8 +297,8 @@ class _Anchors:
     def _long_s_landing(self, t: float) -> tuple[float, float]:
         """Offset that puts Wanted's dot (ink center x, ink bottom) where ``_long_s_dots`` says at ``t``."""
         dots = self._long_s_dots
-        dot_cx = _interpolate(H4_LOCS, [d[0] for d in dots], t)
-        dot_bottom = _interpolate(H4_LOCS, [d[1] for d in dots], t)
+        dot_cx = _interpolate(self.h4_locs, [d[0] for d in dots], t)
+        dot_bottom = _interpolate(self.h4_locs, [d[1] for d in dots], t)
         ink = self.ctx.outline(self.ctx.cmap[_DOT_ABOVE], t).bounds()
         return (dot_cx - _center_x(ink), dot_bottom - ink[1])
 
@@ -328,15 +331,15 @@ class _Anchors:
     def horn_offset(self, base: str, t: float) -> tuple[float, float]:
         rx, ry, zone = self._horn_measures[base]
         # The zone maps exist at the H4 masters; the H4 horn interpolates between them.
-        ys = [apply_zone_map(self._zone_map(zone, loc), ry) for loc in H4_LOCS]
-        y_min = _interpolate(H4_LOCS, ys, t)
+        ys = [apply_zone_map(self._zone_map(zone, loc), ry) for loc in self.h4_locs]
+        y_min = _interpolate(self.h4_locs, ys, t)
         horn = self.ctx.outline(self.ctx.cmap[_HORN], t).bounds()
         return (self.ctx.outline(base, t).bounds()[2] + rx - horn[0], y_min - horn[1])
 
     def horn_advance(self, base: str, t: float) -> float:
         """Ruling R30: Pretendard's side bearing right of the horn, never below the base's advance."""
         params = h4_letters.params(self.ctx)
-        w_prime = _interpolate(H4_LOCS, [params[loc].w_prime for loc in H4_LOCS], t)
+        w_prime = _interpolate(self.h4_locs, [params[loc].w_prime for loc in self.h4_locs], t)
         letter = self.pcmap[_HORN_LETTERS[base]]
         bearing = self.ctx.ps.advance(letter, w_prime) - self.ctx.ps.outline(letter, w_prime).bounds()[2]
         horn_right = self.ctx.outline(self.ctx.cmap[_HORN], t).bounds()[2] + self.horn_offset(base, t)[0]
@@ -481,12 +484,13 @@ def contribute(ctx) -> list[NewGlyph]:
         if not all(_available(ctx, n) for n in names):
             skipped.append(cp)
             continue
-        parts = {t: placed_parts(ctx, cp, t) for t in COMPOSITE_LOCS}
+        locs = ctx.locs(COMPOSITE_LOCS)
+        parts = {t: placed_parts(ctx, cp, t) for t in locs}
         base = parts[0.0][0][0]
         if ctx.cmap[_HORN] in names:
-            advance = {t: _anchors(ctx).horn_advance(base, t) for t in COMPOSITE_LOCS}
+            advance = {t: _anchors(ctx).horn_advance(base, t) for t in locs}
         else:
-            advance = {t: ctx.advance(base, t) for t in COMPOSITE_LOCS}
+            advance = {t: ctx.advance(base, t) for t in locs}
         out.append(composite_glyph(ctx.cmap[cp], parts, advance, (cp,), Rule.H2_COMPOSE, pcmap[cp]))
     if skipped:
         listed = " ".join(f"U+{cp:04X}" for cp in skipped)

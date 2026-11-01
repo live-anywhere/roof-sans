@@ -10,6 +10,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 
 from roofsans import features, finalize
+from roofsans import light as light_mod
 from roofsans.assemble import insert, planned_cmap, planned_uvs, write_cmap
 from roofsans.context import make_context
 from roofsans.inputs import Inputs, ensure_inputs
@@ -35,9 +36,9 @@ CONTRIBUTORS = (
 )
 
 
-def build(out: Path, inputs: Inputs | None = None, chinese: bool = True) -> Path:
+def build(out: Path, inputs: Inputs | None = None, chinese: bool = True, light: bool = True) -> Path:
     inputs = inputs or ensure_inputs()
-    ctx = make_context(inputs, chinese=chinese)
+    ctx = make_context(inputs, chinese=chinese, light=light)
     h6_copy.copy_closure(ctx)
     ctx.cmap = planned_cmap(ctx)
     for module in CONTRIBUTORS:
@@ -49,6 +50,8 @@ def build(out: Path, inputs: Inputs | None = None, chinese: bool = True) -> Path
             ctx.contributed[g.name] = g
 
     font = TTFont(inputs.wanted, recalcTimestamp=False)
+    if ctx.light is not None:
+        light_mod.extend_wanted(font, ctx.light)
     insert(font, list(ctx.contributed.values()))
     names = set(font.getGlyphOrder())
     missing = Counter(ctx.selection.rules[cp] for cp, g in ctx.cmap.items() if g not in names)
@@ -71,6 +74,7 @@ def build(out: Path, inputs: Inputs | None = None, chinese: bool = True) -> Path
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="roofsans-build", description=__doc__)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help=f"output font (default {DEFAULT_OUT})")
-    parser.add_argument("--without-chinese", action="store_true", help="reproduce the pre-Chinese font")
+    parser.add_argument("--without-chinese", action="store_true", help="leave out the Simplified Chinese rules")
+    parser.add_argument("--without-light", action="store_true", help="leave out weights below 400 (wght 400–1000)")
     args = parser.parse_args(argv)
-    print(build(args.out, chinese=not args.without_chinese))
+    print(build(args.out, chinese=not args.without_chinese, light=not args.without_light))

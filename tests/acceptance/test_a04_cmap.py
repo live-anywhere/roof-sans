@@ -62,7 +62,8 @@ def test_variation_sequences(roof, pretendard, pj_names):
 def test_sequence_targets_match_pretendard(static, pretendard, pj_names, wght, tolerance):
     targets = {g for seqs in format14_sequences(pretendard).values() for _, g in seqs}
     pairs = [(source, pj_names[source]) for source in sorted(targets)]
-    bad = differing_copies(static("pretendard", wght), static("roof", wght), pairs, tolerance)
+    bad = differing_copies(static("pretendard", wght), static("roof", wght), pairs, tolerance, advance_tolerance=tolerance if wght < 400 else 0,
+                           composite_tolerance=1.5 if wght < 400 else None)
     assert len(targets) == 524 and not bad, bad[:10]
 
 

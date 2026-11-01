@@ -1,7 +1,7 @@
 # flutter_specimen
 
 Android rendering check for Roof Sans under Flutter 3.44.9 (design Acceptance 10).
-The screen draws mixed Korean/Latin/Japanese/hanja text at w300–w900, once through
+The screen draws mixed Korean/Latin/Japanese/hanja text at w100–w900, once through
 `fontWeight` and once through the `wght` axis, and compares Roof Sans line metrics
 against PretendardJP.
 
