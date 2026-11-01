@@ -19,6 +19,8 @@ from pathlib import Path
 
 from fontTools.ttLib import TTFont
 
+from roofsans.chinese import gb2312_levels
+
 SITE_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = SITE_DIR / "specimen.html"
 LANGUAGES_PATH = SITE_DIR / "languages.json"
@@ -26,14 +28,15 @@ DEFAULT_ROOF = SITE_DIR.parent / "fonts" / "RoofSansVariable.ttf"
 
 # Numbers the page states, as (covered, total). Keep them in sync with specimen.html.
 PAGE_FACTS = {
-    "code points": (21718, None),
-    "glyphs": (22923, None),
+    "code points": (24978, None),
+    "glyphs": (28404, None),
     "Hangul syllables": (11172, 11172),
     "KS X 1001 hanja": (4888, 4888),
     "JIS X 0208 level 1 kanji": (2965, 2965),
     "JIS X 0208 level 2 kanji": (3390, 3390),
-    "GB 2312 level 1 hanzi": (2420, 3755),
-    "Big5 frequent hanzi": (4611, 5401),
+    "GB 2312 level 1 hanzi": (3755, 3755),
+    "GB 2312 level 2 hanzi": (3008, 3008),
+    "Big5 frequent hanzi": (5034, 5401),
 }
 # Language counts the page states, per Hyperglot script name.
 PAGE_LANGUAGE_COUNTS = {"Latin": 483, "Cyrillic": 77}
@@ -66,7 +69,8 @@ def measure_facts(font: TTFont) -> dict[str, tuple[int, int | None]]:
         "KS X 1001 hanja": _double_byte_set("euc_kr", range(0xCA, 0xFE), euc_trail),
         "JIS X 0208 level 1 kanji": _double_byte_set("euc_jp", range(0xB0, 0xD0), euc_trail),
         "JIS X 0208 level 2 kanji": _double_byte_set("euc_jp", range(0xD0, 0xF5), euc_trail),
-        "GB 2312 level 1 hanzi": _double_byte_set("gb2312", range(0xB0, 0xD8), euc_trail),
+        "GB 2312 level 1 hanzi": set(gb2312_levels()[0]),
+        "GB 2312 level 2 hanzi": set(gb2312_levels()[1]),
         "Big5 frequent hanzi": _double_byte_set("big5", range(0xA4, 0xC7), big5_trail),
     }
     facts: dict[str, tuple[int, int | None]] = {

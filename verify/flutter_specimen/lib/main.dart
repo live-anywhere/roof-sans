@@ -4,6 +4,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 /// Mixed-script text drawn at every weight.
 const sample = '한글 ㅅㄴ 강남 Latin 0123 日本語「東京」へ、カタカナ 漢字 大韓民國 ①⑩ ½⅓ cảm ơn';
 
+const chineseSample =
+    '欢迎回来！您的预订已确认。请在“我的行程”中查看详情：入住时间为下午三点；'
+    '如有疑问，请联系客服。《使用条款》【重要】他说“OK”。啊阿埃挨哎唉';
+const japaneseSample = '「東京」へ行きます。今日は、とても暑い！ID「abc」';
+
 /// Text laid out for the line metrics comparison.
 const metricsSample = '한글 Aa 日本';
 const metricsFamilies = ['RoofSans', 'PretendardJP'];
@@ -96,6 +101,8 @@ class SpecimenScreen extends StatelessWidget {
               const SizedBox(height: 16),
               for (final weight in weights) _WeightSample(weight: weight),
               const SizedBox(height: 16),
+              const _LocaleSamples(),
+              const SizedBox(height: 16),
               const _MetricsTable(),
             ],
           ),
@@ -184,6 +191,49 @@ String fontWeightLabel(FontWeight weight, {required bool boldText}) => boldText
 String wghtLabel(FontWeight weight, {required bool boldText}) => boldText
     ? 'wght ${weight.value} (style weight w${FontWeight.bold.value}, boldText)'
     : 'wght ${weight.value}';
+
+/// Explicit style locales next to the same text with no style locale.
+class _LocaleSamples extends StatelessWidget {
+  const _LocaleSamples();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Japanese: TextStyle ja'),
+        Text(
+          japaneseSample,
+          style: TextStyle(
+            fontFamily: 'RoofSans',
+            fontSize: 18,
+            locale: Locale('ja', 'JP'),
+          ),
+        ),
+        Text('Japanese: untagged'),
+        Text(
+          japaneseSample,
+          style: TextStyle(fontFamily: 'RoofSans', fontSize: 18),
+        ),
+        SizedBox(height: 8),
+        Text('Simplified Chinese: TextStyle zh-CN'),
+        Text(
+          chineseSample,
+          style: TextStyle(
+            fontFamily: 'RoofSans',
+            fontSize: 18,
+            locale: Locale('zh', 'CN'),
+          ),
+        ),
+        Text('Simplified Chinese: untagged'),
+        Text(
+          chineseSample,
+          style: TextStyle(fontFamily: 'RoofSans', fontSize: 18),
+        ),
+      ],
+    );
+  }
+}
 
 class _MetricsTable extends StatelessWidget {
   const _MetricsTable();

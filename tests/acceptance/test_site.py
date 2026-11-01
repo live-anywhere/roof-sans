@@ -22,6 +22,7 @@ build_site = _load_build_site()
 def test_page_facts_match_font(roof_path):
     languages = json.loads(build_site.LANGUAGES_PATH.read_text(encoding="utf-8"))
     assert build_site.stale_facts(TTFont(roof_path), languages) == []
+    assert build_site.measure_facts(TTFont(roof_path))["GB 2312 level 2 hanzi"] == (3008, 3008)
 
 
 def test_stale_fact_is_reported(roof_path, monkeypatch):
@@ -37,3 +38,9 @@ def test_page_embeds_font_and_language_lists(roof_path, tmp_path):
     for marker in ("__FONT_DATA__", "__LATIN_LIST__", "__CYRILLIC_LIST__"):
         assert marker not in page
     assert "Standard Estonian" in page and "Ukrainian" in page
+
+    assert len(page.encode("utf-8")) < 16_000_000
+    assert 'lang="zh-CN"' in page and 'data-lang="zh-CN"' in page
+    assert 'data-sample="zh"' in page
+    assert "6,763" in page and "3,008" in page and "5,034" in page
+    assert "TextStyle(fontFamily: 'RoofSans', locale: Locale('zh', 'CN'))" in page
