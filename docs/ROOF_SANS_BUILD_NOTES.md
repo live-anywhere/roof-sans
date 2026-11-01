@@ -8,7 +8,7 @@ All values are in font units (2048 per em) unless stated otherwise. "t" is the n
 
 ## 1. Inputs and pinning
 
-`inputs.lock.json` pins four files. Each entry has the upstream repository, the path, a `raw.githubusercontent.com` URL at the full 40-character commit, and the SHA-256.
+`inputs.lock.json` pins seven files. Each entry has the upstream repository, the path, a `raw.githubusercontent.com` URL at the full 40-character commit, and the SHA-256. The last three came with the Simplified Chinese extension (section 12).
 
 | Name | File | Commit | SHA-256 | Bytes |
 | --- | --- | --- | --- | --- |
@@ -16,6 +16,9 @@ All values are in font units (2048 per em) unless stated otherwise. "t" is the n
 | `pretendard` | `PretendardJPVariable.ttf` (1.309) | `7aeb0698819be2b4097dae8ec8fe6a795e5cf3ae` | `bc1d77db…535cbb` | 13,087,888 |
 | `wanted_ofl` | Wanted Sans `OFL.txt` | `02c9b82…` | `db345ad0…0d4331` | 4,394 |
 | `pretendard_license` | Pretendard `LICENSE` | `7aeb069…` | `82e9c8a4…f088d70a` | 4,816 |
+| `shs_cn` | Source Han Sans `SourceHanSansCN-VF.ttf` (2.005, `Variable/TTF/Subset/`) | `a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2` | `25a01e41…f2ba0b` | 17,749,860 |
+| `shs_jp` | Source Han Sans `SourceHanSansJP-VF.ttf` (2.005, same folder) | `a4f7cf9…` | `4acc3492…7f55bbc` | 9,564,672 |
+| `shs_license` | Source Han Sans `LICENSE.txt` | `a4f7cf9…` | `fcac737e…c2bac5a2` | 4,463 |
 
 `roofsans-fetch` (`src/roofsans/inputs.py`) fills `inputs/` in lock order:
 
@@ -59,7 +62,9 @@ Counts on the pinned inputs:
 
 The cmap has 21,718 code points and 524 variation sequences. The font has 22,923 glyphs: 12,663 from Wanted Sans, 8,537 Pretendard copies, 1,699 glyphs for the other rules (`➉` shares `⑩`'s glyph), and 24 helper glyphs.
 
-The build takes 12–14 seconds. On 2026-10-31 the output was 11,779,304 bytes with SHA-256 `9927013acc733a6659075909028e35b3cad9898621dc38bcd2a3f593a9e8defe`. Two builds from the same inputs are byte-identical (`test_build_determinism.py`).
+The counts above are without the Simplified Chinese extension. With it, `C1_HANZI` adds 3,260 code points, so the cmap has 24,978 code points and the font 28,404 glyphs (section 12).
+
+The build takes about 20 seconds with the extension (12–14 seconds without). The font committed before the extension (`roofsans-build --without-chinese` reproduces it) is 11,798,960 bytes with SHA-256 `6a01839de58c49b41cfa6bba64a6653ab8b66fcab74e7150ae55cd4173272325`. An earlier version of these notes gave `9927013a…8defe` (11,779,304 bytes), from a build before the last change to the committed font. Two builds from the same inputs are byte-identical (`test_build_determinism.py`).
 
 ## 3. Glyph naming
 
@@ -353,7 +358,7 @@ Every new same-sign overlap is in an H4 letter (Greek, Cyrillic, IPA and Latin E
 - `uv run pytest` runs every unit and acceptance test. On 2026-10-31: 194 passed in 3 minutes 44 seconds, most of it spent instancing the 22,923-glyph font.
 - `test_a08_ots_roundtrip.py` runs `ots-sanitize` (exit code 0) and checks that fontTools round-trips the binary and the XML.
 - The fresh-copy check replaces the plan's `git clone`, because the repository had no commits yet (R8). The non-ignored working tree is copied into an empty directory (`git ls-files --others --cached --exclude-standard -z | rsync --from0 --files-from=- …`). Then `uv sync`, `uv run roofsans-fetch` (network download), and `uv run roofsans-build` run there. On 2026-10-31 the copy downloaded the four inputs in 2 seconds and built the font in 14 seconds. Its SHA-256 (`9927013a…8defe`) equaled that of `fonts/RoofSansVariable.ttf` in the repository, and `uv run pytest` in the copy passed (194 tests).
-- **Language support** (stated on the specimen page, `site/`). Hyperglot 0.8.2 (`--validity preliminary`, base characters, living and constructed languages, primary orthographies) finds 483 Latin-script, 77 Cyrillic-script, and 2 Greek-script languages, plus Korean. Hyperglot has no data for Japanese, so CJK coverage is measured against national character sets decoded with Python's codecs: Hangul syllables 11,172 of 11,172; KS X 1001 hanja 4,888 of 4,888; JIS X 0208 level 1 and 2 kanji 2,965 and 3,390, all present; GB 2312 level 1 hanzi 2,420 of 3,755 (64%); Big5 frequent hanzi 4,611 of 5,401 (85%). Chinese is therefore listed as not supported. The missing kana `ゕ ゖ`, JIS logic and set symbols, box drawing, and parenthesized numbers such as `⑴` are absent from both inputs too; no non-PUA input code point is missing from Roof Sans. `site/build_site.py` re-measures these numbers on every page build.
+- **Language support** (stated on the specimen page, `site/`). Hyperglot 0.8.2 (`--validity preliminary`, base characters, living and constructed languages, primary orthographies) finds 483 Latin-script, 77 Cyrillic-script, and 2 Greek-script languages, plus Korean. Hyperglot has no data for Japanese, so CJK coverage is measured against national character sets decoded with Python's codecs: Hangul syllables 11,172 of 11,172; KS X 1001 hanja 4,888 of 4,888; JIS X 0208 level 1 and 2 kanji 2,965 and 3,390, all present; before the Simplified Chinese extension, GB 2312 level 1 hanzi 2,420 of 3,755 (64%) and Big5 frequent hanzi 4,611 of 5,401 (85%), so Chinese was listed as not supported. With it, GB 2312 levels 1 and 2 are 3,755 of 3,755 and 3,008 of 3,008, Big5 frequent hanzi 5,034 of 5,401, and the page lists Simplified Chinese (GB 2312) as supported; Traditional Chinese is not. The missing kana `ゕ ゖ`, JIS logic and set symbols, box drawing, and parenthesized numbers such as `⑴` are absent from both inputs too; no non-PUA input code point is missing from Roof Sans. `site/build_site.py` re-measures these numbers on every page build.
 - The visual review (Acceptance 9) uses the specimen sheet from `verify/specimen.py` and `verify/specimen_lines.json`. Besides the design's seven lines, it has two lines for the decisions above (R32): stacked capitals, horn letters, Greek and Cyrillic accents (line 8); notch and aperture glyphs, two-digit enclosed numbers, off-axis symbols, fractions, and unit squares (line 9).
 - The Flutter check (Acceptance 10) is the app in `verify/flutter_specimen/` (Flutter 3.44.9 through FVM). It draws w300–w900 through `fontWeight` and through the `wght` axis, and it compares line metrics with PretendardJP.
 - **Acceptance 10 on an Android emulator is outstanding.** The AVD `Medium_Phone_API_36.1` does not boot: its system image folder lacks `system.img` and `vendor.img` ("No initial system image"), and the disk is 99% full (8 GB free). Reinstalling the image is the owner's call.
@@ -371,6 +376,8 @@ Every new same-sign overlap is in an H4 letter (Greek, Cyrillic, IPA and Latin E
 
 These need the owner's visual judgment in the specimen sheet or on a device. All tests pass for each of them.
 
+- **Simplified Chinese assumes the app's Chinese strings are Simplified.** Traditional strings would use different code points, many of them still missing. Chinese forms need `TextStyle(locale: Locale('zh', 'CN'))` (or plain `zh`) in the app; untagged Chinese text shows every hanzi in Roof Sans but with Japanese forms for 2,212 of them (section 12).
+- **The font grew to 16.2 MB** with the Chinese extension (from 11.8 MB). Splitting the Chinese part into its own file later is possible from the same rules (`--without-chinese` is the first half); see the Chinese design's "Splitting later".
 - **Acceptance 10 on Android is not done.** Only the Flutter web proxy ran (section 9). The Android emulator check, including whether the app locale reaches `locl` JAN there, waits for the owner to reinstall the AVD system image.
 - **`⅟` U+215F overhangs the next glyph (R37).** Its advance is 734 / 908 at 400 / 1000 while its ink reaches 1160 / 1354 (right side bearing −426 / −446). This is kept on purpose: the slash ends where `½` puts its `.dnom`, so `⅟` followed by a denominator sets like `½`. Pretendard JP's own `⅟` overhangs too (−322 at 400, −362 at 930). Judge `⅟x` in specimen line 7. If the overlap is too much, cap it at Pretendard's ratio rather than removing it.
 - **`ǫ ǭ` ogonek overhangs the next glyph.** The right side bearing is −44 / −288 at 400 / 1000, against Pretendard's +88 / +58. The placement equals Wanted's own GPOS for `o` + U+0328 (lookup 9), so it follows the rule, but Wanted's `ą ę ų` right-align the ogonek with the letter instead. A fix would align the ogonek's ink right edge with the base's, as in `ą`.
@@ -392,3 +399,84 @@ Also noted during the build:
 - At 1000, H4's lowercase zone map has a slope of 1.115 above the x-height and 0.885 below it, so horizontal strokes of marks and in the ascender band come out about 26% heavier relative to the letter body.
 - Decomposed `i` or `j` followed by an H4 top mark (for example `i` + U+0311) keeps the dot. Wanted's `ccmp` lookup 31 swaps in `dotlessi` only before Wanted's own 14 top marks. Fixing it would change a Wanted lookup. HarfBuzz composes these sequences to the precomposed H2 glyph anyway, because the font maps it.
 - 22 Greek and Cyrillic non-letters (spacing accents, `;`, `·`) are harmonized with the lowercase zone map, and `〈 〉` U+2329/232A follow H5 (section 6, Selection).
+
+## 12. Simplified Chinese (rules C1–C3)
+
+The design is `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`; the plan is `docs/ROOF_SANS_SIMPLIFIED_CHINESE_PLAN.md`. Built on 2026-11-01.
+
+### Code
+
+- `src/roofsans/chinese.py` decodes GB 2312 (levels 1 and 2) with Python's `gb2312` codec; `site/build_site.py` uses the same decoder.
+- `selection.py` assigns `C1_HANZI` to the GB 2312 hanzi neither Wanted Sans nor Pretendard JP maps. `Rule.C2_FORM` and `Rule.C3_PUNCT` label the unencoded alternates; no code point gets them.
+- `sampling.ShsSampler` reads Source Han Sans with its `avar` (weights 250–900, no extrapolation). The CN and JP subsets have identical `fvar` and `avar`, so a weight calibrated on JP means the same on CN.
+- `rules/c_hanzi.py` calibrates and builds C1 and C2; `rules/c_punct.py` builds C3. `build.py` runs them after `h3_enclosed`.
+- `features/gsub.py` appends lookups for ZHS (section "OpenType" below).
+- `roofsans-build --without-chinese` skips C1–C3, the ZHS lookups, the Source Han Sans license lines, and code page 936. It reproduces the pre-extension font byte for byte (`6a01839d…272325`). The acceptance fixture `baseline_path` builds it (or reads `$ROOF_BASELINE`) as the "before" font for A11 and A14, and `test_a16_baseline.py` pins its SHA-256. Update that value only when a change to the non-Chinese rules is intended, and record it here.
+
+### Counts
+
+| Item | Count |
+| --- | --- |
+| GB 2312 hanzi | 6,763 (level 1: 3,755; level 2: 3,008) |
+| Present before the extension | 3,503 (Pretendard JP's Japanese forms) |
+| C1, added | 3,260 (level 1: 1,335; level 2: 1,925) |
+| C2, `.zhs` alternates | 2,212: 2,210 whose CN outline differs from JP, plus `唾 毁` (not in the JP subset) |
+| Calibration set (CN and JP outlines identical) | 1,291 |
+| C3, `.zhs` punctuation | 9 (`！：；？‘’“”·`) |
+| Non-GB 2312 code points switched through shared glyphs | 199 (U+2Exx 6, U+2Fxx 81, U+F9xx 79, U+FAxx 33) |
+
+The font has 24,978 code points and 28,404 glyphs (22,923 + 3,260 + 2,212 + 9). Both format 4 cmap subtables compile to 51,206 bytes (5,045 segments), 14,329 bytes under the 65,535-byte limit; a test asserts the limit. GSUB has 103 lookups.
+
+### Calibration
+
+One set of values for every glyph, solved at build time and cached on the context:
+
+| Value | Result | How |
+| --- | --- | --- |
+| scale | 1.92 | fixed: Source Han Sans's 1000-unit advance becomes 1920 |
+| `w400` | 381.5 | Source Han Sans weight in [350, 420] where the median ink-area ratio (Pretendard 400 / scaled Source Han Sans) is 1; bisected, rounded to 0.25 |
+| `w930` | 900 | the same at Pretendard 930 in [850, 900]; the answer is the upper bound, because Pretendard's 930 kanji are about 0.6% heavier than Source Han Sans's maximum |
+| dx400, dy400 | −0.020, +21.649 | median of Pretendard ink-box edge − 1.92 × Source Han Sans edge |
+| dx930, dy930 | −0.160, +21.440 | the same at 930 |
+
+- Ink boxes in the C rules are true curve bounds (a helper in `c_hanzi.py`), not `Outline.bounds()`, which includes off-curve points. With control boxes, `戊 戍` missed by 15.6 units at 930.
+- The calibration raises an error if `w400` lands on either search bound or `w930` on its lower bound.
+- New glyphs have two masters (400 and 930) and the copied Han regions `(0, PJ_PEAK, 1)` and `(PJ_PEAK, 1, 1)`: linear to 930, held to 1000.
+
+Acceptance 13 on the 1,291 calibration hanzi, built from the JP subset with these values (edge = worst ink-box edge error per glyph, in units):
+
+| wght | edge median / p99 / max | within the 99% limit | ink-area ratio median (min–max) | over the 99% limit |
+| --- | --- | --- | --- | --- |
+| 400 | 1.42 / 2.91 / 19.06 | 1,283 of 1,291 within 3 | 1.0002 (0.989–1.018) | `忤 忱 摹 漫 熙 相 荻 蔓` (`熙` 19.1, `摹` 9.3, `蔓` 7.7, `荻` 5.5, the rest ≤ 3.13) |
+| 700 | 1.78 / 3.60 / 6.19 | 1,290 within 5 | 1.0042 (0.994–1.025) | `熙` 6.19 |
+| 930 | 2.56 / 4.96 / 6.72 | 1,280 within 5 | 1.0056 (0.992–1.028) | `卩 叱 史 尾 想 椅 洗 熙 狂 玩 相` (≤ 6.72) |
+
+The outliers at 400 come from small shape differences between Pretendard's Source Han Sans and version 2.005. At 700 the check uses the linear interpolation of the two transformed masters, which is what the font contains. Sampling Source Han Sans directly at an interpolated weight gives an ink-area median of 0.978, because its own interpolation is not linear; that is why the masters are interpolated linearly, like Pretendard's.
+
+### Punctuation (C3)
+
+- `！：；？` use the same Wanted Sans component as Roof's default fullwidth glyph (R3_SIGN). `‘’“”·` use Wanted Sans's `quoteleft quoteright quotedblleft quotedblright periodcentered`. Advance 1920; only x moves.
+- Target ink center x = 1.92 × Source Han Sans CN's ink center at the calibrated weight + dx, linear between the 400 and 930 targets. Source centers at `w400`, in 1000 units: `！` 250, `：` 250, `；` 243.4, `？` 247.0, `‘` 879.3, `’` 120.7, `“` 793.9, `”` 206.1, `·` 500.
+
+### OpenType
+
+- GSUB lookups 99 (`zhs_hanzi`, 2,212 entries), 100 (`zhs_punct`, 17: the 13 JAN mappings and `！：；？`), and a chained-context quotes lookup with a referenced single substitution. Language system `ZHS ` under `hani` (all three) and under `latn` and `DFLT` (punctuation and quotes).
+- The quotes lookup skips `’` and `·` between two "alnum" glyphs: every glyph the Roof cmap maps from a code point below U+3000 with Unicode category L* or Nd. `It’s`, `McDonald’s`, `l·l`, and `2’30` keep Wanted Sans's glyphs; `他说“OK”。`, `“abc”`, `列奥纳多·达·芬奇` switch.
+- The quotes lookup applies in every ZHS script, not only `hani`: with `hani` only, `他说“OK”。` gave a 1920-wide `“` (Han run) and a 796-wide `”` (Latin run).
+- HarfBuzz (uharfbuzz 0.57.0) selects ZHS for `zh`, `zh-CN`, `zh-Hans`, `zh-SG`, `zh-Hans-CN`, `zh-Hans-HK`, `cmn`, and `wuu`; not for `zh-TW`, `zh-HK`, `zh-Hant`, `zh-MO`, or `yue`.
+- With `ss20` on under `zh-CN`, a hanzi in both sets (258, for example `乳`) takes the Korean form, because lookup 82 runs before 99. A test pins it.
+- Every `.zhs` glyph and every C1 glyph is GDEF class 1.
+
+### Licensing and OS/2
+
+- `OFL.txt` adds Source Han Sans's `LICENSE.txt` header verbatim after Pretendard's. Name ID 0 adds `Copyright 2014-2025 Adobe (http://www.adobe.com/)`; Pretendard's `2014-2021 Adobe` line stays.
+- OS/2 code page bit 18 (936) is set. Unicode ranges do not change. `xAvgCharWidth` goes from 1770 to 1799.
+
+### Output and verification
+
+- Output: 16,230,096 bytes, SHA-256 `da7a7fe8197d2b5209cac0a9b6a313e42a975762f2015ab26b5be3dc7e75b87d`, about 20 seconds to build. The pre-extension font was 11,798,960 bytes; the estimate was 15.9 MB.
+- The specimen page is 7.7 MB (WOFF2 inside).
+- Tests: `uv run pytest` passed 302 tests in 5 minutes 5 seconds on 2026-11-01. It built `build/test/` (`da7a7fe8…`, equal to the default-path build) and `build/test-baseline/` (`6a01839d…`).
+- Reviews: a Codex builder check of the design; a Claude review of the implementation (no blocker; its findings are fixed or recorded above).
+- Visual review (Acceptance 17): the specimen sheets at 400, 700, and 1000 show no jump in size, position, or weight between C1 hanzi and present hanzi under `zh-CN`.
+- Flutter web (Acceptance 18, Flutter 3.44.9, CanvasKit): `TextStyle(locale: Locale('zh', 'CN'))` applies the C2 forms and the Chinese punctuation; untagged Chinese text draws every hanzi from Roof Sans with the Japanese forms; line metrics still match PretendardJP. Android is still outstanding (section 11).

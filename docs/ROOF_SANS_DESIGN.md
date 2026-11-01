@@ -1,6 +1,6 @@
 # Roof Sans — Design
 
-Status: approved for planning; revised with facts found while planning (2026-10-31)
+Status: approved for planning; revised with facts found while planning (2026-10-31); extended with Simplified Chinese (2026-11-01, `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`)
 
 ## Intent
 
@@ -8,16 +8,20 @@ Roof Sans is a single variable font for the LiveAnywhere Flutter app (`liveanywh
 
 The owner prefers Wanted Sans's Latin letters, digits, and symbols over Pretendard's; they read as more consistent. Wanted Sans has no Han ideographs and no Japanese kana, though, so it cannot serve Japanese text or hanja on its own. Roof Sans is therefore **Wanted Sans as the base, with Pretendard JP filling every character Wanted Sans lacks**. Han and Japanese glyphs come over unchanged. Everything else Pretendard adds is rebuilt from Wanted Sans parts or adjusted to Wanted Sans's metrics, so it does not stand out next to Wanted Sans text.
 
+The app also has a Chinese mode. Pretendard JP lacks 3,260 of the 6,763 GB 2312 hanzi, and its kanji are Japanese forms, so Roof Sans adds the missing hanzi and Simplified Chinese forms from Source Han Sans CN (rules C1–C3 below). The full reasoning and measurements are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`.
+
 ## Inputs
 
 | Source | File | Version | Upstream commit in `refs/` |
 | --- | --- | --- | --- |
 | Wanted Sans | `refs/wanted-sans/packages/wanted-sans/fonts/variable/WantedSansVariable.ttf` | 1.003 | `02c9b82` (v1.0.3+1) |
 | Pretendard JP | `refs/pretendard/packages/pretendard-jp/dist/public/variable/PretendardJPVariable.ttf` | 1.309 | `7aeb069` (v1.3.9+18) |
+| Source Han Sans CN | `adobe-fonts/source-han-sans` `Variable/TTF/Subset/SourceHanSansCN-VF.ttf` (downloaded; no `refs/` checkout) | 2.005 | `a4f7cf9` (`release` branch) |
+| Source Han Sans JP | `Variable/TTF/Subset/SourceHanSansJP-VF.ttf`, same commit; used only to calibrate and to compare forms, no glyph ships | 2.005 | `a4f7cf9` |
 
 Pretendard JP is the right Pretendard flavor: the plain Pretendard build has kana but **no Han ideographs** (its 0 CJK Unified Ideographs vs. 7,138 in Pretendard JP).
 
-Both fonts use 2048 UPM, are TrueType-flavored variable fonts with a single `wght` axis, and carry no HVAR/MVAR.
+Wanted Sans and Pretendard JP use 2048 UPM, are TrueType-flavored variable fonts with a single `wght` axis, and carry no HVAR/MVAR. The Source Han Sans subsets are TrueType-flavored too, with 1000 UPM, `wght` 250–900, and an `avar` table.
 
 ## Glyph selection rule
 
@@ -27,6 +31,12 @@ Both fonts use 2048 UPM, are TrueType-flavored variable fonts with a single `wgh
 4. **Every other code point Pretendard JP has and Wanted Sans lacks is added, harmonized to Wanted Sans** per "Design harmonization" (about 1,535 code points: Latin Extended and Vietnamese, IPA, Greek, Cyrillic, combining marks, arrows, math, currency, enclosed and number forms). *(Owner's decision.)*
    - **Excluded: Pretendard's 382 Private Use Area code points (U+E000–F8FF).** They are private slots for Pretendard's own alternates, such as its numerator and denominator figures. No text uses them, and they would bring Pretendard-style digits back. *(Designer's call.)*
 5. **Unicode variation sequences:** keep Pretendard JP's format-14 `cmap` subtable. It has 524 sequences on 503 Han bases, with selectors U+FE00 and U+E0100–E0107. Also keep the alternate glyphs those sequences point to, with their variations, even though they have no ordinary code point. Wanted Sans has no format-14 subtable, so nothing conflicts. *(Designer's call.)*
+6. **Simplified Chinese (rules C1–C3).** *(Owner's decisions, 2026-11-01: Simplified Chinese, the GB 2312 range, one file.)*
+   - **C1:** the 3,260 GB 2312 hanzi neither Wanted Sans nor Pretendard JP maps come from Source Han Sans CN. They are default glyphs in every locale.
+   - **C2:** 2,212 present GB 2312 hanzi get an unencoded Simplified Chinese alternate from Source Han Sans CN, reached only through `locl` ZHS: the 2,210 whose CN outline differs from the JP subset's, plus `唾 毁`, which the JP subset does not map. Defaults stay Pretendard JP's Japanese forms. 199 compatibility ideographs and radicals that share a glyph with a C2 hanzi switch with it.
+   - **C1/C2 construction:** Source Han Sans CN sampled at the weights that reproduce Pretendard JP's 400 and 930 kanji, scaled by 1.92, shifted to Pretendard's position, with Pretendard's two-region variation (linear to 930, held to 1000). The weights and offsets are calibrated at build time on the 1,291 GB 2312 hanzi whose CN and JP forms are identical.
+   - **C3:** under `locl` ZHS, the 13 shared CJK code points take the same Pretendard JP forms as under JAN; `！：；？` keep Wanted Sans's drawing at Source Han Sans CN's left position; `‘’“”·` become fullwidth Wanted Sans drawings in every script, so quote pairs around Latin words stay matched; `’` and `·` between two Latin, Greek, or Cyrillic letters or digits keep their width.
+   - **Excluded:** Traditional Chinese forms, the 189 GB 2312 non-hanzi Roof Sans lacks, and hanzi beyond GB 2312.
 
 ## Design harmonization
 
@@ -147,6 +157,7 @@ Prefer, in order: build the glyph from Wanted Sans parts, then adjust a Pretenda
 - Drop Pretendard's Latin-oriented features (its `ss`/`cv` sets, `case`, `frac`, `sups`, …); Wanted Sans's versions apply. Added Latin, Greek, and Cyrillic glyphs do not need to join them.
 - Added combining marks (for example U+0309 hook above, U+031B horn) get mark-to-base positioning on Wanted Sans bases, so decomposed input still renders. Precomposed glyphs from H2 cover normal text.
 - Default Han forms are Pretendard JP's Japanese forms, the same as the app today.
+- **`locl` ZHS (rules C2 and C3):** a `ZHS ` language system under `hani` (hanzi, punctuation, and quote lookups) and under `latn` and `DFLT` (punctuation and quote lookups). HarfBuzz selects it for `zh`, `zh-CN`, `zh-Hans`, and `zh-SG`; `zh-TW`, `zh-HK`, and `zh-Hant` select ZHT/ZHH, which get no lookups. No stylistic set carries the Chinese forms.
 
 ## Flutter rendering (the Pretendard "bug")
 
@@ -176,7 +187,7 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
 - Family `Roof Sans`, variable file `RoofSansVariable.ttf`, version 1.000. Names must not contain the Reserved Font Names in Pretendard's OFL: "Pretendard", "Source", "Inter", or "M PLUS 1". "Wanted Sans" has no RFN.
 - License: SIL OFL 1.1. The shipped `OFL.txt` lists every upstream copyright line verbatim:
   - Pretendard: Kil Hyung-jin
-  - Adobe (Source Han Sans)
+  - Adobe (Source Han Sans), from Pretendard's `LICENSE` and, for rules C1–C3, from Source Han Sans's own `LICENSE.txt` header
   - The Inter Project Authors (Pretendard's Latin, Greek, and Cyrillic come from Inter)
   - The M+ FONTS Project Authors (M PLUS 1)
   - Wanted Lab, Inc. / The Wanted Sans Project Authors
@@ -229,6 +240,7 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
     - No hollow glyphs.
     - Real weights, not fake bold.
     - Line heights unchanged against PretendardJP.
+11–20. Simplified Chinese: cmap coverage of GB 2312, source fidelity, the calibration match with Pretendard JP's kanji, `locl` ZHS behavior and isolation, C3 placement, sanity and determinism, the visual review, the Flutter check, size, and the specimen page. The items and their limits are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`, "Acceptance". Items 1–10 still apply unchanged to the font with C1–C3.
 
 ## Non-goals
 
@@ -236,6 +248,7 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
 - Weights below 400.
 - New type design: Greek, Cyrillic, IPA, and letters without a decomposition keep Pretendard's drawings, matched in height and weight per H4; nothing is redrawn by hand.
 - Width and proportion matching for those letters. They keep Pretendard's advances and shapes; for example, Pretendard's `о` is about 7% narrower than Wanted Sans's `o`.
+- Traditional Chinese (`zh-TW`, `zh-HK`) forms, hanzi beyond GB 2312, the GB 2312 non-hanzi Roof Sans lacks, and Chinese forms for `…` and `—`.
 
 ## Anti-goals
 
@@ -267,6 +280,8 @@ Owner's decisions (2026-10-31):
 4. Latin parts of Pretendard glyphs (unit squares and similar) follow Wanted Sans.
 5. Overlap flags stay; no font-side workaround for Flutter ≤ 3.32.
 6. Pretendard letters that cannot be built from Wanted Sans parts are matched to Wanted Sans in height and weight (H4).
+
+Owner's decisions (2026-11-01): Simplified Chinese for the app's Chinese mode, covering all GB 2312 hanzi, in the same single file; splitting it into its own file later must stay possible. The designer's calls for that extension are listed in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`.
 
 Designer's calls. Check these while reading:
 

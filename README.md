@@ -6,9 +6,10 @@ It is **Wanted Sans as the base, with Pretendard JP filling every character Want
 
 - Every character Wanted Sans has (Hangul, Latin, digits, punctuation, symbols) is Wanted Sans, unchanged.
 - Han ideographs, kana, and Japanese punctuation come from Pretendard JP, unchanged.
+- The GB 2312 hanzi Pretendard JP lacks (3,260), and Simplified Chinese forms for 2,212 hanzi it has, come from Source Han Sans CN, scaled and weighted to match Pretendard JP's kanji. The Chinese forms apply only to text tagged Chinese.
 - Everything else Pretendard JP adds (Vietnamese and other Latin letters, Greek, Cyrillic, IPA, combining marks, arrows, math, unit squares, enclosed numbers, fractions) is rebuilt from Wanted Sans parts or matched to Wanted Sans's heights, weights, and symbol axes, so it does not stand out next to Wanted Sans text.
 
-The output is `fonts/RoofSansVariable.ttf`. The design is in `docs/ROOF_SANS_DESIGN.md`. The decisions and measured values from the build are in `docs/ROOF_SANS_BUILD_NOTES.md`.
+The output is `fonts/RoofSansVariable.ttf`. The design is in `docs/ROOF_SANS_DESIGN.md`; the Simplified Chinese extension and its reasons are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`. The decisions and measured values from the build are in `docs/ROOF_SANS_BUILD_NOTES.md`.
 
 ## Build
 
@@ -21,15 +22,16 @@ uv run roofsans-build
 uv run pytest
 ```
 
-- `uv run roofsans-fetch` downloads the two pinned input fonts and their license files into `inputs/` and checks each file's SHA-256 against `inputs.lock.json`. A file already in `inputs/` with the right checksum is reused.
-- If you have the upstream repositories checked out under `refs/wanted-sans` and `refs/pretendard` at the pinned commits, copy the inputs from there instead of downloading them:
+- `uv run roofsans-fetch` downloads the pinned input fonts (Wanted Sans, Pretendard JP, and the Source Han Sans CN and JP subsets) and their license files into `inputs/` and checks each file's SHA-256 against `inputs.lock.json`. A file already in `inputs/` with the right checksum is reused.
+- If you have the upstream repositories checked out under `refs/wanted-sans` and `refs/pretendard` at the pinned commits, copy those inputs from there instead of downloading them. The Source Han Sans files are still downloaded unless `refs/source-han-sans` exists:
 
   ```sh
   uv run roofsans-fetch --from-refs refs
   ```
 
-- `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf`, `fonts/OFL.txt`, and `OFL.txt`. It takes 12–14 seconds. The build is deterministic: the same inputs give a byte-identical font.
-- `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copy of the font into `build/test/`. The full run takes about 4 minutes.
+- `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf`, `fonts/OFL.txt`, and `OFL.txt`. It takes about 20 seconds. The build is deterministic: the same inputs give a byte-identical font.
+- `uv run roofsans-build --without-chinese --out <path>` builds the font without the Simplified Chinese extension. It reproduces the font from before the extension byte for byte, and the tests use it as the "before" font.
+- `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copies of the font into `build/test/` and `build/test-baseline/`. The full run takes about 5 minutes.
 
 ## Specimen page
 
@@ -102,6 +104,20 @@ Where the locale comes from matters:
 
 See "Migration from PretendardJP" below.
 
+### Simplified Chinese
+
+Roof Sans maps all 6,763 GB 2312 hanzi. Chinese text should be tagged Chinese, the same way Japanese text is tagged `ja`:
+
+```dart
+const TextStyle(fontFamily: 'RoofSans', locale: Locale('zh', 'CN'))
+```
+
+- With the tag, 2,212 hanzi switch from Pretendard JP's Japanese forms to Simplified Chinese forms (for example `直`, `骨`, `安`). `！：；？` move to the left of the em box. `“”‘’·` become fullwidth, also around Latin words; an apostrophe or middle dot inside a Latin word (`It’s`, `l·l`) keeps its normal width. The ideographic space and the 12 brackets `〈〉《》「」『』【】〔〕` switch to the same forms as under `ja` (fullwidth, except `〈〉` at 698 units).
+- Plain `zh`, `zh-CN`, `zh-Hans`, and `zh-SG` all select the Chinese forms. `zh-TW`, `zh-HK`, and `zh-Hant` do not: Traditional Chinese is not supported, and that text shows the default forms.
+- Without the tag, every GB 2312 hanzi still comes from Roof Sans, so no character falls back to a system font. The 2,212 hanzi keep their Japanese forms, though.
+- The same locale caveats as for Japanese apply: `TextStyle(locale: …)` works on Flutter web; `Text(locale: …)` and the app locale do not reach the font there; Android is unverified.
+- The GB 2312 symbols outside the hanzi rows (for example `⑴`, `㈠`, bopomofo, and box drawing) are not in Roof Sans.
+
 ## Known issue: Flutter 3.32 and earlier
 
 On Flutter 3.32 and earlier, some Hangul jamo (for example ㅅ and ㄴ) can draw as hollow outlines when text is bold on Android or Flutter web (CanvasKit).
@@ -126,7 +142,7 @@ Roof Sans is licensed under the SIL Open Font License 1.1. See `OFL.txt` (a copy
 
 - Wanted Lab, Inc. and The Wanted Sans Project Authors (Wanted Sans)
 - Kil Hyung-jin (Pretendard)
-- Adobe (Source Han Sans)
+- Adobe (Source Han Sans, through Pretendard JP and directly for the Simplified Chinese hanzi)
 - The Inter Project Authors (Inter, which Pretendard's Latin, Greek, and Cyrillic come from)
 - The M+ FONTS Project Authors (M PLUS 1)
 

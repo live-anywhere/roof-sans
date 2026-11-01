@@ -1,8 +1,9 @@
 # Agent notes for Roof Sans
 
-This repository builds `fonts/RoofSansVariable.ttf`, a `wght` 400–1000 variable font made of Wanted Sans plus harmonized Pretendard JP glyphs. Read these before changing anything:
+This repository builds `fonts/RoofSansVariable.ttf`, a `wght` 400–1000 variable font made of Wanted Sans plus harmonized Pretendard JP glyphs, with Simplified Chinese hanzi and forms from Source Han Sans CN. Read these before changing anything:
 
 - `docs/ROOF_SANS_DESIGN.md`: what the font must be. It is the binding authority, including its Acceptance list and Anti-goals.
+- `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`: the Simplified Chinese extension (rules C1–C3), its measurements, and Acceptance 11–20.
 - `docs/ROOF_SANS_BUILD_NOTES.md`: the decisions made while building it, the tolerances the tests use, and the measured values.
 - `docs/ROOF_SANS_IMPLEMENTATION_PLAN.md`: the original task plan. Where it disagrees with the build notes, the build notes are current.
 
@@ -56,7 +57,7 @@ Measure variable advances from the phantom points (`roofsans.sampling` does this
 ## Where the code is
 
 - `src/roofsans/selection.py` assigns every code point to one rule (`Rule`). Each rule has one module in `src/roofsans/rules/`. Each module's `contribute(ctx)` returns `NewGlyph` records.
-- `src/roofsans/build.py` runs the contributors in a fixed order (`h6_copy`, `r3_fullwidth`, `h4_letters`, `h5_symbols`, `h2_compose`, `h3_construct`, `h3_enclosed`). A later rule may use glyphs an earlier one contributed. The build fails if any planned code point has no glyph.
+- `src/roofsans/build.py` runs the contributors in a fixed order (`h6_copy`, `r3_fullwidth`, `h4_letters`, `h5_symbols`, `h2_compose`, `h3_construct`, `h3_enclosed`, `c_hanzi`, `c_punct`). A later rule may use glyphs an earlier one contributed. The build fails if any planned code point has no glyph.
 - `src/roofsans/features/` adds the OpenType data; `src/roofsans/finalize.py` writes names, `head`, `OS/2`, and the license text.
 - Unit tests are in `tests/unit/`; acceptance tests, numbered by the design's Acceptance items, are in `tests/acceptance/`.
 
