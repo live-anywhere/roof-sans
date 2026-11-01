@@ -1,20 +1,25 @@
-"""Build the Roof Sans specimen web page as one self-contained HTML file.
+"""Build the Roof Sans specimen web page, the site GitHub Pages serves.
 
-``specimen.html`` is the page source. This script embeds the built font as WOFF2, fills
-in the language lists from ``languages.json``, and writes ``index.html``. Before writing,
-it checks that the coverage numbers the page states still hold for the font; if the
-font changed, it stops and names the numbers to update in ``specimen.html``.
+``specimen.html`` is the page source. This script writes the built font as
+``RoofSansVariable.woff2`` next to the page, fills in the language lists from
+``languages.json`` and the version, release, and file-size markers, and writes
+``index.html``. Before writing, it checks that the coverage numbers the page states still
+hold for the font; if the font changed, it stops and names the numbers to update in
+``specimen.html``.
 
-Usage: ``uv run python site/build_site.py --out build/site``
+The page loads the font file by a relative URL, so open it through a web server:
+
+    uv run python site/build_site.py --out build/site
+    uv run python -m http.server -d build/site 8000
 """
 
 from __future__ import annotations
 
 import argparse
-import base64
 import html
-import io
 import json
+import re
+import tomllib
 from pathlib import Path
 
 from fontTools.ttLib import TTFont
@@ -25,6 +30,9 @@ SITE_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = SITE_DIR / "specimen.html"
 LANGUAGES_PATH = SITE_DIR / "languages.json"
 DEFAULT_ROOF = SITE_DIR.parent / "fonts" / "RoofSansVariable.ttf"
+PYPROJECT_PATH = SITE_DIR.parent / "pyproject.toml"
+# The page's @font-face and preload link use this file name.
+WOFF2_NAME = "RoofSansVariable.woff2"
 
 # Numbers the page states, as (covered, total). Keep them in sync with specimen.html.
 PAGE_FACTS = {
@@ -104,42 +112,67 @@ def stale_facts(font: TTFont, languages: dict) -> list[str]:
     return problems
 
 
-def woff2_base64(font_path: Path) -> str:
-    font = TTFont(font_path)
+def package_version() -> str:
+    """The package version, which names the release tag (``v`` + version)."""
+    return tomllib.loads(PYPROJECT_PATH.read_text(encoding="utf-8"))["project"]["version"]
+
+
+def font_version(font: TTFont) -> str:
+    """The version in the font's name table, such as ``1.100`` from ``Version 1.100``."""
+    return font["name"].getDebugName(5).removeprefix("Version ").split(";")[0].strip()
+
+
+def megabytes(size: int) -> str:
+    """Three significant figures in decimal megabytes, as the README states file sizes."""
+    mb = size / 1_000_000
+    return f"{mb:.1f} MB" if mb >= 10 else f"{mb:.2f} MB"
+
+
+def write_woff2(font_path: Path, out: Path) -> None:
+    """Write the font as WOFF2 the way ``roofsans-web`` writes its single file, so the page's
+    file is byte-identical to ``dist/web/woff2/RoofSansVariable.woff2`` and the release asset."""
+    font = TTFont(font_path, recalcTimestamp=False)
     font.flavor = "woff2"
-    buffer = io.BytesIO()
-    font.save(buffer, reorderTables=False)
-    return base64.b64encode(buffer.getvalue()).decode("ascii")
+    font.save(out)
 
 
 def build_site(roof: Path, out_dir: Path) -> Path:
     languages = json.loads(LANGUAGES_PATH.read_text(encoding="utf-8"))
-    problems = stale_facts(TTFont(roof), languages)
+    font = TTFont(roof)
+    problems = stale_facts(font, languages)
     if problems:
         raise SystemExit(
             "specimen.html states numbers that no longer match the font. Update the page text and "
             "PAGE_FACTS in site/build_site.py (and regenerate languages.json with Hyperglot if the "
             "language counts changed):\n  " + "\n  ".join(problems)
         )
+    out_dir.mkdir(parents=True, exist_ok=True)
+    woff2 = out_dir / WOFF2_NAME
+    write_woff2(roof, woff2)
     page = TEMPLATE_PATH.read_text(encoding="utf-8")
     replacements = {
-        "__FONT_DATA__": woff2_base64(roof),
         "__LATIN_LIST__": ", ".join(html.escape(n) for n in languages["scripts"]["Latin"]),
         "__CYRILLIC_LIST__": ", ".join(html.escape(n) for n in languages["scripts"]["Cyrillic"]),
+        "__RELEASE_TAG__": f"v{package_version()}",
+        "__FONT_VERSION__": font_version(font),
+        "__TTF_SIZE__": megabytes(roof.stat().st_size),
+        "__WOFF2_SIZE__": megabytes(woff2.stat().st_size),
     }
     for marker, value in replacements.items():
-        if page.count(marker) != 1:
-            raise SystemExit(f"specimen.html must contain {marker} exactly once")
+        if marker not in page:
+            raise SystemExit(f"specimen.html must contain {marker}")
         page = page.replace(marker, value)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    leftover = sorted(set(re.findall(r"__[A-Z0-9_]+__", page)))
+    if leftover:
+        raise SystemExit(f"specimen.html has markers build_site.py does not fill: {', '.join(leftover)}")
     out = out_dir / "index.html"
     out.write_text(page, encoding="utf-8", newline="\n")
     return out
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Build the self-contained Roof Sans specimen page.")
-    parser.add_argument("--font", type=Path, default=DEFAULT_ROOF, help="built font to embed")
+    parser = argparse.ArgumentParser(description="Build the Roof Sans specimen page and its font file.")
+    parser.add_argument("--font", type=Path, default=DEFAULT_ROOF, help="built font to publish with the page")
     parser.add_argument("--out", type=Path, default=Path("build/site"), help="output directory")
     args = parser.parse_args(argv)
     print(build_site(args.font, args.out))

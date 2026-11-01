@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -32,14 +33,15 @@ def test_stale_fact_is_reported(roof_path, monkeypatch):
     assert len(problems) == 1 and problems[0].startswith("glyphs:")
 
 
-def test_page_embeds_font_and_language_lists(roof_path, tmp_path):
+def test_page_links_font_and_fills_markers(roof_path, tmp_path):
     page = build_site.build_site(roof_path, tmp_path).read_text(encoding="utf-8")
-    assert "data:font/woff2;base64,d09GMg" in page  # "wOF2" signature
-    for marker in ("__FONT_DATA__", "__LATIN_LIST__", "__CYRILLIC_LIST__"):
-        assert marker not in page
+    assert (tmp_path / build_site.WOFF2_NAME).read_bytes()[:4] == b"wOF2"
+    assert f'url("{build_site.WOFF2_NAME}")' in page
+    assert re.search(r"__[A-Z0-9_]+__", page) is None
     assert "Standard Estonian" in page and "Ukrainian" in page
+    assert f"roof-sans@v{build_site.package_version()}/dist/web/" in page
 
-    assert len(page.encode("utf-8")) < 16_000_000
+    assert len(page.encode("utf-8")) < 1_000_000
     assert 'lang="zh-CN"' in page and 'data-lang="zh-CN"' in page
     assert 'data-sample="zh"' in page
     assert "6,763" in page and "3,008" in page and "5,034" in page
