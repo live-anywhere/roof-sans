@@ -1,6 +1,7 @@
 Copyright © 2024 Wanted Lab, Inc.
 Copyright 2024 The Wanted Sans Project Authors (https://github.com/wanteddev/wanted-sans)
 
+Copyright © 2023 Kil Hyung-jin
 Copyright (c) 2021, Kil Hyung-jin (https://github.com/orioncactus/pretendard),
 with Reserved Font Name 'Pretendard'.
 
@@ -17,6 +18,13 @@ with Reserved Font Name 'M PLUS 1'.
 Copyright 2014-2025 Adobe (http://www.adobe.com/), with Reserved Font
 Name 'Source'. Source is a trademark of Adobe in the United States
 and/or other countries.
+
+Copyright 2026 LiveAnywhere Inc. (https://github.com/live-anywhere/roof-sans)
+
+Wanted Sans Variable is a trademark of Wanted Lab, Inc.
+Wanted Logo is a trademark of Wanted Lab, Inc.
+Pretendard is a trademark of Kil Hyung-jin.
+Inter UI and Inter is a trademark of rsms.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
