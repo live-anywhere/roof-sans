@@ -33,7 +33,7 @@ The data goes to a temporary file in `inputs/`, is checked, and is then moved in
 
 Python dependencies are pinned with `==` in `pyproject.toml` and locked in `uv.lock`: Python 3.12 (3.12.13 in the current `.venv`), fontTools 4.60.2, skia-python 144.1, uharfbuzz 0.57.0, opentype-sanitizer 9.2.0, pytest 9.2.0, brotli 1.2.1, and the build backend uv_build 0.11.27. brotli was added for the specimen page: fontTools needs it to write WOFF2, which keeps the self-contained page near 5 MB instead of 16 MB with the TTF. The plan's selection counts were measured with Python 3.9's Unicode 13.0 data; Python 3.12's Unicode 15.0 data gives the same count for every rule.
 
-The package version in `pyproject.toml` is `1.2.0`. The font's own version, 1.200, is `VERSION` in `finalize.py`: package `X.Y.0` is font version `X.Y00`. The package does not use the font's form because PEP 440 would normalize `1.000` to `1.0`. Roof Sans 1.0.0 was font version 1.000; 1.1.0 (1.100) added weights below 400, and 1.2.0 removed them again (section 14).
+The package version in `pyproject.toml` is `1.3.0`. The font's own version, 1.300, is `VERSION` in `finalize.py`: package `X.Y.0` is font version `X.Y00`. The package does not use the font's form because PEP 440 would normalize `1.000` to `1.0`. Roof Sans 1.0.0 was font version 1.000; 1.1.0 (1.100) added weights below 400, 1.2.0 removed them again (section 14), and 1.3.0 removed Wanted Sans's logo and added the upstream trademark notices (section 15). The package metadata declares `license = "MIT"` with `license-files = ["LICENSE"]`: that covers the build code; the font is OFL 1.1.
 
 ## 2. What the build produces
 
@@ -43,14 +43,14 @@ The package version in `pyproject.toml` is `1.2.0`. The font's own version, 1.20
 2. Collect the Pretendard glyphs to copy and name them (`rules/h6_copy.py`).
 3. Plan the cmap.
 4. Run the rule modules in a fixed order: `h6_copy`, `r3_fullwidth`, `h4_letters`, `h5_symbols`, `h2_compose`, `h3_construct`, `h3_enclosed`. A later rule may use a glyph an earlier rule contributed; for example, unit squares use H4's `Ω`.
-5. Insert the glyphs into the Wanted Sans binary. If any planned code point has no glyph, the build stops with `no glyph for N planned code points (RULE: n, …)` (R11).
+5. Remove Wanted Sans's logo glyphs and its `liga` feature from the Wanted Sans binary (section 15), then insert the glyphs. If any planned code point has no glyph, the build stops with `no glyph for N planned code points (RULE: n, …)` (R11).
 6. Write the cmap (formats 4, 12, and 14), the OpenType features, and the names, then save the font and the license text.
 
 Counts on the pinned inputs:
 
 | Rule | Code points | What it does |
 | --- | --- | --- |
-| `WANTED` | 12,032 | Wanted Sans glyph, unchanged |
+| `WANTED` | 12,028 | Wanted Sans glyph, unchanged |
 | `H6_COPY` | 7,986 | Pretendard JP glyph copied unchanged (Han, kana, Japanese punctuation) |
 | `R3_FULLWIDTH` | 62 | fullwidth digits and letters from Wanted Sans ASCII |
 | `R3_SIGN` | 23 | fullwidth signs from Wanted Sans, at Pretendard's position |
@@ -62,12 +62,13 @@ Counts on the pinned inputs:
 | `H4_LETTER` | 1,012 | harmonized Pretendard letters (669 lowercase zone, 343 capital zone) |
 | `H5_SYMBOL` | 208 | aligned Pretendard symbols (OTHER 114, CURRENCY 30, ARROW 27, GEOMETRIC 20, MATH 17) |
 | `EXCLUDED_PUA` | 382 | Pretendard's Private Use Area, left out |
+| `EXCLUDED_LOGO` | 4 | Wanted Sans's logo, U+F0000–F0003, left out (section 15) |
 
-The cmap has 21,718 code points and 524 variation sequences. The font has 22,923 glyphs: 12,663 from Wanted Sans, 8,537 Pretendard copies, 1,699 glyphs for the other rules (`➉` shares `⑩`'s glyph), and 24 helper glyphs.
+The cmap has 21,714 code points and 524 variation sequences. The font has 22,919 glyphs: 12,659 from Wanted Sans, 8,537 Pretendard copies, 1,699 glyphs for the other rules (`➉` shares `⑩`'s glyph), and 24 helper glyphs.
 
-The counts above are without the Simplified Chinese extension. With it, `C1_HANZI` adds 3,260 code points, so the cmap has 24,978 code points and the font 28,404 glyphs (section 12).
+The counts above are without the Simplified Chinese extension. With it, `C1_HANZI` adds 3,260 code points, so the cmap has 24,974 code points and the font 28,400 glyphs (section 12). Before 1.3.0, both counts were 4 higher: the logo code points and glyphs.
 
-The build takes about 20 seconds with the extension (12–14 seconds without). The font committed before the extension (`roofsans-build --without-chinese` reproduces it) is 11,798,960 bytes with SHA-256 `6a01839de58c49b41cfa6bba64a6653ab8b66fcab74e7150ae55cd4173272325`. An earlier version of these notes gave `9927013a…8defe` (11,779,304 bytes), from a build before the last change to the committed font. Since the version became 1.200 (section 14), `roofsans-build --without-chinese` gives that font with only the version changed: 11,798,960 bytes, SHA-256 `4b4791d6815c4d6ee59bef123325db039c90691f27d1289647b29511f8ad0606`, which `test_a16_baseline.py` pins. Two builds from the same inputs are byte-identical (`test_build_determinism.py`).
+The build takes about 20 seconds with the extension (12–14 seconds without). The font committed before the extension (`roofsans-build --without-chinese` reproduces it) is 11,798,960 bytes with SHA-256 `6a01839de58c49b41cfa6bba64a6653ab8b66fcab74e7150ae55cd4173272325`. An earlier version of these notes gave `9927013a…8defe` (11,779,304 bytes), from a build before the last change to the committed font. With version 1.200 (section 14), `roofsans-build --without-chinese` gave that font with only the version changed: 11,798,960 bytes, SHA-256 `4b4791d6815c4d6ee59bef123325db039c90691f27d1289647b29511f8ad0606`. Since 1.3.0 (section 15), it gives that font without the logo and with the 1.3.0 names: 11,797,900 bytes, SHA-256 `93cd005f51f97c7d8f514ed8631e749a0f0e2331bf38cd4ab4d599d75cd0835f`, which `test_a16_baseline.py` pins. Two builds from the same inputs are byte-identical (`test_build_determinism.py`).
 
 ## 3. Glyph naming
 
@@ -102,6 +103,7 @@ The trap: in fontTools, `TTGlyphSet[name].width` returns the default `hmtx` adva
 - `JAN_SHARED` has 13 code points: U+3000, U+3008–3011, U+3014, U+3015 (R9). Earlier text said 11; that was a counting error. The ranges, the character list `　〈〉《》「」『』【】〔〕`, and both fonts agree on 13.
 - Zone (lowercase or capital) for every H4 letter comes from the Unicode category: `Lu Lt Nl` are capitals, everything else uses the lowercase zone. This includes Greek and Cyrillic.
 - 22 Greek and Cyrillic code points that are not letters (spacing accents, U+037E `;`, U+0387 `·`) fall under H4 with the lowercase zone, because H4 takes the Greek and Cyrillic blocks whole.
+- Wanted Sans's logo code points U+F0000–F0003 are `EXCLUDED_LOGO` (section 15), checked before `WANTED`. Pretendard JP maps none of them.
 - `〈 〉` U+2329/232A are outside the design's Han/Japanese blocks, so they are H5 symbols (category OTHER) and follow H5's weight rule, not the 930 plateau.
 
 ### H6 copies
@@ -258,29 +260,29 @@ The design first assumed that Wanted Sans's GPOS anchors are static. They are no
 
 ### OpenType features
 
-Wanted's GSUB lookups 0–81 and its GPOS lookups 0–14 keep their indices and contents (`src/roofsans/features/`). The Pretendard data is appended:
+Wanted's GSUB and GPOS lookups keep their order and contents, without the four lookups section 15 removes with the logo: GSUB 6–8 (`liga`) and GPOS 0 (the logo divider's kerning). Wanted's GSUB lookups 9–81 are therefore 6–78 in Roof Sans, and its GPOS lookups 1–14 are 0–13 (`src/roofsans/features/`). The numbers below are Roof Sans 1.3.0's. The Pretendard data is appended:
 
-- **GSUB lookups 82–98:** 82 `locl` KOR (Pretendard 34, 537 hanja), 83 `fwid` (71), 84 `pwid` (72), 85–88 `jp78 jp83 jp90 nlck` (73–76), 89–97 the kana weight alternates (77–85), and 98 `locl` JAN (13 code points). New features: `fwid jp78 jp83 jp90 locl(KOR) locl(JAN) nlck pwid ss20`. `ss20` carries the same 537 Korean forms that Pretendard calls `ss05`, because Wanted Sans uses `ss05` for a Latin alternate.
-- **Feature order (R38).** The OpenType spec requires the FeatureList to be sorted by tag, and OTS warned about the appended features. After the features are added, `sort_features` sorts the GSUB FeatureList by tag and remaps every feature index in the language systems and in FeatureVariations. Records with the same tag keep their order, so Wanted's 11 `locl` records come before `locl` KOR and `locl` JAN. Wanted's feature indices therefore change (for example, `rlig` moves from 46 to 54), but each language system turns on the same features, so shaping is unchanged (`test_wanted_behavior_unchanged`). GPOS needs no sort: its four records (`kern kern mark mark`) are already in order, and the build adds lookups to them but no features.
+- **GSUB lookups 79–95:** 79 `locl` KOR (Pretendard 34, 537 hanja), 80 `fwid` (71), 81 `pwid` (72), 82–85 `jp78 jp83 jp90 nlck` (73–76), 86–94 the kana weight alternates (77–85), and 95 `locl` JAN (13 code points). New features: `fwid jp78 jp83 jp90 locl(KOR) locl(JAN) nlck pwid ss20`. `ss20` carries the same 537 Korean forms that Pretendard calls `ss05`, because Wanted Sans uses `ss05` for a Latin alternate.
+- **Feature order (R38).** The OpenType spec requires the FeatureList to be sorted by tag, and OTS warned about the appended features. After the features are added, `sort_features` sorts the GSUB FeatureList by tag and remaps every feature index in the language systems and in FeatureVariations. Records with the same tag keep their order, so Wanted's `locl` records (6 since 1.3.0, which merged identical ones; 11 before) come before `locl` KOR and `locl` JAN. Wanted's feature indices therefore change (for example, `rlig` moves from 39 in the base without the logo to 49), but each language system turns on the same features, so shaping is unchanged (`test_wanted_behavior_unchanged`). GPOS needs no sort: its two records (`kern mark`; four before 1.3.0) are already in order, and the build adds lookups to them but no features.
 - **`ss20` UI name (R39).** `ss20` has stylistic-set `FeatureParams` like Wanted's `ss01`–`ss16`. Its name is Pretendard's own `ss05` name, "Korean localization", written on Windows only, like Wanted's feature names. It takes the next free name ID, 308.
 - Carried entries: KOR 537, `fwid` 103 of 154, `pwid` 103 of 154, `jp78` 586, `jp83` 386, `jp90` 160, `nlck` 214 of 215, kana 42, JAN 13. Entries are re-mapped by code point through the Roof cmap, so an entry drops when either end has no code point or no Roof glyph. In `fwid` and `pwid`, 51 entries each drop this way; their targets are Pretendard's unencoded `.full` glyphs. `nlck` drops `uni5349.001`, which is not copied.
 - **Scripts and languages.** `hani` and `kana` are added; their default LangSys is the `DFLT` default list plus `ss20 jp78 jp83 jp90 nlck fwid pwid`. Those seven features are also added to the default LangSys of `DFLT`, `latn`, and `hang`, but not to Wanted's Latin language systems (AZE, TRK, …). `KOR` is added under `hani`.
 - **`locl` JAN under `DFLT` and `latn` as well as `hani` and `kana` (design decision 12).** Script itemization gives brackets next to Latin text or digits the Latin or Common script. In `ID「abc」` a `hani`/`kana`-only lookup would leave narrow Korean brackets inside Japanese UI. `test_jan_brackets_after_latin` pins this. There is no `hang`/JAN language system.
 - **`〈〉` under JAN (R13).** Pretendard JP's own glyphs for U+3008/3009 are 698 units wide; its only alternates (`.hang`) are also 698. The design's intent is Pretendard JP's Japanese forms, so `locl` JAN maps all 13 shared code points to their `.pj` copies, and the two angle brackets stay 698 wide. The other 11 are 1920.
-- **Kana weight alternates (`rlig` FeatureVariations).** Pretendard's thresholds are converted from Pretendard's normalized axis to the Roof axis (wght = 400 + 530·s, or 400 + 355·s below 0), clamped to [0, 1], and rounded to F2Dot14. The result is merged with Wanted's own record (`rlig` → lookups 35 and 74 at t ≥ 0.41668701171875) into one record per distinct threshold, in descending order. Pretendard's three negative thresholds all clamp to 0, so only the first is kept.
+- **Kana weight alternates (`rlig` FeatureVariations).** Pretendard's thresholds are converted from Pretendard's normalized axis to the Roof axis (wght = 400 + 530·s, or 400 + 355·s below 0), clamped to [0, 1], and rounded to F2Dot14. The result is merged with Wanted's own record (`rlig` → lookups 32 and 71 at t ≥ 0.41668701171875; Wanted Sans's 35 and 74) into one record per distinct threshold, in descending order. Pretendard's three negative thresholds all clamp to 0, so only the first is kept.
 
   | t ≥ | lookups |
   | --- | --- |
-  | 0.61163330078125 | 35, 74, 89–97 |
-  | 0.6099853515625 | 35, 74, 89–96 |
-  | 0.41668701171875 | 35, 74, 89–95 |
-  | 0.38836669921875 | 89–95 |
-  | 0.38665771484375 | 89–94 |
-  | 0.1666259765625 | 89–93 |
-  | 0.16497802734375 | 89–92 |
-  | 0.0 | 89–91 |
+  | 0.61163330078125 | 32, 71, 86–94 |
+  | 0.6099853515625 | 32, 71, 86–93 |
+  | 0.41668701171875 | 32, 71, 86–92 |
+  | 0.38836669921875 | 86–92 |
+  | 0.38665771484375 | 86–91 |
+  | 0.1666259765625 | 86–90 |
+  | 0.16497802734375 | 86–89 |
+  | 0.0 | 86–88 |
 
-- **GPOS lookups 15–18.** 15 is a kern lookup with the 9 Pretendard pairs whose two glyphs are both copied (all between `.pj` quotes and `〈〉`, none weight-dependent). 16–18 are mark-to-base lookups for H4 marks: top (`uni0309 uni0311 uni0340 uni0341 uni0342 uni0344 uni20F0`) and bottom (`uni0319 uni031E uni032A uni0332 uni0347`) on lookup 7's 530 bases, and horn (`uni031B`) on `o u O U`. They are appended to Wanted's existing `kern` and `mark` features, so they apply in every language system.
+- **GPOS lookups 14–17.** 14 is a kern lookup with the 9 Pretendard pairs whose two glyphs are both copied (all between `.pj` quotes and `〈〉`, none weight-dependent). 15–17 are mark-to-base lookups for H4 marks: top (`uni0309 uni0311 uni0340 uni0341 uni0342 uni0344 uni20F0`) and bottom (`uni0319 uni031E uni032A uni0332 uni0347`) on the 530 bases of Wanted Sans's lookup 7 (6 in Roof Sans), and horn (`uni031B`) on `o u O U`. They are appended to Wanted's existing `kern` and `mark` features, so they apply in every language system. Since 1.3.0, GPOS `latn` has no language systems of Wanted's own: after identical records were merged, AZE, TRK, and the others listed the same features as the `latn` default, so the subsetter dropped them and those languages use the default.
 - **13 of 164 H4 combining marks have mark-to-base positioning.** The other 151 have no usable Pretendard anchor or no top/bottom class. The build prints them to stderr. Precomposed H2 glyphs cover normal text.
 - **Variable anchors.** Wanted's anchors vary with weight through device tables. The new base anchors take masters at `COMPOSITE_LOCS`, so decomposed input lands where the precomposed H2 glyph puts the mark (for example, `ơ`'s horn base anchor moves +164 in x at 1000). 46 rows are appended to Wanted's GDEF variation store, with three new regions. `test_decomposed_marks` compares decomposed shaping with the precomposed glyph within ±2 units, not with the base anchor x, because Pretendard's hook ink center sits 68 units right of its anchor by design (R26).
 - **GDEF.** Class 3 (mark) for the 164 H4 combining marks; class 1 (base) for every other new glyph.
@@ -288,12 +290,13 @@ Wanted's GSUB lookups 0–81 and its GPOS lookups 0–14 keep their indices and 
 
 ### Names, metrics, and licensing
 
-- Name IDs below 256 are exactly 0–6, 13, 14, and 25 (R33). IDs 7 (trademark), 10 (description), and every localized record are dropped. Wanted's platform layout is kept: 0–6, 13, and 14 on Mac (1, 0, 0) and Windows (3, 1, 0x409); 25 and IDs 256 and up on Windows only.
+- Name IDs below 256 are exactly 0–7, 13, 14, and 25 (R33). ID 10 (description) and every localized record are dropped. Wanted's platform layout is kept: 0–7, 13, and 14 on Mac (1, 0, 0) and Windows (3, 1, 0x409); 25 and IDs 256 and up on Windows only. Before 1.3.0, ID 7 was dropped too.
+- Name ID 7 (since 1.3.0) lists every trademark notice of the inputs' name ID 7, one sentence each, joined with spaces, in input order without repeats: Wanted Sans Variable and the Wanted logo (Wanted Lab), Source (Adobe), Pretendard (Kil Hyung-jin), and Inter (rsms). Pretendard's semicolon-separated notices are split into sentences and get a final period.
 - Records 256 and up (the axis, instance, and feature names) replace `WantedSansVariable` with `RoofSans` and `Wanted Sans` with `Roof Sans`. Instance PostScript names are `RoofSans-<Style>`.
-- Name ID 0 is Wanted Sans's own name ID 0 ("Copyright © 2024 Wanted Lab, Inc."), followed by every upstream `Copyright` line, joined with spaces, without the Reserved Font Name clauses and their commas.
-- `OFL.txt` starts with Wanted Sans's name ID 0 notice when Wanted's `OFL.txt` header does not already contain it (it does not). Then come the header of Wanted's `OFL.txt` and the header of Pretendard's `LICENSE`, both verbatim (every copyright line, every Reserved Font Name line, and Adobe's sentence "Source is a trademark of Adobe…"), then Wanted's OFL 1.1 text. The file is written as UTF-8 with `\n` line ends.
+- Name ID 0 lists, per source in license order, the input font's own name ID 0 when its license header does not state the same years and holder, then the header's `Copyright` lines without the Reserved Font Name clauses and their commas, all joined with spaces; LiveAnywhere's line `Copyright 2026 LiveAnywhere Inc. (https://github.com/live-anywhere/roof-sans)` (`ROOF_COPYRIGHT`) comes last. Two font notices are added this way: Wanted Sans's "Copyright © 2024 Wanted Lab, Inc." and, since 1.3.0, Pretendard JP's "Copyright © 2023 Kil Hyung-jin" (its `LICENSE` says 2021). Source Han Sans CN's name ID 0 matches its license header. `finalize.states` compares the years and holder, ignoring "Copyright", "©", "(c)", line breaks, and the Reserved Font Name clause.
+- `OFL.txt` has, per source, the font notice name ID 0 adds (above) followed by the source's license header verbatim: Wanted's `OFL.txt`, then Pretendard's `LICENSE` (every copyright line, every Reserved Font Name line, and Adobe's sentence "Source is a trademark of Adobe…"), then LiveAnywhere's copyright line, then each trademark notice of name ID 7 that those headers do not already state (all but Adobe's), one per line, then Wanted's OFL 1.1 text. The file is written as UTF-8 with `\n` line ends.
 - The plan kept Pretendard's Inter line ("Copyright (c) 2016 The Inter Project Authors") in both places: Pretendard's Latin, Greek, and Cyrillic come from Inter, and H4 copies those drawings.
-- `head.fontRevision` 1.200 (1.000 until section 14); `created` and `modified` are fixed at 2026-10-31T00:00:00Z so the build is deterministic. `OS/2.achVendID` is `ROOF`. Unicode ranges are recalculated (bits 7, 9, 24, 30, 39, 40, 49, 50, 55, 59, 61, 64, 67, 68, and 116 are added); code page bit 17 (Japanese) is added. `OS/2.xAvgCharWidth` is recalculated from every nonzero advance (R39): 1770, where Wanted's value is 1714.
+- `head.fontRevision` 1.300 (1.000 until section 14, 1.200 until section 15); `created` and `modified` are fixed at 2026-10-31T00:00:00Z so the build is deterministic. `OS/2.achVendID` is `ROOF`. Unicode ranges are recalculated (bits 7, 9, 24, 30, 39, 40, 49, 50, 55, 59, 61, 64, 67, 68, and 116 are added); code page bit 17 (Japanese) is added. `OS/2.xAvgCharWidth` is recalculated from every nonzero advance (R39): 1770, where Wanted's value is 1714.
 - Metrics are Wanted's, unchanged: `hhea` 1950 / −494 / 0, `OS/2` typo 1752 / −296 / 0 with `USE_TYPO_METRICS` off, win 1950 / 494, x-height 1032, cap height 1448.
 - The build writes `OFL.txt` next to the font. A default-path build also copies it to the repository root.
 
@@ -428,7 +431,7 @@ The design is `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`; the plan is `docs/R
 | C3, `.zhs` punctuation | 9 (`！：；？‘’“”·`) |
 | Non-GB 2312 code points switched through shared glyphs | 199 (U+2Exx 6, U+2Fxx 81, U+F9xx 79, U+FAxx 33) |
 
-The font has 24,978 code points and 28,404 glyphs (22,923 + 3,260 + 2,212 + 9). Both format 4 cmap subtables compile to 51,206 bytes (5,045 segments), 14,329 bytes under the 65,535-byte limit; a test asserts the limit. GSUB has 103 lookups.
+The font had 24,978 code points and 28,404 glyphs (22,923 + 3,260 + 2,212 + 9); since 1.3.0 it has 24,974 and 28,400, without the logo (section 15). Both format 4 cmap subtables compile to 51,206 bytes (5,045 segments), 14,329 bytes under the 65,535-byte limit; a test asserts the limit. GSUB has 100 lookups (103 before 1.3.0).
 
 ### Calibration
 
@@ -463,11 +466,11 @@ The outliers at 400 come from small shape differences between Pretendard's Sourc
 
 ### OpenType
 
-- GSUB lookups 99 (`zhs_hanzi`, 2,212 entries), 100 (`zhs_punct`, 17: the 13 JAN mappings and `！：；？`), and a chained-context quotes lookup with a referenced single substitution. Language system `ZHS ` under `hani` (all three) and under `latn` and `DFLT` (punctuation and quotes).
+- GSUB lookups 96 (`zhs_hanzi`, 2,212 entries), 97 (`zhs_punct`, 17: the 13 JAN mappings and `！：；？`), and a chained-context quotes lookup with a referenced single substitution. Language system `ZHS ` under `hani` (all three) and under `latn` and `DFLT` (punctuation and quotes).
 - The quotes lookup skips `’` and `·` between two "alnum" glyphs: every glyph the Roof cmap maps from a code point below U+3000 with Unicode category L* or Nd. `It’s`, `McDonald’s`, `l·l`, and `2’30` keep Wanted Sans's glyphs; `他说“OK”。`, `“abc”`, `列奥纳多·达·芬奇` switch.
 - The quotes lookup applies in every ZHS script, not only `hani`: with `hani` only, `他说“OK”。` gave a 1920-wide `“` (Han run) and a 796-wide `”` (Latin run).
 - HarfBuzz (uharfbuzz 0.57.0) selects ZHS for `zh`, `zh-CN`, `zh-Hans`, `zh-SG`, `zh-Hans-CN`, `zh-Hans-HK`, `cmn`, and `wuu`; not for `zh-TW`, `zh-HK`, `zh-Hant`, `zh-MO`, or `yue`.
-- With `ss20` on under `zh-CN`, a hanzi in both sets (258, for example `乳`) takes the Korean form, because lookup 82 runs before 99. A test pins it.
+- With `ss20` on under `zh-CN`, a hanzi in both sets (258, for example `乳`) takes the Korean form, because lookup 79 runs before 96. A test pins it.
 - Every `.zhs` glyph and every C1 glyph is GDEF class 1.
 
 ### Licensing and OS/2
@@ -480,7 +483,7 @@ The outliers at 400 come from small shape differences between Pretendard's Sourc
 - Output: 16,230,096 bytes, SHA-256 `da7a7fe8197d2b5209cac0a9b6a313e42a975762f2015ab26b5be3dc7e75b87d`, about 20 seconds to build. The pre-extension font was 11,798,960 bytes; the estimate was 15.9 MB.
 - The specimen page is 7.7 MB (WOFF2 inside).
 - Tests: `uv run pytest` passed 302 tests in 5 minutes 5 seconds on 2026-11-01. It built `build/test/` (`da7a7fe8…`, equal to the default-path build) and `build/test-baseline/` (`6a01839d…`).
-- These hashes are Roof Sans 1.000's. Version 1.200 changes only `head` and `name` (section 14); the font is now SHA-256 `13c1e443…eb8c9af`.
+- These hashes are Roof Sans 1.000's. Version 1.200 changed only `head` and `name` (section 14; SHA-256 `13c1e443…eb8c9af`). Version 1.300 is in section 15.
 - Reviews: a Codex builder check of the design; a Claude review of the implementation (no blocker; its findings are fixed or recorded above).
 - Visual review (Acceptance 17): the specimen sheets at 400, 700, and 1000 show no jump in size, position, or weight between C1 hanzi and present hanzi under `zh-CN`.
 - Flutter web (Acceptance 18, Flutter 3.44.9, CanvasKit): `TextStyle(locale: Locale('zh', 'CN'))` applies the C2 forms and the Chinese punctuation; untagged Chinese text draws every hanzi from Roof Sans with the Japanese forms; line metrics still match PretendardJP. Android is still outstanding (section 11).
@@ -489,7 +492,7 @@ The outliers at 400 come from small shape differences between Pretendard's Sourc
 
 `roofsans-web` (`src/roofsans/web.py`) writes `dist/web/`: the whole font as WOFF2, a dynamic subset of 245 WOFF2 files, and a CSS file for each. The design, the split, the measured download sizes, and the known cross-file limits are in `docs/ROOF_SANS_WEB_DISTRIBUTION.md`. Facts the tests rely on:
 
-- The split reads only the built font and the three `slices_*` inputs. It does not change the font, so the font's SHA-256 stays `13c1e443…eb8c9af` (section 14).
+- The split reads only the built font, the `OFL.txt` that `roofsans-build` writes next to it, and the three `slices_*` inputs. It does not change the font. Since 1.3.0, `dist/web/OFL.txt` is a copy of that license file, and both CSS headers point to it; the build stops if the file is missing.
 - The output is deterministic: two runs give byte-identical files. `test_committed_dist_matches_a_fresh_build` compares a fresh build of the committed font with the committed `dist/web/`, so a font change without a new `roofsans-web` run fails the tests.
 - Each subset file's cmap is its `unicode-range` plus the bidi mirror of any bracket in it (fontTools' default `bidi_closure`), so a mirrored bracket in right-to-left text comes from the same file.
 - Each subset file also holds the variation sequences (format 14 cmap) of its base characters. Requesting only the bases dropped all 524 sequences; `subset_request` adds the selectors.
@@ -524,3 +527,48 @@ Result, compared table by table with fontTools against the committed Roof Sans 1
 - In Chrome, the specimen page's weights tab, sliders, and named-weight list show 400–1000 and seven weights.
 
 To bring the light weights back, start from tag `v1.1.0` or the `feature/light-weights` branch, and re-measure every value in this section.
+
+## 15. Licensing changes in 1.3.0
+
+On 2026-11-02 a license review found that LiveAnywhere's use of Roof Sans fits the SIL OFL 1.1 of all three inputs, with two gaps. The owner decided on 1.3.0 with these changes:
+
+1. **Remove Wanted Sans's logo.** Wanted Sans maps its logo to U+F0000–F0003: the logo lockup, the symbol, the wordmark "wanted", and a divider. Its `liga`, on by default, turned the text `wanted_logo` into U+F0000 and " × ", " X ", or " | " after the logo into the divider. Wanted Sans's name ID 7 says "Wanted Logo is a trademark of Wanted Lab, Inc.", and the OFL grants no trademark rights (OFL FAQ 3.7). A LiveAnywhere font has no use for another company's logo, and user text could draw it.
+2. **Keep the upstream trademark notices.** OFL FAQ 3.7 asks derivative fonts to keep them. Roof Sans 1.0.0–1.2.0 dropped name ID 7, so only Adobe's sentence, which the license headers repeat, was left.
+3. **Add LiveAnywhere's copyright line** for its changes, in name ID 0 and `OFL.txt`. No Reserved Font Name is added; OFL FAQ 5.10 allows adding one in a later version. The independent review of these changes also found that Pretendard JP's own notice, "Copyright © 2023 Kil Hyung-jin" in its name ID 0, was missing (its `LICENSE` says 2021); 1.3.0 keeps every input font's own notice the way it already kept Wanted Sans's (section 6).
+4. **Ship `OFL.txt` with the web files**, so the release's web zip carries the license text and not only the link in the font's name table (OFL FAQ 1.10).
+5. **State the Octicons license** on the specimen page in full.
+6. **License the build code under MIT** (`LICENSE`). The fonts stay under the OFL.
+
+### Removing the logo
+
+- `selection.WANTED_LOGO` lists U+F0000–F0003 and `Rule.EXCLUDED_LOGO` claims them before `WANTED`; `planned_cmap` leaves them out.
+- `assemble.drop_wanted_logo` runs the fontTools subsetter on the Wanted Sans binary before any glyph is inserted. Its options keep every table, name record, glyph name, and feature except `liga`; the glyph set is every glyph but the four logo glyphs (`uF0000` is a composite of `uF0001` and `uF0002`; no other glyph uses them). The function fails if a logo glyph survives.
+- Compared table by table with the input, the subset made these glyph and layout changes, plus the counts and maxima derived from them (`maxp.numGlyphs` 12,663 → 12,659, `maxPoints` 163 → 141, `maxCompositePoints` 229 → 116, `maxCompositeContours` 11 → 8):
+  - `glyf`, `gvar`, `hmtx`, `post`, and `cmap` lose the four glyphs and code points. The order of the other glyphs is unchanged.
+  - GSUB loses `liga` and its lookups 6–8 (lookup 6 is reached only from 8). The subsetter also merges feature records with the same tag and lookups: `ccmp` 2 → 1 and `locl` 11 → 6, so 69 records become 62. Every language system and the `rlig` FeatureVariations record list the same features and lookups as before.
+  - GPOS loses lookup 0, whose only first glyph was the divider (one pair class, −90), and the logo glyphs' pairs in lookups 2 and 3. `kern` and `mark` records merge 4 → 2; Wanted's 10 `latn` language systems then equal the `latn` default and are removed, so those languages fall back to the default with the same features.
+  - GDEF loses the two logo glyph classes, and its VarStore's `NumShorts` is recomputed (1 → 0) with every row unchanged.
+  - `head.xMax`, `hhea.xMaxExtent`, and `hhea.advanceWidthMax` drop, because the logo lockup (advance 9436) was the widest glyph: Roof Sans has `xMax` 5381 and `advanceWidthMax` 5817 instead of 9346 and 9436. `OS/2` (`usMaxContext` 14, `xAvgCharWidth` 1799, ranges) is unchanged.
+- Shaping check, run while building 1.3.0: HarfBuzz shaped every Wanted Sans code point but the logo (12,027, in runs of 150) and some sample words with the input and with the base without the logo, at `wght` 400, 700, and 1000, under 12 languages (none, `ko`, and the 10 Latin language systems) with default features, and with each of Wanted's 59 other feature tags on alone (no language and `tr`). All 35,880 results were identical. `wanted_logo` shapes like the input with `liga` off.
+- Tests: Acceptance 1 skips the logo code points; `test_no_wanted_logo` (A4) and `test_no_logo_ligature` (A7) pin the removal.
+
+### Notices
+
+- Name ID 0, name ID 7, and `OFL.txt` are described in section 6, "Names, metrics, and licensing".
+- Every web subset file carries the name table, which grows 1,146 bytes before compression. The 245 subset files grow 59,620 bytes in total, about 243 bytes each.
+- `dist/web/OFL.txt` is a byte copy of the `OFL.txt` next to the font (section 13).
+- The specimen page footer states LiveAnywhere's copyright, the upstream trademarks, and that the font is OFL 1.1 and the build code and page MIT. The Octicons MIT license (`Copyright (c) 2026 GitHub Inc.`) is in an HTML comment before the icon symbols, and the footer names it. The `liga` row of the features tab is gone: the page now counts 66 features, 7 of them on by default.
+- `LICENSE` is the MIT license, `Copyright (c) 2026 LiveAnywhere Inc.`, for the build code, tests, specimen page, and documentation. `OFL.txt`, `fonts/OFL.txt`, and `dist/web/OFL.txt` cover the fonts.
+
+### Results
+
+| File | 1.2.0 | 1.3.0 |
+| --- | --- | --- |
+| `fonts/RoofSansVariable.ttf` | 16,230,096 | 16,228,900 |
+| `dist/web/woff2/RoofSansVariable.woff2` | 5,740,140 | 5,739,928 |
+| `dist/web/woff2-dynamic-subset/` (245 files) | 7,799,040 | 7,858,660 |
+
+- The font is SHA-256 `4543b9dc2c157aed7a4bea8542d93e1a729b0168da3f93079a0b554fdd06d7fc`: 24,974 code points, 28,400 glyphs, 66 feature tags.
+- `--without-chinese` gives 11,797,900 bytes, SHA-256 `93cd005f51f97c7d8f514ed8631e749a0f0e2331bf38cd4ab4d599d75cd0835f` (section 2).
+- Tests: `ROOF_FONT=fonts/RoofSansVariable.ttf ROOF_BASELINE=<the --without-chinese build> uv run pytest` passed 360 tests in 5 minutes 44 seconds on 2026-11-02, including the determinism check and the comparison of `dist/web/` with a fresh web build.
+- Review: a fresh Codex worker (gpt-6.1-sol, high) reviewed the changes and rebuilt the font and web files independently, byte for byte. It found the missing Pretendard notice (fixed above) and two stale passages in the docs (fixed).

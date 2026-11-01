@@ -1,6 +1,6 @@
 # Roof Sans — Design
 
-Status: approved for planning; revised with facts found while planning (2026-10-31); extended with Simplified Chinese (2026-11-01, `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`); weights below 400 added in 1.1.0 and removed in 1.2.0 (2026-11-01, build notes section 14)
+Status: approved for planning; revised with facts found while planning (2026-10-31); extended with Simplified Chinese (2026-11-01, `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`); weights below 400 added in 1.1.0 and removed in 1.2.0 (2026-11-01, build notes section 14); Wanted Sans's logo removed and the license notices completed in 1.3.0 (2026-11-02, build notes section 15)
 
 ## Intent
 
@@ -26,6 +26,7 @@ Wanted Sans and Pretendard JP use 2048 UPM, are TrueType-flavored variable fonts
 ## Glyph selection rule
 
 1. **Every code point Wanted Sans maps stays Wanted Sans** as the default glyph. This includes Hangul, Latin, digits, punctuation, symbols, and the 13 CJK brackets/space Wanted Sans already has (`　〈〉《》「」『』【】〔〕`). Rule H1 adds Japanese alternates for those 11, reached only through `locl`.
+   - **Excluded: Wanted Sans's logo, U+F0000–F0003** (the logo lockup, symbol, wordmark, and divider), together with the `liga` feature that forms it from the text `wanted_logo`. The logo is Wanted Lab's trademark, and the OFL grants no trademark rights. *(Owner's decision, 2026-11-02.)*
 2. **Code points Wanted Sans lacks, inside the Han/Japanese blocks, come from Pretendard JP.** The blocks are: CJK Radicals Supplement, Kangxi Radicals, CJK Symbols and Punctuation, Hiragana, Katakana, Katakana Phonetic Extensions, Enclosed CJK Letters and Months, CJK Compatibility, CJK Unified Ideographs and Extension A, CJK Compatibility Ideographs, Halfwidth and Fullwidth Forms, and the Supplementary Ideographic Plane. Pretendard JP adds roughly 7.7k Han code points, 184 kana, and the related punctuation. Glyphs in these blocks that Pretendard builds from Latin letters or digits (unit squares such as `㎏㎡`) are rebuilt from Wanted Sans parts per rule H3. *(Owner's decision: their Latin follows Wanted Sans.)*
 3. **Exception — fullwidth digits and letters (U+FF10–FF19, FF21–FF3A, FF41–FF5A, 62 code points):** build them from Wanted Sans's ASCII glyphs, centered in Pretendard's fullwidth advance (1920 units). The owner asked for Wanted Sans digits throughout. These are Wanted Sans glyphs in every respect except position: they follow Wanted Sans's variation data across the whole 400–1000 range, with no 930 plateau. Wanted Sans's advances vary with weight (`0` is 1280/1373/1440 at 400/750/1000), so each glyph's centering offset varies too and needs its own variation data. Fullwidth punctuation and halfwidth katakana still come from Pretendard JP, because their placement inside the em box is Japanese-specific. One exception: 23 fullwidth signs that Pretendard builds from a single Latin glyph (`！＂＃＄％＆＇＋，．：；＜＞？＠＾｀｜￠￡￥￦`) are rebuilt from the same-named Wanted Sans glyph. The new glyph keeps Pretendard's placement in the em box, so `，` stays at the bottom left and `！` stays centered; only the drawing changes. *(Designer's call.)*
 4. **Every other code point Pretendard JP has and Wanted Sans lacks is added, harmonized to Wanted Sans** per "Design harmonization" (about 1,535 code points: Latin Extended and Vietnamese, IPA, Greek, Cyrillic, combining marks, arrows, math, currency, enclosed and number forms). *(Owner's decision.)*
@@ -146,7 +147,7 @@ Prefer, in order: build the glyph from Wanted Sans parts, then adjust a Pretenda
 
 ## OpenType features
 
-- **Wanted Sans's GSUB and GPOS stay intact**, including its `ss01`–`ss16`, `cv01`–`cv22`, `locl`, `kern`, and `mark`. Tags keep Wanted Sans's meanings.
+- **Wanted Sans's GSUB and GPOS stay intact**, including its `ss01`–`ss16`, `cv01`–`cv22`, `locl`, `kern`, and `mark`. Tags keep Wanted Sans's meanings. The exception is `liga`, which only forms Wanted's logo; it leaves with the logo (selection rule 1), and so does the kerning of the logo's divider.
 - **Carry over Pretendard JP's CJK features for the added glyphs:**
   - `locl` under script `hani`, language `KOR`: 537 Korean hanja forms, applied automatically when text is tagged Korean (Flutter `locale: ko`).
   - New `locl` lookups for language `JAN` under `kana`, `hani`, `latn`, and `DFLT` (rule H1).
@@ -184,14 +185,19 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
 
 ## Naming and licensing
 
-- Family `Roof Sans`, variable file `RoofSansVariable.ttf`, version 1.200 (build notes section 14). Names must not contain the Reserved Font Names in Pretendard's OFL: "Pretendard", "Source", "Inter", or "M PLUS 1". "Wanted Sans" has no RFN.
+- Family `Roof Sans`, variable file `RoofSansVariable.ttf`, version 1.300 (build notes section 15). Names must not contain the Reserved Font Names in Pretendard's OFL: "Pretendard", "Source", "Inter", or "M PLUS 1". "Wanted Sans" has no RFN.
 - License: SIL OFL 1.1. The shipped `OFL.txt` lists every upstream copyright line verbatim:
   - Pretendard: Kil Hyung-jin
   - Adobe (Source Han Sans), from Pretendard's `LICENSE` and, for rules C1–C3, from Source Han Sans's own `LICENSE.txt` header
   - The Inter Project Authors (Pretendard's Latin, Greek, and Cyrillic come from Inter)
   - The M+ FONTS Project Authors (M PLUS 1)
   - Wanted Lab, Inc. / The Wanted Sans Project Authors
+  - LiveAnywhere Inc., for its changes (`Copyright 2026 LiveAnywhere Inc.`), after the upstream lines. It adds no Reserved Font Name.
+  - Each input font's own copyright notice (its name ID 0) that its license file does not state: Wanted Lab's (2024) and Kil Hyung-jin's (2023).
 - Name ID 0 summarizes them.
+- Trademark notices stay (OFL FAQ 3.7): name ID 7 lists every trademark notice of the inputs' name ID 7 (Wanted Sans and the Wanted logo, Pretendard, Inter, Source), and `OFL.txt` adds the ones the copied license headers lack.
+- The web files ship with a copy of `OFL.txt`.
+- The build code, tests, specimen page, and documentation are under the MIT license (`LICENSE`, LiveAnywhere Inc.). The specimen page states the MIT license of the Octicons icons it uses in full.
 
 ## Deliverables
 
@@ -199,17 +205,17 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
 - A reproducible build script in this repo. It takes the two pinned input files and produces the font with no manual steps; Python with pinned dependencies is expected.
 - A verification step (see acceptance).
 - `README.md`: what Roof Sans is, how to build it, and Flutter usage. The usage section covers a pubspec snippet, `FontWeight` on Flutter ≥ 3.41, `fontVariations` on older versions, and Korean forms via locale or `ss20`.
-- License files.
+- License files: `OFL.txt` for the font (also in `fonts/` and `dist/web/`), `LICENSE` (MIT) for the code.
 
 ## Acceptance
 
-1. For every code point Wanted Sans maps, the default outline and advance at `wght` 400, 750, and 1000 match Wanted Sans exactly.
+1. For every code point Wanted Sans maps, except its logo (U+F0000–F0003), the default outline and advance at `wght` 400, 750, and 1000 match Wanted Sans exactly.
 2. For every glyph copied unchanged from Pretendard JP (rule H6, plus glyphs reached through variation sequences and carried-over CJK features), the outline and advance at `wght` 400, 700, and 930 match Pretendard JP.
    - For Han, kana, and Japanese punctuation, the outline at 1000 equals the one at 930.
 3. For each synthesized fullwidth digit or letter, at `wght` 400, 750, and 1000:
    - the outline equals the matching Wanted Sans ASCII outline, shifted horizontally so it sits centered in the advance;
    - the advance is 1920.
-4. The cmap equals the selection rule above, with no unexpected additions or losses, and no PUA code point from Pretendard. All 524 variation sequences resolve to the same outlines as in Pretendard JP.
+4. The cmap equals the selection rule above, with no unexpected additions or losses, no PUA code point from Pretendard, and none of Wanted Sans's logo code points or glyphs. All 524 variation sequences resolve to the same outlines as in Pretendard JP.
 5. Harmonization checks, at `wght` 400, 550, 700, 850, and 1000 (the in-between weights catch interpolation drift):
    - H4, heights: zone heights equal Wanted Sans's (x-height 1032, cap height 1448, descenders, overshoots) ±2 units.
    - H4, weights:
@@ -222,7 +228,7 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
    - H2/H3: rebuilt composites reference Wanted Sans glyphs wherever the rule says so.
 6. Outline sanity for every glyph sampled past 930 or offset by H4/H5: contour directions keep their sign, and no collapsed counter (each counter keeps a positive area at every master). A new self-intersection fails when the crossing contour twists on its own, or when the total winding around it changes sign (ink in a hole, or a hole in ink). A same-sign overlap, where the fill equals the union of the strokes, passes. A twist whose reversed lobe is ≤ 1 unit² inside an open counter passes and is listed. Crossings the source already has at the sampled weight are excused one-to-one.
 7. Features:
-   - Wanted Sans feature behavior is unchanged on a Latin/Hangul sample.
+   - Wanted Sans feature behavior is unchanged on a Latin/Hangul sample. There is no `liga`: `wanted_logo` stays text.
    - `locl` KOR and `ss20` switch the 537 hanja.
    - `locl` JAN switches the 13 shared CJK punctuation code points to Pretendard JP's forms: fullwidth, except `〈〉`, which Pretendard JP draws 698 units wide.
    - `jp90` and friends still work.
@@ -252,7 +258,7 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
 
 ## Anti-goals
 
-- Any change to Wanted Sans's default shapes, spacing, metrics, or feature behavior for code points it already covers. That would defeat the reason for the font.
+- Any change to Wanted Sans's default shapes, spacing, metrics, or feature behavior for code points it already covers. That would defeat the reason for the font. The logo (selection rule 1) is the one exception.
 - Letters of two different x-heights inside one word, or symbols sitting off Wanted Sans's axes.
 - Pretendard-styled digits or Latin letters showing up where Wanted Sans parts exist.
 - A Han/kana weight that falls back to Regular above 930.
@@ -280,6 +286,8 @@ Owner's decisions (2026-10-31):
 4. Latin parts of Pretendard glyphs (unit squares and similar) follow Wanted Sans.
 5. Overlap flags stay; no font-side workaround for Flutter ≤ 3.32.
 6. Pretendard letters that cannot be built from Wanted Sans parts are matched to Wanted Sans in height and weight (H4).
+
+Owner's decisions (2026-11-02), after a license review: Wanted Sans's logo glyphs and `liga` are removed; the upstream trademark notices are kept in name ID 7 and `OFL.txt`; LiveAnywhere's copyright line is added; `OFL.txt` ships with the web files; the specimen page states the Octicons license; the build code is MIT. Released as 1.3.0 (build notes section 15).
 
 Owner's decisions (2026-11-01): Simplified Chinese for the app's Chinese mode, covering all GB 2312 hanzi, in the same single file; splitting it into its own file later must stay possible. The designer's calls for that extension are listed in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`.
 

@@ -2,18 +2,19 @@
 
 Roof Sans is 16.2 MB as TTF and 5.74 MB as WOFF2. A web page that shows a few sentences of Korean should not download all of it. Like Pretendard's "dynamic subset", the web build splits the font into small WOFF2 files and lists each file's code points in a CSS `unicode-range`. A browser then downloads only the files whose range covers characters on the page.
 
-`roofsans-web` (`src/roofsans/web.py`) builds everything in `dist/web/` from `fonts/RoofSansVariable.ttf`. `dist/web/` is committed, because jsDelivr serves the files from a Git tag.
+`roofsans-web` (`src/roofsans/web.py`) builds everything in `dist/web/` from `fonts/RoofSansVariable.ttf` and the `fonts/OFL.txt` next to it. `dist/web/` is committed, because jsDelivr serves the files from a Git tag.
 
 ## Contents of `dist/web/`
 
 | Path | What it is |
 | --- | --- |
-| `roofsans-dynamic-subset.css` | One `@font-face` per subset file, each with a `unicode-range`. 159,764 bytes. |
-| `woff2-dynamic-subset/RoofSansVariable.subset.N.woff2` | 245 files, 7,799,040 bytes in total, median 26,092 bytes, largest 114,424 bytes. |
+| `roofsans-dynamic-subset.css` | One `@font-face` per subset file, each with a `unicode-range`. 159,751 bytes. |
+| `woff2-dynamic-subset/RoofSansVariable.subset.N.woff2` | 245 files, 7,858,660 bytes in total, median 26,328 bytes, largest 114,528 bytes. |
 | `roofsans.css` | One `@font-face` for the whole font. |
-| `woff2/RoofSansVariable.woff2` | The whole font as WOFF2, 5,740,140 bytes. |
+| `woff2/RoofSansVariable.woff2` | The whole font as WOFF2, 5,739,928 bytes. |
+| `OFL.txt` | A copy of the font's license: the copyright lines, the trademark notices, and the SIL OFL 1.1 text. Both CSS headers point to it. |
 
-Every `@font-face` uses the family name `Roof Sans`, `font-weight: 400 1000`, `font-style: normal`, and `font-display: swap`. Every file keeps the `wght` axis (`fvar`, `gvar`, `STAT`), the family names, and every OpenType rule that applies to its glyphs. fontTools drops the features and the feature name records that have no glyph in a file (for example, file 0 keeps 53 of the font's 65 GSUB features). A requested weight below 400 renders at 400, as in Flutter.
+Every `@font-face` uses the family name `Roof Sans`, `font-weight: 400 1000`, `font-style: normal`, and `font-display: swap`. Every file keeps the `wght` axis (`fvar`, `gvar`, `STAT`), the family names, and every OpenType rule that applies to its glyphs. fontTools drops the features and the feature name records that have no glyph in a file (for example, file 0 keeps 52 of the font's 64 GSUB features). A requested weight below 400 renders at 400, as in Flutter.
 
 ## How the split works
 
@@ -21,12 +22,12 @@ Every `@font-face` uses the family name `Roof Sans`, `font-weight: 400 1000`, `f
 
 1. **Fixed groups**, for the scripts where the shaping rules matter most:
 
-   | Group | Code points | File size |
+   | Group | Code points | File size (1.3.0) |
    | --- | --- | --- |
-   | `latin` | Google Fonts' `latin` subset plus every combining diacritical mark (U+0300–036F) | 68,188 bytes |
-   | `latin-ext` | U+0100–02FF, U+1D00–1DBF, U+1E00–1EFF, U+20A0–20CF, U+2C60–2C7F, U+A720–A7FF, U+AB30–AB6F (Vietnamese is here) | 96,340 bytes |
-   | `greek`, `cyrillic` | the Greek and Cyrillic blocks | 55,540 and 45,580 bytes |
-   | `symbols-2070` … `symbols-2500` | U+2070–20FF, U+2100–21FF, U+2200–23FF, U+2400–24FF, U+2500–2E7F | 8,376–22,680 bytes each |
+   | `latin` | Google Fonts' `latin` subset plus every combining diacritical mark (U+0300–036F) | 67,920 bytes |
+   | `latin-ext` | U+0100–02FF, U+1D00–1DBF, U+1E00–1EFF, U+20A0–20CF, U+2C60–2C7F, U+A720–A7FF, U+AB30–AB6F (Vietnamese is here) | 96,368 bytes |
+   | `greek`, `cyrillic` | the Greek and Cyrillic blocks | 55,716 and 45,932 bytes |
+   | `symbols-2070` … `symbols-2500` | U+2070–20FF, U+2100–21FF, U+2200–23FF, U+2400–24FF, U+2500–2E7F | 8,608–23,008 bytes each |
 
    `latin` keeps the combining marks with their Basic Latin and Latin-1 bases, so marks attach correctly. It also keeps the quotes and the middle dot with the letters around them. The Simplified Chinese rule that keeps `It’s` and `l·l` proportional reads those letters as context (`_zhs_quotes` in `features/gsub.py`).
 
@@ -53,7 +54,7 @@ Interleaving the three slicings by frequency rank was also tried: compared with 
 
 ## Download sizes
 
-Measured on the committed `dist/web/` of Roof Sans 1.2.0 (bytes of the files a page needs):
+Measured on the committed `dist/web/` of Roof Sans 1.2.0 (bytes of the files a page needs). In 1.3.0 each subset file is about 243 bytes larger, because the name table carries the trademark notices and the added copyright lines (build notes section 15); the Korean sentence's 8 files, for example, cost about 1.9 KB more:
 
 | Text | Distinct characters | Files | Bytes |
 | --- | --- | --- | --- |
@@ -78,7 +79,7 @@ A browser shapes each run of characters with the file that holds them. A context
 ## Usage
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.2.0/dist/web/roofsans-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.3.0/dist/web/roofsans-dynamic-subset.css">
 ```
 
 ```css

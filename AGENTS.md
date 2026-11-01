@@ -40,12 +40,13 @@ The specimen web page is built with `uv run python site/build_site.py --out buil
 - **`refs/` is never modified and never committed.** It holds upstream checkouts of Wanted Sans and Pretendard for reference and for `roofsans-fetch --from-refs`. It is git-ignored.
 - **The build reads its inputs only from `inputs/`.** `roofsans-fetch` fills `inputs/` from the URLs and SHA-256 values in `inputs.lock.json`. Do not edit files in `inputs/` by hand, and do not point build code at `refs/`. Changing an input means changing `inputs.lock.json` on purpose and re-checking every measured value in the build notes.
 - **Dependencies are pinned** with `==` in `pyproject.toml` and locked in `uv.lock`. Do not add or upgrade one without a reason recorded in the build notes. A fontTools upgrade can change the output bytes.
-- **Wanted Sans glyphs must not change.** Any change to Wanted Sans's outlines, advances, variations, metrics, or feature behavior for code points it covers would make Roof Sans differ from Wanted Sans where it must match. `test_a01_wanted_identity.py` and `test_a07_features.py::test_wanted_behavior_unchanged` check this.
+- **Wanted Sans glyphs must not change.** Any change to Wanted Sans's outlines, advances, variations, metrics, or feature behavior for code points it covers would make Roof Sans differ from Wanted Sans where it must match. `test_a01_wanted_identity.py` and `test_a07_features.py::test_wanted_behavior_unchanged` check this. The one exception is Wanted Sans's logo (U+F0000–F0003) and its `liga`, which 1.3.0 removed because the logo is Wanted Lab's trademark (build notes section 15).
+- **License notices stay complete.** The font is SIL OFL 1.1: `OFL.txt` and name IDs 0 and 7 keep every upstream copyright line and trademark notice, plus LiveAnywhere's line. The build writes them (`finalize.py`); do not edit `OFL.txt` by hand. The build code, tests, site, and docs are MIT (`LICENSE`). Do not ship another company's logo or trademark glyph.
 - **Overlap flags stay as the sources set them.** Do not clear `OVERLAP_SIMPLE` or `OVERLAP_COMPOUND` (see the design's "Flutter rendering" section).
 - **No weights below 400.** Roof Sans 1.1.0 added 100–399 and 1.2.0 removed them: only 400 and above is used, and they made every file about a third larger. Do not bring them back without the owner's decision; the code is at tag `v1.1.0` (build notes section 14).
 - **The axis maximum stays ≤ 1000 and the range ≤ 1000.** Skia reads a variable font's `wght` value as the typeface weight only within those limits.
 - **`dist/web/` is a build output of the committed font.** After any change to `fonts/RoofSansVariable.ttf`, run `uv run roofsans-web` and commit both. `test_committed_dist_matches_a_fresh_build` fails while `dist/web/` is stale. Without `ROOF_WEB`, the web tests build into `build/test-web/`.
-- **The build is deterministic.** Two builds from the same inputs give the same SHA-256 (`test_build_determinism.py`). `fonts/RoofSansVariable.ttf` and `OFL.txt` are build outputs meant to be committed. The build also writes `fonts/OFL.txt`, a copy of `OFL.txt`; whether it is committed is the owner's decision. If a change alters the font, rebuild the default path and say so in your report, with the new SHA-256.
+- **The build is deterministic.** Two builds from the same inputs give the same SHA-256 (`test_build_determinism.py`). `fonts/RoofSansVariable.ttf` and `OFL.txt` are build outputs meant to be committed. The build also writes `fonts/OFL.txt`, a copy of `OFL.txt`; it is committed too, and `roofsans-web` copies it into `dist/web/`. If a change alters the font, rebuild the default path and say so in your report, with the new SHA-256.
 
 ## The advance-measurement trap
 
@@ -62,9 +63,9 @@ Measure variable advances from the phantom points (`roofsans.sampling` does this
 ## Where the code is
 
 - `src/roofsans/selection.py` assigns every code point to one rule (`Rule`). Each rule has one module in `src/roofsans/rules/`. Each module's `contribute(ctx)` returns `NewGlyph` records.
-- `src/roofsans/build.py` runs the contributors in a fixed order (`h6_copy`, `r3_fullwidth`, `h4_letters`, `h5_symbols`, `h2_compose`, `h3_construct`, `h3_enclosed`, `c_hanzi`, `c_punct`). A later rule may use glyphs an earlier one contributed. The build fails if any planned code point has no glyph.
+- `src/roofsans/build.py` removes Wanted Sans's logo from the base font (`assemble.drop_wanted_logo`), then runs the contributors in a fixed order (`h6_copy`, `r3_fullwidth`, `h4_letters`, `h5_symbols`, `h2_compose`, `h3_construct`, `h3_enclosed`, `c_hanzi`, `c_punct`). A later rule may use glyphs an earlier one contributed. The build fails if any planned code point has no glyph.
 - `src/roofsans/features/` adds the OpenType data; `src/roofsans/finalize.py` writes names, `head`, `OS/2`, and the license text.
-- `src/roofsans/web.py` splits the built font for the web (`roofsans-web`). It reads only the font and the `slices_*` inputs.
+- `src/roofsans/web.py` splits the built font for the web (`roofsans-web`). It reads only the font, the `OFL.txt` next to it, and the `slices_*` inputs.
 - Unit tests are in `tests/unit/`; acceptance tests, numbered by the design's Acceptance items, are in `tests/acceptance/`.
 
 When a decision changes what the font contains or how it is checked, record it in `docs/ROOF_SANS_BUILD_NOTES.md` with the reason and the measured numbers.

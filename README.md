@@ -30,8 +30,8 @@ uv run pytest
   ```
 
 - `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf`, `fonts/OFL.txt`, and `OFL.txt`. It takes about 20 seconds. The build is deterministic: the same inputs give a byte-identical font.
-- `uv run roofsans-web` writes `dist/web/` from `fonts/RoofSansVariable.ttf`: the font as one WOFF2 file and as a dynamic subset of 245 WOFF2 files, each with its CSS. It takes about 40 seconds. Run it after every font build and commit `dist/web/` with the font; the tests fail while it is stale.
-- `uv run roofsans-build --without-chinese --out <path>` builds the font without the Simplified Chinese extension. It reproduces the font from before the extension, with only the version changed to 1.200, and the tests use it as the "before" font.
+- `uv run roofsans-web` writes `dist/web/` from `fonts/RoofSansVariable.ttf`: the font as one WOFF2 file and as a dynamic subset of 245 WOFF2 files, each with its CSS, and a copy of `fonts/OFL.txt`. It takes about 40 seconds. Run it after every font build and commit `dist/web/` with the font; the tests fail while it is stale.
+- `uv run roofsans-build --without-chinese --out <path>` builds the font without the Simplified Chinese extension. It reproduces the font from before the extension with the later changes (version 1.300, no Wanted Sans logo, the 1.3.0 license notices), and the tests use it as the "before" font.
 - `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copies of the font into `build/test/` and `build/test-baseline/`. The full run takes about 5 minutes.
 
 ## Specimen page
@@ -56,7 +56,7 @@ uv run python -m http.server -d build/site 8000   # then open http://localhost:8
 Load the dynamic subset from jsDelivr and use the family `Roof Sans`:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.2.0/dist/web/roofsans-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.3.0/dist/web/roofsans-dynamic-subset.css">
 ```
 
 ```css
@@ -79,6 +79,17 @@ flutter:
     - family: RoofSans
       fonts:
         - asset: assets/fonts/RoofSansVariable.ttf
+  assets:
+    - assets/fonts/OFL.txt
+```
+
+The OFL asks an app that bundles the font to carry its copyright notices and license text (OFL FAQ 1.20). Copy `fonts/OFL.txt` next to the font and add it to the app's license page:
+
+```dart
+LicenseRegistry.addLicense(() async* {
+  final license = await rootBundle.loadString('assets/fonts/OFL.txt');
+  yield LicenseEntryWithLineBreaks(['Roof Sans'], license);
+});
 ```
 
 ### Weights
@@ -163,12 +174,17 @@ References: flutter/flutter#159678, orioncactus/pretendard#177, flutter/flutter#
 
 ## License
 
-Roof Sans is licensed under the SIL Open Font License 1.1. See `OFL.txt` (a copy is also written to `fonts/OFL.txt`). It lists every upstream copyright holder:
+The fonts — `fonts/RoofSansVariable.ttf`, the web files in `dist/web/`, and the release files — are licensed under the SIL Open Font License 1.1. See `OFL.txt` (copies are in `fonts/OFL.txt` and `dist/web/OFL.txt`). It lists every copyright holder:
 
 - Wanted Lab, Inc. and The Wanted Sans Project Authors (Wanted Sans)
 - Kil Hyung-jin (Pretendard)
 - Adobe (Source Han Sans, through Pretendard JP and directly for the Simplified Chinese hanzi)
 - The Inter Project Authors (Inter, which Pretendard's Latin, Greek, and Cyrillic come from)
 - The M+ FONTS Project Authors (M PLUS 1)
+- LiveAnywhere Inc. (Roof Sans's changes and additions)
 
-The Reserved Font Names in the upstream licenses are "Pretendard", "Source", "Inter", and "M PLUS 1". The name "Roof Sans" contains none of them. Wanted Sans has no Reserved Font Name.
+The Reserved Font Names in the upstream licenses are "Pretendard", "Source", "Inter", and "M PLUS 1". The name "Roof Sans" contains none of them. Wanted Sans has no Reserved Font Name, and Roof Sans adds none.
+
+Wanted Sans and the Wanted logo are trademarks of Wanted Lab, Inc.; Pretendard is a trademark of Kil Hyung-jin, Inter of rsms, and Source of Adobe. The OFL grants no trademark rights, so Roof Sans leaves out Wanted Sans's logo glyphs (U+F0000–F0003) and the `liga` feature that formed them from `wanted_logo`. The trademark notices stay in the font's name ID 7 and in `OFL.txt`.
+
+Everything else in this repository — the build code, the tests, the specimen page, and the documentation — is licensed under the MIT license (`LICENSE`). The specimen page's icons are GitHub Primer Octicons, Copyright (c) 2026 GitHub Inc., under the MIT license.
