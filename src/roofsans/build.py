@@ -14,6 +14,8 @@ from roofsans.assemble import insert, planned_cmap, planned_uvs, write_cmap
 from roofsans.context import make_context
 from roofsans.inputs import Inputs, ensure_inputs
 from roofsans.rules import (
+    c_hanzi,
+    c_punct,
     h2_compose,
     h3_construct,
     h3_enclosed,
@@ -27,15 +29,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = Path("fonts/RoofSansVariable.ttf")
 
 # Fixed order: a later rule may use glyphs an earlier one contributed.
-CONTRIBUTORS = (h6_copy, r3_fullwidth, h4_letters, h5_symbols, h2_compose, h3_construct, h3_enclosed)
+CONTRIBUTORS = (
+    h6_copy, r3_fullwidth, h4_letters, h5_symbols, h2_compose, h3_construct, h3_enclosed,
+    c_hanzi, c_punct,
+)
 
 
-def build(out: Path, inputs: Inputs | None = None) -> Path:
+def build(out: Path, inputs: Inputs | None = None, chinese: bool = True) -> Path:
     inputs = inputs or ensure_inputs()
-    ctx = make_context(inputs)
+    ctx = make_context(inputs, chinese=chinese)
     h6_copy.copy_closure(ctx)
     ctx.cmap = planned_cmap(ctx)
     for module in CONTRIBUTORS:
+        if not chinese and module in (c_hanzi, c_punct):
+            continue
         for g in module.contribute(ctx):
             if g.name in ctx.contributed:
                 raise ValueError(f"{module.__name__} contributes {g.name} twice")
@@ -55,7 +62,7 @@ def build(out: Path, inputs: Inputs | None = None) -> Path:
     out.parent.mkdir(parents=True, exist_ok=True)
     font.save(out)
     license_path = out.parent / "OFL.txt"
-    finalize.write_license(license_path, ctx.inputs)
+    finalize.write_license(license_path, ctx.inputs, chinese=chinese)
     if out.resolve() == (REPO_ROOT / DEFAULT_OUT).resolve():
         shutil.copyfile(license_path, REPO_ROOT / "OFL.txt")
     return out
@@ -64,5 +71,6 @@ def build(out: Path, inputs: Inputs | None = None) -> Path:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="roofsans-build", description=__doc__)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help=f"output font (default {DEFAULT_OUT})")
+    parser.add_argument("--without-chinese", action="store_true", help="reproduce the pre-Chinese font")
     args = parser.parse_args(argv)
-    print(build(args.out))
+    print(build(args.out, chinese=not args.without_chinese))

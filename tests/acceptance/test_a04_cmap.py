@@ -39,6 +39,12 @@ def test_no_private_use(roof, plan):
     assert not [cp for cp in plan if 0xE000 <= cp <= 0xF8FF]
 
 
+def test_format4_size_limit(roof):
+    sizes = [len(table.compile(roof)) for table in roof['cmap'].tables if table.format == 4]
+    print('CMAP_FORMAT4_BYTES', sizes)
+    assert sizes and all(size < 65535 for size in sizes)
+
+
 def test_variation_sequences(roof, pretendard, pj_names):
     expected = {
         (vs, base, pj_names[g]) for vs, seqs in format14_sequences(pretendard).items() for base, g in seqs

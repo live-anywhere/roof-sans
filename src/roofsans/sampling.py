@@ -5,7 +5,7 @@ from __future__ import annotations
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._g_l_y_f import OVERLAP_COMPOUND
 from fontTools.varLib.iup import iup_delta
-from fontTools.varLib.models import supportScalar
+from fontTools.varLib.models import piecewiseLinearMap, supportScalar
 
 from roofsans.axis import roof_norm
 from roofsans.outline import Outline, Point, combine
@@ -102,3 +102,16 @@ class WantedSampler(_Sampler):
         if not 400 <= wght <= 1000:
             raise ValueError(f"Wanted Sans weight {wght} is outside 400–1000")
         return roof_norm(wght)
+
+
+class ShsSampler(_Sampler):
+    """Source Han Sans, including its non-linear avar weight mapping."""
+
+    def __init__(self, font: TTFont) -> None:
+        super().__init__(font)
+        self._segments = font["avar"].segments["wght"]
+
+    def _norm(self, wght: float) -> float:
+        if not 250 <= wght <= 900:
+            raise ValueError(f"Source Han Sans weight {wght} is outside 250–900")
+        return piecewiseLinearMap((wght - 250) / 650, self._segments)

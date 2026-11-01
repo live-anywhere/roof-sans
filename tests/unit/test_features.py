@@ -148,3 +148,75 @@ def test_append_store_keeps_existing_rows_and_shares_regions():
     for t, value in masters.items():
         scalars = [supportScalar({"wght": t}, {"wght": keys[i][0]}) for i in data.VarRegionIndex]
         assert default + sum(s * d for s, d in zip(scalars, row)) == pytest.approx(value)
+
+
+@pytest.fixture(scope='module')
+def chinese_gsub(ctx, inputs):
+    from fontTools.ttLib import TTFont
+    from roofsans.assemble import planned_cmap
+    from roofsans.features.gsub import carry
+    from roofsans.rules import c_hanzi, c_punct, h6_copy
+
+    h6_copy.copy_closure(ctx)
+    ctx.cmap = planned_cmap(ctx)
+    font = TTFont(inputs.wanted)
+    names = set(font.getGlyphOrder()) | set(ctx.pj_names.values()) | set(ctx.cmap.values())
+    names.update(f'uni{cp:04X}.zhs' for cp in (*c_hanzi.zhs_forms(ctx), *c_punct.ZHS_SIGNS, *c_punct.ZHS_QUOTES))
+    order = font.getGlyphOrder()
+    font.setGlyphOrder(order + sorted(names - set(order)))
+    carry(font, ctx)
+    return font['GSUB'].table
+
+
+def test_zhs_lookup_order(chinese_gsub):
+    lookups = chinese_gsub.LookupList.Lookup
+    assert len(lookups) == 103
+    mappings = [lookups[i].SubTable[0].mapping for i in (99, 100, 102)]
+    assert [len(m) for m in mappings] == [2212, 17, 5]
+    assert mappings[0]['uni76F4'] == 'uni76F4.zhs'
+    assert mappings[1]['uniFF01'] == 'uniFF01.zhs'
+    assert mappings[2]['quotedblleft'] == 'uni201C.zhs'
+
+
+def test_zhs_quote_context(chinese_gsub, ctx):
+    import unicodedata
+
+    lookup = chinese_gsub.LookupList.Lookup[101]
+    assert lookup.LookupType == 6 and lookup.LookupFlag == 0
+    exception, substitution = lookup.SubTable
+    assert exception.Format == substitution.Format == 3
+    alnum = {g for cp, g in ctx.cmap.items()
+             if cp < 0x3000 and (unicodedata.category(chr(cp)).startswith('L')
+                                 or unicodedata.category(chr(cp)) == 'Nd')}
+    assert set(exception.BacktrackCoverage[0].glyphs) == alnum
+    assert set(exception.LookAheadCoverage[0].glyphs) == alnum
+    assert set(exception.InputCoverage[0].glyphs) == {ctx.cmap[0x2019], ctx.cmap[0x00B7]}
+    assert exception.SubstCount == 0 and exception.SubstLookupRecord == []
+    assert substitution.BacktrackGlyphCount == substitution.LookAheadGlyphCount == 0
+    assert set(substitution.InputCoverage[0].glyphs) == {
+        ctx.cmap[cp] for cp in (0x2018, 0x2019, 0x201C, 0x201D, 0x00B7)}
+    (record,) = substitution.SubstLookupRecord
+    assert (record.SequenceIndex, record.LookupListIndex) == (0, 102)
+    assert all(102 not in fr.Feature.LookupListIndex for fr in chinese_gsub.FeatureList.FeatureRecord)
+
+
+def test_zhs_language_systems(chinese_gsub, wanted):
+    records = chinese_gsub.FeatureList.FeatureRecord
+    assert [fr.FeatureTag for fr in records] == sorted(fr.FeatureTag for fr in records)
+    scripts = {sr.ScriptTag: sr.Script for sr in chinese_gsub.ScriptList.ScriptRecord}
+    zhs = {tag: next((lr.LangSys for lr in s.LangSysRecord if lr.LangSysTag == 'ZHS '), None)
+           for tag, s in scripts.items()}
+    assert {tag for tag, ls in zhs.items() if ls is not None} == {'DFLT', 'hani', 'latn'}
+    for tag in ('DFLT', 'hani', 'latn'):
+        ls = zhs[tag]
+        added = set(ls.FeatureIndex) - set(scripts[tag].DefaultLangSys.FeatureIndex)
+        assert len(added) == 1
+        (index,) = added
+        assert records[index].FeatureTag == 'locl'
+        assert records[index].Feature.LookupListIndex == ([99, 100, 101] if tag == 'hani' else [100, 101])
+    original = wanted['GSUB'].table
+    for sr in original.ScriptList.ScriptRecord:
+        for lr in sr.Script.LangSysRecord:
+            current = next(r.LangSys for r in scripts[sr.ScriptTag].LangSysRecord if r.LangSysTag == lr.LangSysTag)
+            assert [records[i].FeatureTag for i in current.FeatureIndex] == [
+                original.FeatureList.FeatureRecord[i].FeatureTag for i in lr.LangSys.FeatureIndex]

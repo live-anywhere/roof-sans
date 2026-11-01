@@ -14,6 +14,7 @@ OFL_BODY_START = "This Font Software is licensed"
 RFN_PREFIX = "with Reserved Font Name"
 TIMESTAMP = timestampFromString("Sat Oct 31 00:00:00 2026")
 JIS_CODE_PAGE = 17
+GB_CODE_PAGE = 18
 
 MAC = (1, 0, 0)
 WINDOWS = (3, 1, 0x409)
@@ -33,27 +34,35 @@ def wanted_notice(inputs: Inputs) -> str:
     return TTFont(inputs.wanted, lazy=True)["name"].getDebugName(0)
 
 
-def copyright_lines(inputs: Inputs) -> list[str]:
+def copyright_lines(inputs: Inputs, chinese: bool = True) -> list[str]:
     """Every upstream ``Copyright`` line and its reserved-font-name line, verbatim."""
+    paths = (inputs.wanted_ofl, inputs.pretendard_license)
+    if chinese:
+        paths += (inputs.shs_license,)
     return [
         line
-        for path in (inputs.wanted_ofl, inputs.pretendard_license)
+        for path in paths
         for line in _split(path)[0].splitlines()
         if line.startswith("Copyright") or line.startswith(RFN_PREFIX)
     ]
 
 
-def write_license(path: Path, inputs: Inputs) -> None:
-    """Write Wanted's binary notice, both sources' license headers verbatim, then Wanted's OFL 1.1 body."""
+def write_license(path: Path, inputs: Inputs, chinese: bool = True) -> None:
+    """Write Wanted's binary notice, all sources' license headers verbatim, then Wanted's OFL 1.1 body."""
     wanted_header, body = _split(inputs.wanted_ofl)
     pretendard_header, _ = _split(inputs.pretendard_license)
+    shs_header = _split(inputs.shs_license)[0] if chinese else ""
     notice = wanted_notice(inputs)
     lead = "" if notice in wanted_header else f"{notice}\n"
-    path.write_text(f"{lead}{wanted_header}{pretendard_header}{body}", encoding="utf-8", newline="\n")
+    path.write_text(f"{lead}{wanted_header}{pretendard_header}{shs_header}{body}", encoding="utf-8", newline="\n")
 
 
-def _names(inputs: Inputs) -> dict[int, str]:
-    holders = [line.removesuffix(",") for line in copyright_lines(inputs) if not line.startswith(RFN_PREFIX)]
+def _names(inputs: Inputs, chinese: bool = True) -> dict[int, str]:
+    # Source Han Sans's RFN clause wraps onto the next line in its license header.
+    holders = [
+        line.split(", with Reserved Font", 1)[0].removesuffix(",")
+        for line in copyright_lines(inputs, chinese=chinese) if not line.startswith(RFN_PREFIX)
+    ]
     return {
         0: " ".join([wanted_notice(inputs), *holders]),
         1: "Roof Sans",
@@ -68,7 +77,7 @@ def _names(inputs: Inputs) -> dict[int, str]:
     }
 
 
-def _rename(font: TTFont, inputs: Inputs) -> None:
+def _rename(font: TTFont, inputs: Inputs, chinese: bool = True) -> None:
     """Replace every name below 256 and rename Wanted Sans in the instance and STAT names."""
     name = font["name"]
     name.names = [rec for rec in name.names if rec.nameID >= 256]
@@ -77,7 +86,7 @@ def _rename(font: TTFont, inputs: Inputs) -> None:
         renamed = text.replace("WantedSansVariable", "RoofSans").replace("Wanted Sans", "Roof Sans")
         if renamed != text:
             rec.string = renamed
-    for name_id, text in _names(inputs).items():
+    for name_id, text in _names(inputs, chinese=chinese).items():
         for platform in NAME_PLATFORMS[name_id]:
             name.setName(text, name_id, *platform)
 
@@ -91,7 +100,7 @@ def _name_kor_set(font: TTFont, pretendard: TTFont) -> None:
 
 
 def finalize(font: TTFont, ctx) -> None:
-    _rename(font, ctx.inputs)
+    _rename(font, ctx.inputs, chinese=ctx.chinese)
     _name_kor_set(font, ctx.pretendard)
     head = font["head"]
     head.fontRevision = 1.0
@@ -100,4 +109,7 @@ def finalize(font: TTFont, ctx) -> None:
     os2.achVendID = "ROOF"
     os2.recalcUnicodeRanges(font)
     os2.recalcAvgCharWidth(font)
-    os2.setCodePageRanges(os2.getCodePageRanges() | {JIS_CODE_PAGE})
+    code_pages = {JIS_CODE_PAGE}
+    if ctx.chinese:
+        code_pages.add(GB_CODE_PAGE)
+    os2.setCodePageRanges(os2.getCodePageRanges() | code_pages)

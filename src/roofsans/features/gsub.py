@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import copy
+import unicodedata
 from collections.abc import Mapping
 
-from fontTools.otlLib.builder import buildLookup, buildSingleSubstSubtable
+from fontTools.otlLib.builder import buildCoverage, buildLookup, buildSingleSubstSubtable
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables import otTables
 
+from roofsans.rules.c_hanzi import zhs_forms
+from roofsans.rules.c_punct import ZHS_QUOTES, ZHS_SIGNS
 from roofsans.selection import JAN_SHARED
 
 # Pretendard JP lookups this build carries, verified by feature tag on the pinned input.
@@ -27,6 +30,7 @@ CJK_FEATURES = ("ss20", "jp78", "jp83", "jp90", "nlck", "fwid", "pwid")
 CJK_SCRIPTS = ("hani", "kana")
 # Rule H1: Japanese punctuation under JAN, also for brackets around Latin and digits.
 JAN_SCRIPTS = ("DFLT", "hani", "kana", "latn")
+ZHS_SCRIPTS = ("DFLT", "hani", "latn")
 WIDENED_SCRIPTS = ("DFLT", "hang", "latn")
 RLIG = "rlig"
 _F2DOT14 = 1 << 14
@@ -234,6 +238,36 @@ def _renamed(mapping: Mapping[str, str], names: Mapping[str, str], glyphs: set[s
     return out
 
 
+def _zhs_quotes(cmap: Mapping[int, str], glyph_map: Mapping[str, int], target: int) -> otTables.Lookup:
+    """Keep apostrophes and middle dots inside alphanumeric words proportional."""
+    alnum = {
+        g for cp, g in cmap.items()
+        if cp < 0x3000 and (unicodedata.category(chr(cp)).startswith("L")
+                            or unicodedata.category(chr(cp)) == "Nd")
+    }
+    exception = otTables.ChainContextSubst()
+    exception.Format = 3
+    exception.BacktrackCoverage = [buildCoverage(alnum, glyph_map)]
+    exception.InputCoverage = [buildCoverage({cmap[0x2019], cmap[0x00B7]}, glyph_map)]
+    exception.LookAheadCoverage = [buildCoverage(alnum, glyph_map)]
+    exception.BacktrackGlyphCount = exception.LookAheadGlyphCount = 1
+    exception.InputGlyphCount = 1
+    exception.SubstCount = 0
+    exception.SubstLookupRecord = []
+
+    substitution = otTables.ChainContextSubst()
+    substitution.Format = 3
+    substitution.BacktrackCoverage = substitution.LookAheadCoverage = []
+    substitution.BacktrackGlyphCount = substitution.LookAheadGlyphCount = 0
+    substitution.InputCoverage = [buildCoverage({cmap[cp] for cp in ZHS_QUOTES}, glyph_map)]
+    substitution.InputGlyphCount = 1
+    record = otTables.SubstLookupRecord()
+    record.SequenceIndex, record.LookupListIndex = 0, target
+    substitution.SubstCount = 1
+    substitution.SubstLookupRecord = [record]
+    return buildLookup([exception, substitution], table="GSUB")
+
+
 def carry(font: TTFont, ctx) -> None:
     """Append Pretendard JP's CJK lookups and features; Wanted Sans's keep their indices."""
     gsub = font["GSUB"].table
@@ -252,6 +286,11 @@ def carry(font: TTFont, ctx) -> None:
     for index in PJ_KANA:
         mappings[f"kana{index}"] = _renamed(_single_mapping(pgsub, index), names, glyphs)
     mappings["jan"] = {ctx.cmap[cp]: names[pcmap[cp]] for cp in JAN_SHARED}
+    if ctx.chinese:
+        mappings["zhs_hanzi"] = {ctx.cmap[cp]: f"uni{cp:04X}.zhs" for cp in zhs_forms(ctx)}
+        mappings["zhs_punct"] = {
+            **mappings["jan"], **{ctx.cmap[cp]: f"uni{cp:04X}.zhs" for cp in ZHS_SIGNS},
+        }
     lookups = gsub.LookupList.Lookup
     new: dict[str, int] = {}
     for key, mapping in mappings.items():
@@ -259,6 +298,12 @@ def carry(font: TTFont, ctx) -> None:
             raise ValueError(f"carried GSUB lookup {key} is empty")
         new[key] = len(lookups)
         lookups.append(buildLookup([buildSingleSubstSubtable(mapping)], table="GSUB"))
+    if ctx.chinese:
+        new["zhs_quotes"] = len(lookups)
+        lookups.append(_zhs_quotes(ctx.cmap, font.getReverseGlyphMap(), len(lookups) + 1))
+        # Only the context lookup references this single substitution; no feature lists it.
+        quote_mapping = {ctx.cmap[cp]: f"uni{cp:04X}.zhs" for cp in ZHS_QUOTES}
+        lookups.append(buildLookup([buildSingleSubstSubtable(quote_mapping)], table="GSUB"))
     gsub.LookupList.LookupCount = len(lookups)
 
     records = gsub.FeatureList.FeatureRecord
@@ -270,6 +315,13 @@ def carry(font: TTFont, ctx) -> None:
         feature[tag] = len(records)
         records.append(_feature(tag[:4], [new[key]]))
     records[feature[KOR_SET]].Feature.FeatureParams = _stylistic_set_params()
+    if ctx.chinese:
+        for key, keys in (
+            ("locl ZHS hani", ("zhs_hanzi", "zhs_punct", "zhs_quotes")),
+            ("locl ZHS common", ("zhs_punct", "zhs_quotes")),
+        ):
+            feature[key] = len(records)
+            records.append(_feature("locl", [new[k] for k in keys]))
     gsub.FeatureList.FeatureCount = len(records)
 
     scripts = scripts_by_tag(gsub)
@@ -284,6 +336,11 @@ def carry(font: TTFont, ctx) -> None:
     add_lang_sys(scripts["hani"], "KOR ", [*scripts["hani"].DefaultLangSys.FeatureIndex, feature["locl KOR"]])
     for tag in JAN_SCRIPTS:
         add_lang_sys(scripts[tag], "JAN ", [*scripts[tag].DefaultLangSys.FeatureIndex, feature["locl JAN"]])
+
+    if ctx.chinese:
+        for tag in ZHS_SCRIPTS:
+            key = "locl ZHS hani" if tag == "hani" else "locl ZHS common"
+            add_lang_sys(scripts[tag], "ZHS ", [*scripts[tag].DefaultLangSys.FeatureIndex, feature[key]])
 
     rlig = next(i for i, fr in enumerate(records) if fr.FeatureTag == RLIG)
     kana = {p: new[f"kana{p}"] for p in PJ_KANA}

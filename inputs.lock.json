@@ -26,5 +26,26 @@
     "path": "LICENSE",
     "url": "https://raw.githubusercontent.com/orioncactus/pretendard/7aeb0698819be2b4097dae8ec8fe6a795e5cf3ae/LICENSE",
     "sha256": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a"
+  },
+  {
+    "name": "shs_cn",
+    "repo": "source-han-sans",
+    "path": "Variable/TTF/Subset/SourceHanSansCN-VF.ttf",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-han-sans/a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2/Variable/TTF/Subset/SourceHanSansCN-VF.ttf",
+    "sha256": "25a01e41b5cc99893eb35a6cd2cc7611841dc19eb03cbaf7f0c1de8210f2ba0b"
+  },
+  {
+    "name": "shs_jp",
+    "repo": "source-han-sans",
+    "path": "Variable/TTF/Subset/SourceHanSansJP-VF.ttf",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-han-sans/a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2/Variable/TTF/Subset/SourceHanSansJP-VF.ttf",
+    "sha256": "4acc34926098472741bbb7be5949b80afa7fc08f41ea3cd80dc34f12f7d55bbc"
+  },
+  {
+    "name": "shs_license",
+    "repo": "source-han-sans",
+    "path": "LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-han-sans/a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2/LICENSE.txt",
+    "sha256": "fcac737e761ec63dbfbdce11030a1780161920d80315edba9c8beff1c2bac5a2"
   }
 ]

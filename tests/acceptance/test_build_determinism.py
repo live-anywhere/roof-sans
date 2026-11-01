@@ -25,6 +25,6 @@ def test_build_determinism(tmp_path, inputs):
         "import sys; from pathlib import Path; from roofsans.build import build; from roofsans.inputs import Inputs; "
         "build(Path(sys.argv[1]), Inputs(*map(Path, sys.argv[2:])))"
     )
-    args = [str(there), *(str(p) for p in (inputs.wanted, inputs.pretendard, inputs.wanted_ofl, inputs.pretendard_license))]
+    args = [str(there), *(str(p) for p in vars(inputs).values())]
     subprocess.run([sys.executable, "-c", script, *args], env={**os.environ, "PYTHONHASHSEED": seed}, check=True)
     assert sha256(here) == sha256(there)

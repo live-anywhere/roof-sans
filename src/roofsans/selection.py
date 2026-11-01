@@ -9,9 +9,14 @@ from enum import StrEnum
 
 from fontTools.ttLib import TTFont
 
+from roofsans.chinese import gb2312_hanzi
+
 
 class Rule(StrEnum):
     WANTED = "WANTED"
+    C1_HANZI = "C1_HANZI"
+    C2_FORM = "C2_FORM"
+    C3_PUNCT = "C3_PUNCT"
     H6_COPY = "H6_COPY"
     R3_FULLWIDTH = "R3_FULLWIDTH"
     R3_SIGN = "R3_SIGN"
@@ -127,7 +132,7 @@ def _symbol_category(cp: int) -> SymbolCategory:
     return SymbolCategory.OTHER
 
 
-def select(wanted: TTFont, pretendard: TTFont) -> Selection:
+def select(wanted: TTFont, pretendard: TTFont, shs_cn: TTFont, chinese: bool = True) -> Selection:
     """Classify every code point either font maps, in the design's rule order."""
     wanted_cmap = wanted.getBestCmap()
     pretendard_cmap = pretendard.getBestCmap()
@@ -194,5 +199,14 @@ def select(wanted: TTFont, pretendard: TTFont) -> Selection:
             zone[cp] = Zone.CAPITAL if capital else Zone.LOWER
         elif rule is Rule.H5_SYMBOL:
             symbol_category[cp] = _symbol_category(cp)
+
+    if chinese:
+        source_cmap = shs_cn.getBestCmap()
+        for cp in gb2312_hanzi():
+            if cp in rules:
+                continue
+            if cp not in source_cmap:
+                raise ValueError(f"Source Han Sans CN lacks C1 U+{cp:04X}")
+            rules[cp] = Rule.C1_HANZI
 
     return Selection(rules=rules, symbol_category=symbol_category, zone=zone)

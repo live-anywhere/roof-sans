@@ -12,7 +12,7 @@ from roofsans.inputs import ensure_inputs
 
 
 # Fixtures that read the built font; a test that uses one is an acceptance test (ruling R40).
-FONT_FIXTURES = {"roof", "roof_path"}
+FONT_FIXTURES = {"roof", "roof_path", "baseline_path"}
 
 
 def pytest_configure(config):
@@ -39,6 +39,16 @@ def wanted(inputs):
 @pytest.fixture(scope="session")
 def pretendard(inputs):
     return TTFont(inputs.pretendard)
+
+
+@pytest.fixture(scope="session")
+def shs_cn(inputs):
+    return TTFont(inputs.shs_cn)
+
+
+@pytest.fixture(scope="session")
+def shs_jp(inputs):
+    return TTFont(inputs.shs_jp)
 
 
 @pytest.fixture(scope="session")
@@ -69,6 +79,16 @@ def roof_path():
     from roofsans.build import build
 
     return build(Path("build/test/RoofSansVariable.ttf"))
+
+
+@pytest.fixture(scope="session")
+def baseline_path(inputs):
+    """One reproducible pre-Chinese font per session, unless ROOF_BASELINE overrides it."""
+    if os.environ.get("ROOF_BASELINE"):
+        return Path(os.environ["ROOF_BASELINE"])
+    from roofsans.build import build
+
+    return build(Path("build/test-baseline/RoofSansVariable.ttf"), inputs, chinese=False)
 
 
 @pytest.fixture(scope="session")

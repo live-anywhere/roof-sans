@@ -63,3 +63,31 @@ def test_weight_range_checked(ps, ws):
         ps.outline("l", 1101)
     with pytest.raises(ValueError):
         ws.outline("A", 399)
+
+
+@pytest.mark.parametrize('w', [250, 381.25, 655, 900])
+def test_shs_sampler_matches_fonttools(shs_cn, w):
+    from fontTools.pens.recordingPen import DecomposingRecordingPen
+    from fontTools.pens.ttGlyphPen import TTGlyphPen
+    from roofsans.sampling import ShsSampler
+
+    sampler = ShsSampler(shs_cn)
+    glyphs = shs_cn.getGlyphSet(location={'wght': w})
+    for cp in map(ord, '一口龍熙'):
+        name = shs_cn.getBestCmap()[cp]
+        pen = DecomposingRecordingPen(glyphs)
+        glyphs[name].draw(pen)
+        ttpen = TTGlyphPen(None)
+        pen.replay(ttpen)
+        glyph = ttpen.glyph(round=lambda x: x)
+        assert max_abs_diff(sampler.outline(name, w).points, glyph.coordinates) <= 1e-6
+        assert sampler.advance(name, w) == pytest.approx(1000)
+
+
+def test_shs_sampler_rejects_out_of_range(shs_cn):
+    from roofsans.sampling import ShsSampler
+
+    sampler = ShsSampler(shs_cn)
+    for w in (249, 901):
+        with pytest.raises(ValueError):
+            sampler.outline(shs_cn.getBestCmap()[ord('一')], w)

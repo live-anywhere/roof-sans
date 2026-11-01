@@ -13,6 +13,7 @@ COPYRIGHT_HOLDERS = [
     "Adobe",
     "The Inter Project Authors",
     "The M+ FONTS Project Authors",
+    "Adobe",
 ]
 
 
@@ -27,8 +28,8 @@ def test_copyright_lines(inputs):
         "with Reserved Font Name 'Inter'.",
         "with Reserved Font Name 'M PLUS 1'.",
     ]
-    sources = inputs.wanted_ofl.read_text() + inputs.pretendard_license.read_text()
-    assert len(lines) == 9 and all(line in sources.splitlines() for line in lines)
+    sources = inputs.wanted_ofl.read_text() + inputs.pretendard_license.read_text() + inputs.shs_license.read_text()
+    assert len(lines) == 10 and all(line in sources.splitlines() for line in lines)
 
 
 def test_wanted_notice(inputs):
@@ -40,13 +41,23 @@ def test_write_license(tmp_path, inputs):
     write_license(path, inputs)
     text = path.read_bytes().decode("utf-8")
     assert "\r" not in text
-    sources = [p.read_text(encoding="utf-8") for p in (inputs.wanted_ofl, inputs.pretendard_license)]
+    sources = [p.read_text(encoding="utf-8") for p in (inputs.wanted_ofl, inputs.pretendard_license, inputs.shs_license)]
     headers = [t[: t.index("This Font Software is licensed")] for t in sources]
     assert WANTED_NOTICE not in headers[0]
     body = sources[0][len(headers[0]) :]
-    assert text == f"{WANTED_NOTICE}\n{headers[0]}{headers[1]}{body}"
+    assert text == f"{WANTED_NOTICE}\n{headers[0]}{headers[1]}{headers[2]}{body}"
     assert "Source is a trademark of Adobe in the United States and/or other countries." in text
     assert text.count("SIL OPEN FONT LICENSE Version 1.1") == 1
+
+
+def test_write_license_without_chinese(tmp_path, inputs):
+    path = tmp_path / "OFL.txt"
+    write_license(path, inputs, chinese=False)
+    sources = [p.read_text(encoding="utf-8") for p in (inputs.wanted_ofl, inputs.pretendard_license)]
+    headers = [text[:text.index("This Font Software is licensed")] for text in sources]
+    body = sources[0][len(headers[0]):]
+    assert path.read_bytes().decode("utf-8") == f"{WANTED_NOTICE}\n{headers[0]}{headers[1]}{body}"
+    assert not any("2014-2025" in line for line in copyright_lines(inputs, chinese=False))
 
 
 @pytest.mark.acceptance
@@ -56,6 +67,9 @@ def test_names(roof):
     for rec in n.names:
         if rec.nameID not in (0, 13, 14):
             assert not re.search(r"Pretendard|Source|Inter|M PLUS 1|Wanted Sans", rec.toUnicode())
+    assert "Copyright 2014-2025 Adobe (http://www.adobe.com/)" in n.getDebugName(0)
+    assert "Reserved Font" not in n.getDebugName(0)
+    assert "Copyright 2014-2021 Adobe" in n.getDebugName(0)
     assert "Kil Hyung-jin" in n.getDebugName(0) and "M+ FONTS" in n.getDebugName(0) and "Inter Project" in n.getDebugName(0)
 
 
@@ -64,7 +78,7 @@ def test_name_records(roof, inputs):
     n = roof["name"]
     expected = {
         0: " ".join(
-            [WANTED_NOTICE, *(line.removesuffix(",") for line in copyright_lines(inputs) if not line.startswith("with "))]
+            [WANTED_NOTICE, *(line.split(", with Reserved Font", 1)[0].removesuffix(",") for line in copyright_lines(inputs) if not line.startswith("with "))]
         ),
         1: "Roof Sans",
         2: "Regular",
@@ -98,7 +112,7 @@ def test_head(roof):
 def test_os2(roof, wanted):
     o, w = roof["OS/2"], wanted["OS/2"]
     assert o.achVendID == "ROOF"
-    assert o.getCodePageRanges() == w.getCodePageRanges() | {17}
+    assert o.getCodePageRanges() == w.getCodePageRanges() | {17, 18}
     # Hiragana (49), CJK Unified Ideographs (59), Enclosed Alphanumerics (42): Roof adds kana and Han.
     assert {42, 49, 59} <= o.getUnicodeRanges()
     widths = [width for width, _ in roof["hmtx"].metrics.values() if width > 0]

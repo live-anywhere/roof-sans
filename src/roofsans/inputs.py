@@ -29,6 +29,9 @@ class Inputs:
     pretendard: Path
     wanted_ofl: Path
     pretendard_license: Path
+    shs_cn: Path
+    shs_jp: Path
+    shs_license: Path
 
 
 def _sha256(path: Path) -> str:
