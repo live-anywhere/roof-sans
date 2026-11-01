@@ -517,7 +517,7 @@ Result, compared table by table with fontTools against the committed Roof Sans 1
 - Every table except `head` and `name` is byte-identical.
 - `head` differs only in `fontRevision` (1.200) and `checkSumAdjustment`.
 - `name` differs only in IDs 3 (`1.200;ROOF;RoofSans-Regular`) and 5 (`Version 1.200`), on both platforms.
-- The font is 16,230,096 bytes, SHA-256 `13c1e443d08c6d88bf9d6e4ee64f04230d1df09473cea265873e5aaeeb8c9af`.
+- The font is 16,230,096 bytes, SHA-256 `13c1e443cd08c6d88bf9d6e4ee64f04230d1df09473cea265873e5aaeeb8c9af`.
 - `--without-chinese` gives the committed pre-Chinese font (`6a01839d…272325`) with the same three differences: SHA-256 `4b4791d6…8ad0606` (section 2).
 - In `dist/web/`, only the version comment in the two CSS files changes. Each WOFF2 file differs from 1.0.0's by −172 to +240 bytes, because WOFF2 compression varies with the changed bytes. The download sizes in `docs/ROOF_SANS_WEB_DISTRIBUTION.md` are re-measured on 1.2.0.
 - Tests: `uv run pytest` passed 349 tests in 5 minutes 39 seconds on 2026-11-01. `build/test/` equals the default-path build (`13c1e443…`), and `build/test-baseline/` is `4b4791d6…`.
