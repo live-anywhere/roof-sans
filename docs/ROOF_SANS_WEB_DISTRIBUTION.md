@@ -1,6 +1,6 @@
 # Roof Sans — Web distribution
 
-Roof Sans is 16.2 MB as TTF and 5.74 MB as WOFF2. A web page that shows a few sentences of Korean should not download all of it. Like Pretendard's "dynamic subset", the web build splits the font into small WOFF2 files and lists each file's code points in a CSS `unicode-range`. A browser then downloads only the files whose range covers characters on the page.
+Roof Sans is 21.0 MB as TTF and 8.15 MB as WOFF2 (16.2 MB and 5.74 MB before the light weights). A web page that shows a few sentences of Korean should not download all of it. Like Pretendard's "dynamic subset", the web build splits the font into small WOFF2 files and lists each file's code points in a CSS `unicode-range`. A browser then downloads only the files whose range covers characters on the page.
 
 `roofsans-web` (`src/roofsans/web.py`) builds everything in `dist/web/` from `fonts/RoofSansVariable.ttf`. `dist/web/` is committed, because jsDelivr serves the files from a Git tag.
 
@@ -9,11 +9,11 @@ Roof Sans is 16.2 MB as TTF and 5.74 MB as WOFF2. A web page that shows a few se
 | Path | What it is |
 | --- | --- |
 | `roofsans-dynamic-subset.css` | One `@font-face` per subset file, each with a `unicode-range`. 159,764 bytes. |
-| `woff2-dynamic-subset/RoofSansVariable.subset.N.woff2` | 245 files, 7,798,008 bytes in total, median 26,068 bytes, largest 114,264 bytes. |
+| `woff2-dynamic-subset/RoofSansVariable.subset.N.woff2` | 245 files, 10,745,224 bytes in total, median 35,808 bytes, largest 158,760 bytes. |
 | `roofsans.css` | One `@font-face` for the whole font. |
-| `woff2/RoofSansVariable.woff2` | The whole font as WOFF2, 5,740,256 bytes. |
+| `woff2/RoofSansVariable.woff2` | The whole font as WOFF2, 8,154,880 bytes. |
 
-Every `@font-face` uses the family name `Roof Sans`, `font-weight: 400 1000`, `font-style: normal`, and `font-display: swap`. Every file keeps the `wght` axis (`fvar`, `gvar`, `STAT`), the family names, and every OpenType rule that applies to its glyphs. fontTools drops the features and the feature name records that have no glyph in a file (for example, file 0 keeps 53 of the font's 65 GSUB features). A requested weight below 400 renders at 400, as in Flutter.
+Every `@font-face` uses the family name `Roof Sans`, `font-weight: 100 1000`, `font-style: normal`, and `font-display: swap`. Every file keeps the `wght` axis (`fvar`, `gvar`, `STAT`), the family names, and every OpenType rule that applies to its glyphs. fontTools drops the features and the feature name records that have no glyph in a file (for example, file 0 keeps 53 of the font's 65 GSUB features). A requested weight below 100 renders at 100.
 
 ## How the split works
 
@@ -23,10 +23,10 @@ Every `@font-face` uses the family name `Roof Sans`, `font-weight: 400 1000`, `f
 
    | Group | Code points | File size |
    | --- | --- | --- |
-   | `latin` | Google Fonts' `latin` subset plus every combining diacritical mark (U+0300–036F) | 68,188 bytes |
-   | `latin-ext` | U+0100–02FF, U+1D00–1DBF, U+1E00–1EFF, U+20A0–20CF, U+2C60–2C7F, U+A720–A7FF, U+AB30–AB6F (Vietnamese is here) | 96,340 bytes |
-   | `greek`, `cyrillic` | the Greek and Cyrillic blocks | 55,540 and 45,580 bytes |
-   | `symbols-2070` … `symbols-2500` | U+2070–20FF, U+2100–21FF, U+2200–23FF, U+2400–24FF, U+2500–2E7F | 8,376–22,680 bytes each |
+   | `latin` | Google Fonts' `latin` subset plus every combining diacritical mark (U+0300–036F) | 87,660 bytes |
+   | `latin-ext` | U+0100–02FF, U+1D00–1DBF, U+1E00–1EFF, U+20A0–20CF, U+2C60–2C7F, U+A720–A7FF, U+AB30–AB6F (Vietnamese is here) | 133,584 bytes |
+   | `greek`, `cyrillic` | the Greek and Cyrillic blocks | 81,172 and 65,700 bytes |
+   | `symbols-2070` … `symbols-2500` | U+2070–20FF, U+2100–21FF, U+2200–23FF, U+2400–24FF, U+2500–2E7F | 10,940–30,512 bytes each |
 
    `latin` keeps the combining marks with their Basic Latin and Latin-1 bases, so marks attach correctly. It also keeps the quotes and the middle dot with the letters around them. The Simplified Chinese rule that keeps `It’s` and `l·l` proportional reads those letters as context (`_zhs_quotes` in `features/gsub.py`).
 
@@ -53,18 +53,18 @@ Interleaving the three slicings by frequency rank was also tried: compared with 
 
 ## Download sizes
 
-Measured on the committed `dist/web/` (bytes of the files a page needs):
+Measured on the committed `dist/web/` (bytes of the files a page needs). The light weights add a tuple to almost every glyph, so each file grew by 25–45%; the files a text needs did not change. The earlier sizes are in parentheses:
 
 | Text | Distinct characters | Files | Bytes |
 | --- | --- | --- | --- |
-| An English sentence | 28 | 1 | 68,188 |
-| A Korean UI sentence (`라이브 방송을 시작하려면 …`) | 53 | 8 | 170,024 |
-| A Japanese paragraph (`吾輩は猫である。…`) | 63 | 13 | 333,508 |
-| A Chinese paragraph (`我们的直播平台支持多种语言。…`) | 56 | 32 | 1,124,664 |
-| Every string in the LiveAnywhere admin web source | 1,176 | 68 | 1,708,940 |
-| The whole font, for comparison | all | 1 | 5,740,256 |
+| An English sentence | 28 | 1 | 87,660 (68,188) |
+| A Korean UI sentence (`라이브 방송을 시작하려면 …`) | 53 | 8 | 225,880 (170,024) |
+| A Japanese paragraph (`吾輩は猫である。…`) | 63 | 13 | 451,976 (333,508) |
+| A Chinese paragraph (`我们的直播平台支持多种语言。…`) | 56 | 32 | 1,533,680 (1,124,664) |
+| Every string in the LiveAnywhere admin web source | 1,176 | 68 | 2,342,380 (1,708,940) |
+| The whole font, for comparison | all | 1 | 8,154,880 (5,740,256) |
 
-In Chrome, the check page in "Verification" (Korean, Japanese, Chinese, Greek, Cyrillic, Vietnamese, and Latin text at three weights) loaded 33 subset files, 1,151,040 bytes.
+In Chrome, the check page in "Verification" (Korean, Japanese, Chinese, Greek, Cyrillic, Vietnamese, and Latin text at three weights) loaded 33 subset files, 1,151,040 bytes (measured before the light weights; the files are larger now, as in the table above).
 
 ## Known limits
 
@@ -78,15 +78,15 @@ A browser shapes each run of characters with the file that holds them. A context
 ## Usage
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.0.0/dist/web/roofsans-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.1.0/dist/web/roofsans-dynamic-subset.css">
 ```
 
 ```css
 body { font-family: 'Roof Sans', sans-serif; }
 ```
 
-- Use `roofsans.css` instead for the single 5.74 MB file.
-- jsDelivr serves a minified copy of any `.css` file when `.min` is added before the extension (`roofsans-dynamic-subset.min.css`). Its limits are 20 MB per file and 150 MB per package; the largest file in the repository is the 16.2 MB TTF.
+- Use `roofsans.css` instead for the single 8.15 MB file.
+- jsDelivr serves a minified copy of any `.css` file when `.min` is added before the extension (`roofsans-dynamic-subset.min.css`). Its limits are 20 MB per file and 150 MB per package; the largest file in the repository is the 21.0 MB TTF.
 - Language forms follow the HTML `lang` attribute, as Flutter's `TextStyle(locale:)` does: `lang="ja"` for Japanese punctuation, `lang="zh-CN"` (or `zh-Hans`) for Simplified Chinese forms, `lang="ko"` for Korean hanja forms.
 
 ## Verification

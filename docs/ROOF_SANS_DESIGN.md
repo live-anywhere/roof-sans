@@ -1,6 +1,6 @@
 # Roof Sans — Design
 
-Status: approved for planning; revised with facts found while planning (2026-10-31); extended with Simplified Chinese (2026-11-01, `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`)
+Status: approved for planning; revised with facts found while planning (2026-10-31); extended with Simplified Chinese (2026-11-01, `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`); extended with weights 100–400 (2026-11-01, `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md`)
 
 ## Intent
 
@@ -9,6 +9,8 @@ Roof Sans is a single variable font for the LiveAnywhere Flutter app (`liveanywh
 The owner prefers Wanted Sans's Latin letters, digits, and symbols over Pretendard's; they read as more consistent. Wanted Sans has no Han ideographs and no Japanese kana, though, so it cannot serve Japanese text or hanja on its own. Roof Sans is therefore **Wanted Sans as the base, with Pretendard JP filling every character Wanted Sans lacks**. Han and Japanese glyphs come over unchanged. Everything else Pretendard adds is rebuilt from Wanted Sans parts or adjusted to Wanted Sans's metrics, so it does not stand out next to Wanted Sans text.
 
 The app also has a Chinese mode. Pretendard JP lacks 3,260 of the 6,763 GB 2312 hanzi, and its kanji are Japanese forms, so Roof Sans adds the missing hanzi and Simplified Chinese forms from Source Han Sans CN (rules C1–C3 below). The full reasoning and measurements are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`.
+
+The axis runs from Thin 100 to ExtraBlack 1000. Wanted Sans has nothing lighter than Regular 400, so below 400 each Wanted Sans glyph continues its own variation, at the weight where its Hangul matches Pretendard JP's (rules L1–L5). Everything at 400 and above stays as this document describes. The full reasoning and measurements are in `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md`.
 
 ## Inputs
 
@@ -27,7 +29,7 @@ Wanted Sans and Pretendard JP use 2048 UPM, are TrueType-flavored variable fonts
 
 1. **Every code point Wanted Sans maps stays Wanted Sans** as the default glyph. This includes Hangul, Latin, digits, punctuation, symbols, and the 13 CJK brackets/space Wanted Sans already has (`　〈〉《》「」『』【】〔〕`). Rule H1 adds Japanese alternates for those 11, reached only through `locl`.
 2. **Code points Wanted Sans lacks, inside the Han/Japanese blocks, come from Pretendard JP.** The blocks are: CJK Radicals Supplement, Kangxi Radicals, CJK Symbols and Punctuation, Hiragana, Katakana, Katakana Phonetic Extensions, Enclosed CJK Letters and Months, CJK Compatibility, CJK Unified Ideographs and Extension A, CJK Compatibility Ideographs, Halfwidth and Fullwidth Forms, and the Supplementary Ideographic Plane. Pretendard JP adds roughly 7.7k Han code points, 184 kana, and the related punctuation. Glyphs in these blocks that Pretendard builds from Latin letters or digits (unit squares such as `㎏㎡`) are rebuilt from Wanted Sans parts per rule H3. *(Owner's decision: their Latin follows Wanted Sans.)*
-3. **Exception — fullwidth digits and letters (U+FF10–FF19, FF21–FF3A, FF41–FF5A, 62 code points):** build them from Wanted Sans's ASCII glyphs, centered in Pretendard's fullwidth advance (1920 units). The owner asked for Wanted Sans digits throughout. These are Wanted Sans glyphs in every respect except position: they follow Wanted Sans's variation data across the whole 400–1000 range, with no 930 plateau. Wanted Sans's advances vary with weight (`0` is 1280/1373/1440 at 400/750/1000), so each glyph's centering offset varies too and needs its own variation data. Fullwidth punctuation and halfwidth katakana still come from Pretendard JP, because their placement inside the em box is Japanese-specific. One exception: 23 fullwidth signs that Pretendard builds from a single Latin glyph (`！＂＃＄％＆＇＋，．：；＜＞？＠＾｀｜￠￡￥￦`) are rebuilt from the same-named Wanted Sans glyph. The new glyph keeps Pretendard's placement in the em box, so `，` stays at the bottom left and `！` stays centered; only the drawing changes. *(Designer's call.)*
+3. **Exception — fullwidth digits and letters (U+FF10–FF19, FF21–FF3A, FF41–FF5A, 62 code points):** build them from Wanted Sans's ASCII glyphs, centered in Pretendard's fullwidth advance (1920 units). The owner asked for Wanted Sans digits throughout. These are Wanted Sans glyphs in every respect except position: they follow Wanted Sans's variation data across the whole axis, with no 930 plateau. Wanted Sans's advances vary with weight (`0` is 1280/1373/1440 at 400/750/1000), so each glyph's centering offset varies too and needs its own variation data. Fullwidth punctuation and halfwidth katakana still come from Pretendard JP, because their placement inside the em box is Japanese-specific. One exception: 23 fullwidth signs that Pretendard builds from a single Latin glyph (`！＂＃＄％＆＇＋，．：；＜＞？＠＾｀｜￠￡￥￦`) are rebuilt from the same-named Wanted Sans glyph. The new glyph keeps Pretendard's placement in the em box, so `，` stays at the bottom left and `！` stays centered; only the drawing changes. *(Designer's call.)*
 4. **Every other code point Pretendard JP has and Wanted Sans lacks is added, harmonized to Wanted Sans** per "Design harmonization" (about 1,535 code points: Latin Extended and Vietnamese, IPA, Greek, Cyrillic, combining marks, arrows, math, currency, enclosed and number forms). *(Owner's decision.)*
    - **Excluded: Pretendard's 382 Private Use Area code points (U+E000–F8FF).** They are private slots for Pretendard's own alternates, such as its numerator and denominator figures. No text uses them, and they would bring Pretendard-style digits back. *(Designer's call.)*
 5. **Unicode variation sequences:** keep Pretendard JP's format-14 `cmap` subtable. It has 524 sequences on 503 Han bases, with selectors U+FE00 and U+E0100–E0107. Also keep the alternate glyphs those sequences point to, with their variations, even though they have no ordinary code point. Wanted Sans has no format-14 subtable, so nothing conflicts. *(Designer's call.)*
@@ -130,9 +132,9 @@ Prefer, in order: build the glyph from Wanted Sans parts, then adjust a Pretenda
 
 ## Weight axis
 
-- `wght` axis 400–1000, default 400, matching Wanted Sans. Named instances stay those of Wanted Sans (Regular 400 … ExtraBlack 1000).
-- Wanted Sans glyphs keep their exact variation data: masters at 400 and 1000 for all glyphs, plus an intermediate master at 750 for 70 glyphs.
-- Pretendard JP's axis runs 45–930 (default 400). The Light/Thin range below 400 is discarded. Han, kana, and Japanese punctuation follow Pretendard at the same `wght` value. Other Pretendard-derived glyphs are sampled at the weight H4 or H5 picks. Above 930 they behave by group:
+- `wght` axis 100–1000, default 400. At and above 400 it is Wanted Sans's axis, normalized the same way. Named instances are Thin 100, ExtraLight 200, Light 300, then Wanted Sans's own (Regular 400 … ExtraBlack 1000). The range below 400 is specified in `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md` (L1–L5).
+- Wanted Sans glyphs keep their exact variation data at 400–1000: masters at 400 and 1000 for all glyphs, plus an intermediate master at 750 for 70 glyphs. Below 400 they add one extrapolated tuple (L2).
+- Pretendard JP's axis runs 45–930 (default 400). Han, kana, and Japanese punctuation follow Pretendard at the same `wght` value from 100 to 930 (L3). Other Pretendard-derived glyphs are sampled at the weight H4 or H5 picks. Above 930 they behave by group:
   - **Han, kana, and Japanese punctuation hold the 930 shape from 930 to 1000.** Dense Han would risk closing counters if pushed further. They must not fall back toward 400 past 930, which a single tent peaking at 930 would do.
   - **All other Pretendard-derived glyphs (Latin, Greek, Cyrillic, marks, symbols) keep matching Wanted Sans up to 1000** through H4's weight matching and H5's stroke compensation. At 1000 this samples Pretendard slightly past its 930 master (`w′` ≈ 952) and adds the y offset. Holding at 930 would leave them visibly lighter than Wanted Sans's own letters. Every such glyph must pass the outline sanity check in Acceptance. *(Designer's call.)*
 - Weights line up: at the same `wght`, Pretendard's and Wanted Sans's Hangul ink areas differ by about 1–1.2% (e.g., `한` at 700: 1,471,583 vs. 1,485,211 units²). Pretendard's Han glyphs at a given `wght` therefore sit visually with Wanted Sans's Hangul at that `wght`.
@@ -241,11 +243,12 @@ Decision: **keep the overlap flags as the sources set them.** No font-side worka
     - Real weights, not fake bold.
     - Line heights unchanged against PretendardJP.
 11–20. Simplified Chinese: cmap coverage of GB 2312, source fidelity, the calibration match with Pretendard JP's kanji, `locl` ZHS behavior and isolation, C3 placement, sanity and determinism, the visual review, the Flutter check, size, and the specimen page. The items and their limits are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`, "Acceptance". Items 1–10 still apply unchanged to the font with C1–C3.
+21–29. Light weights: the axis and names, nothing changed at 400 and above, Wanted Sans's extrapolation and its weight match with Pretendard JP, copies, derived glyphs, outline sanity, the visual review, and the Flutter check below 400. The items and their limits are in `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md`, "Acceptance".
 
 ## Non-goals
 
 - Static instance files, web fonts (WOFF2), italic, hinting, vertical-writing features.
-- Weights below 400.
+- Weights below 100.
 - New type design: Greek, Cyrillic, IPA, and letters without a decomposition keep Pretendard's drawings, matched in height and weight per H4; nothing is redrawn by hand.
 - Width and proportion matching for those letters. They keep Pretendard's advances and shapes; for example, Pretendard's `о` is about 7% narrower than Wanted Sans's `o`.
 - Traditional Chinese (`zh-TW`, `zh-HK`) forms, hanzi beyond GB 2312, the GB 2312 non-hanzi Roof Sans lacks, and Chinese forms for `…` and `—`.
@@ -280,6 +283,8 @@ Owner's decisions (2026-10-31):
 4. Latin parts of Pretendard glyphs (unit squares and similar) follow Wanted Sans.
 5. Overlap flags stay; no font-side workaround for Flutter ≤ 3.32.
 6. Pretendard letters that cannot be built from Wanted Sans parts are matched to Wanted Sans in height and weight (H4).
+
+Owner's decision (2026-11-01, later): weights below 400 in the same file. The axis starts at 100; the designer's calls for that extension are listed in `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md`.
 
 Owner's decisions (2026-11-01): Simplified Chinese for the app's Chinese mode, covering all GB 2312 hanzi, in the same single file; splitting it into its own file later must stay possible. The designer's calls for that extension are listed in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`.
 

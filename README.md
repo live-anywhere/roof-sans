@@ -1,6 +1,6 @@
 # Roof Sans
 
-Roof Sans is a single variable font (`wght` 400–1000) for the LiveAnywhere Flutter app and web pages. It replaces the static PretendardJP files the app ships today.
+Roof Sans is a single variable font (`wght` 100–1000, Thin to ExtraBlack) for the LiveAnywhere Flutter app and web pages. It replaces the static PretendardJP files the app ships today.
 
 It is **Wanted Sans as the base, with Pretendard JP filling every character Wanted Sans lacks**:
 
@@ -8,8 +8,9 @@ It is **Wanted Sans as the base, with Pretendard JP filling every character Want
 - Han ideographs, kana, and Japanese punctuation come from Pretendard JP, unchanged.
 - The GB 2312 hanzi Pretendard JP lacks (3,260), and Simplified Chinese forms for 2,212 hanzi it has, come from Source Han Sans CN, scaled and weighted to match Pretendard JP's kanji. The Chinese forms apply only to text tagged Chinese.
 - Everything else Pretendard JP adds (Vietnamese and other Latin letters, Greek, Cyrillic, IPA, combining marks, arrows, math, unit squares, enclosed numbers, fractions) is rebuilt from Wanted Sans parts or matched to Wanted Sans's heights, weights, and symbol axes, so it does not stand out next to Wanted Sans text.
+- Wanted Sans has no weights below Regular (400). Roof Sans's Thin, ExtraLight, and Light (100–300) extend each Wanted Sans glyph along its own 400 → 550 movement, so Hangul and Latin match Pretendard JP's light Han and kana in weight. Everything at 400 and above is unchanged.
 
-The output is `fonts/RoofSansVariable.ttf`, plus web fonts in `dist/web/` (see "Web usage"). The design is in `docs/ROOF_SANS_DESIGN.md`; the Simplified Chinese extension and its reasons are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`. The decisions and measured values from the build are in `docs/ROOF_SANS_BUILD_NOTES.md`.
+The output is `fonts/RoofSansVariable.ttf`, plus web fonts in `dist/web/` (see "Web usage"). The design is in `docs/ROOF_SANS_DESIGN.md`; the Simplified Chinese extension and its reasons are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`, and the light weights in `docs/ROOF_SANS_LIGHT_WEIGHTS_DESIGN.md`. The decisions and measured values from the build are in `docs/ROOF_SANS_BUILD_NOTES.md`.
 
 ## Build
 
@@ -29,10 +30,11 @@ uv run pytest
   uv run roofsans-fetch --from-refs refs
   ```
 
-- `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf`, `fonts/OFL.txt`, and `OFL.txt`. It takes about 20 seconds. The build is deterministic: the same inputs give a byte-identical font.
+- `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf` (21.0 MB), `fonts/OFL.txt`, and `OFL.txt`. It takes about 40 seconds. The build is deterministic: the same inputs give a byte-identical font.
 - `uv run roofsans-web` writes `dist/web/` from `fonts/RoofSansVariable.ttf`: the font as one WOFF2 file and as a dynamic subset of 245 WOFF2 files, each with its CSS. It takes about 40 seconds. Run it after every font build and commit `dist/web/` with the font; the tests fail while it is stale.
-- `uv run roofsans-build --without-chinese --out <path>` builds the font without the Simplified Chinese extension. It reproduces the font from before the extension byte for byte, and the tests use it as the "before" font.
-- `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copies of the font into `build/test/` and `build/test-baseline/`. The full run takes about 5 minutes.
+- `uv run roofsans-build --without-light --out <path>` builds the font without the weights below 400 (`wght` 400–1000, 16.2 MB). It reproduces the font from before the light weights byte for byte; use it where the light weights are not needed and file size matters.
+- `uv run roofsans-build --without-chinese --without-light --out <path>` builds the font without the Simplified Chinese extension too. It reproduces the font from before that extension byte for byte, and the tests use it as the "before" font.
+- `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copies of the font into `build/test/`, `build/test-nolight/`, and `build/test-baseline/`. The full run takes about 11 minutes.
 
 ## Specimen page
 
@@ -43,22 +45,22 @@ uv run python site/build_site.py --out build/site
 open build/site/index.html
 ```
 
-The script embeds `fonts/RoofSansVariable.ttf` as WOFF2, so `index.html` (about 5 MB) works offline as one file. It also checks that the numbers the page states (code points, glyphs, Hangul, hanja and kanji coverage, language counts) still match the font, and stops with the list of numbers to update if they do not. The language lists come from `site/languages.json`, produced with Hyperglot 0.8.2 on this font.
+The script embeds `fonts/RoofSansVariable.ttf` as WOFF2, so `index.html` (about 11 MB) works offline as one file. It also checks that the numbers the page states (code points, glyphs, the weight range and named weights, Hangul, hanja and kanji coverage, language counts) still match the font, and stops with the list of numbers to update if they do not. The language lists come from `site/languages.json`, produced with Hyperglot 0.8.2 on this font.
 
 ## Web usage
 
 Load the dynamic subset from jsDelivr and use the family `Roof Sans`:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.0.0/dist/web/roofsans-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.1.0/dist/web/roofsans-dynamic-subset.css">
 ```
 
 ```css
 body { font-family: 'Roof Sans', sans-serif; }
 ```
 
-- The font is split into 245 small WOFF2 files, each listed with a `unicode-range`. The browser downloads only the files that hold characters on the page: a Korean UI sentence needs 8 files (170 KB), where the whole font is 5.74 MB.
-- Weights 400–1000 come from the variable axis (`font-weight: 400 1000`). Weights below 400 render as 400.
+- The font is split into 245 small WOFF2 files, each listed with a `unicode-range`. The browser downloads only the files that hold characters on the page: a Korean UI sentence needs 8 files (226 KB), where the whole font is 8.15 MB.
+- Weights 100–1000 come from the variable axis (`font-weight: 100 1000`). A weight below 100 renders as 100.
 - Language forms follow the HTML `lang` attribute: `lang="ja"` for Japanese punctuation, `lang="zh-CN"` for Simplified Chinese forms, `lang="ko"` for Korean hanja forms.
 - `roofsans.css` loads the whole font as one file instead.
 - Shaping rules do not cross file boundaries. For example, a colon or ellipsis right after Hangul keeps its baseline position, and kerning between basic and extended Latin letters (such as `T` + `ō`) is lost. Use `roofsans.css` where that matters. `docs/ROOF_SANS_WEB_DISTRIBUTION.md` lists the limits, the measured sizes, and how the split is made.
@@ -77,7 +79,7 @@ flutter:
 
 ### Weights
 
-On Flutter 3.41 and later, use `FontWeight`. Flutter maps it to the `wght` axis:
+On Flutter 3.41 and later, use `FontWeight`. Flutter maps it to the `wght` axis, so `FontWeight.w100` (Thin), `w200` (ExtraLight), and `w300` (Light) use the light weights:
 
 ```dart
 const TextStyle(fontFamily: 'RoofSans', fontWeight: FontWeight.w700)
@@ -151,7 +153,7 @@ References: flutter/flutter#159678, orioncactus/pretendard#177, flutter/flutter#
 ## Migration from PretendardJP
 
 - **Line height does not change.** Roof Sans takes its vertical metrics from Wanted Sans. On Android they resolve to the same values as PretendardJP (ascender 1950, descender −494 at 2048 units per em).
-- **Weights below 400 render as 400.** The axis starts at 400. `FontWeight.w100`, `w200`, and `w300` render as Regular, and Flutter does not fall back to another family.
+- **Light weights are new.** PretendardJP's Thin, ExtraLight, and Light (`w100`–`w300`) map to Roof Sans's own 100–300, which match PretendardJP's Han and kana at the same weight. Before Flutter 3.41, set them with `fontVariations` as above.
 - **Japanese brackets need the `ja` locale.** Thirteen code points are shared between Korean and Japanese text: U+3000 (ideographic space) and `〈〉《》「」『』【】〔〕`. By default they use Wanted Sans's proportional Korean forms (for example, `「` is 640 units wide, where PretendardJP's is 1920). With the `ja` locale they switch to Pretendard JP's Japanese forms: fullwidth (1920 units), except `〈〉`, which Pretendard JP draws 698 units wide. This also applies to brackets next to Latin text or digits, such as `ID「abc」`. For Japanese UI, set `TextStyle(locale: Locale('ja', 'JP'))` (see "Japanese punctuation" above); the app locale alone does not work on Flutter web and is unverified on Android.
 - **Remove the `weight` entries** for PretendardJP from `pubspec.yaml` and declare the single Roof Sans asset as shown above.
 
