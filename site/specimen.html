@@ -363,6 +363,32 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
 </head>
 <body>
 
+<!--
+The icon symbols below are Octicons from GitHub Primer (https://github.com/primer/octicons),
+used under this license:
+
+MIT License
+
+Copyright (c) 2026 GitHub Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-repo" viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></symbol>
   <symbol id="i-download" viewBox="0 0 16 16"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></symbol>
@@ -400,7 +426,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
       <a class="UnderlineNav-item" href="#languages">지원 언어 <span class="Counter">560+</span></a>
       <a class="UnderlineNav-item" href="#locales">한·중·일 차이</a>
       <a class="UnderlineNav-item" href="#symbols">기호</a>
-      <a class="UnderlineNav-item" href="#features">OpenType 기능 <span class="Counter">67</span></a>
+      <a class="UnderlineNav-item" href="#features">OpenType 기능 <span class="Counter">66</span></a>
       <a class="UnderlineNav-item" href="#usage">사용법</a>
     </nav>
   </div>
@@ -629,7 +655,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
         </div>
         <div class="markdown-body">
           <h2 id="h-ft" style="margin-top:0">기능 켜기</h2>
-          <p>Roof Sans에는 OpenType 기능이 67개 있습니다. 커닝, 결합 부호 위치, 언어별 자형처럼 글을 바르게 그리는 데 필요한 8개는 기본으로 켜져 있습니다. 나머지는 꺼져 있고, 필요한 곳에서 네 글자 태그로 켭니다.</p>
+          <p>Roof Sans에는 OpenType 기능이 66개 있습니다. 커닝, 결합 부호 위치, 언어별 자형처럼 글을 바르게 그리는 데 필요한 7개는 기본으로 켜져 있습니다. 나머지는 꺼져 있고, 필요한 곳에서 네 글자 태그로 켭니다.</p>
           <p>아래 예시는 왼쪽이 기본 상태, 오른쪽이 그 기능을 켠 상태입니다. 모두 이 페이지의 Roof Sans로 그렸고, 바뀌는 글자는 색으로 표시했습니다.</p>
           <div class="code"><pre><code>.title { font-feature-settings: "case"; }
 .price { font-feature-settings: "tnum", "zero"; }</code></pre><button class="btn copy" type="button" aria-label="복사"><svg class="octicon idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="octicon ok" aria-hidden="true"><use href="#i-check"/></svg></button></div>
@@ -647,7 +673,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
           <ul>
             <li>여러 기능은 쉼표로 이어 씁니다. CSS의 <code>font-feature-settings</code>를 자식 요소에서 다시 지정하면 부모의 값에 더해지지 않고 통째로 바뀝니다. 그래서 자식 요소에는 필요한 기능을 모두 다시 적어야 합니다.</li>
             <li>숫자와 합자 몇 가지는 CSS 표준 속성으로도 켤 수 있습니다. <code>font-variant-numeric</code>의 <code>tabular-nums</code>(tnum), <code>slashed-zero</code>(zero), <code>diagonal-fractions</code>(frac), <code>ordinal</code>(ordn), <code>font-variant-ligatures</code>의 <code>discretionary-ligatures</code>(dlig), <code>font-variant-east-asian</code>의 <code>full-width</code>(fwid), <code>proportional-width</code>(pwid), <code>jis78</code>, <code>jis83</code>, <code>jis90</code>입니다.</li>
-            <li>기본으로 켜진 기능은 값을 0으로 주면 꺼집니다(예: <code>"liga" 0</code>). 맨 아래 상자에 모아 두었습니다.</li>
+            <li>기본으로 켜진 기능은 값을 0으로 주면 꺼집니다(예: <code>"kern" 0</code>). 맨 아래 상자에 모아 두었습니다.</li>
             <li>동적 서브셋 CSS로 불러와도 같은 기능을 쓸 수 있습니다. 다만 사용법 탭에서 설명한 것처럼, 파일 경계를 넘는 문맥 규칙은 적용되지 않을 수 있습니다.</li>
           </ul>
         </div>
@@ -1213,16 +1239,6 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
             </div>
           </div>
         </div>
-        <div class="Box-row ft-row" data-feature="liga">
-          <div class="ft-meta">
-            <div class="ft-tags"><code class="ft-tag">liga</code></div>
-            <h3>기본 합자</h3>
-            <span class="en">Standard ligatures</span>
-          </div>
-          <div class="ft-body">
-            <p>원티드 산스에서 이어받은 로고 합자만 있습니다. <code>wanted_logo</code>라고 쓰면 원티드 로고 한 글자(U+F0000)로 바뀌므로, 이 글자열을 그대로 보여 줘야 하는 곳에서는 <code>"liga" 0</code>으로 끕니다. fi, fl 같은 라틴 합자는 <code>dlig</code>에 있습니다.</p>
-          </div>
-        </div>
         <div class="Box-row ft-row" data-feature="rlig">
           <div class="ft-meta">
             <div class="ft-tags"><code class="ft-tag">rlig</code></div>
@@ -1311,8 +1327,8 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
       <ul class="facts">
         <li><span class="muted">굵기</span><span class="v">400–1000</span></li>
         <li><span class="muted">이름 있는 굵기</span><span class="v">7개</span></li>
-        <li><span class="muted">코드포인트</span><span class="v">24,978</span></li>
-        <li><span class="muted">글리프</span><span class="v">28,404</span></li>
+        <li><span class="muted">코드포인트</span><span class="v">24,974</span></li>
+        <li><span class="muted">글리프</span><span class="v">28,400</span></li>
         <li><span class="muted">한글 음절</span><span class="v">11,172자 전부</span></li>
         <li><span class="muted">지원 언어</span><span class="v">560여 개</span></li>
         <li><span class="muted">UPM</span><span class="v">2048</span></li>
@@ -1344,8 +1360,9 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
 
 <footer class="container">
   <div class="footer">
-    <p>Roof Sans는 Wanted Sans 1.003(Copyright © 2024 Wanted Lab, Inc., The Wanted Sans Project Authors)과 Pretendard JP 1.309(Copyright © 2021 Kil Hyung-jin; Adobe; The Inter Project Authors; The M+ FONTS Project Authors)에 Source Han Sans CN 2.005(Copyright 2014–2025 Adobe)를 더한 폰트이며, SIL Open Font License 1.1로 배포합니다.</p>
-    <p>이 페이지의 글자는 모두 실제 Roof Sans 파일(RoofSansVariable, WOFF2로 압축)로 그렸습니다. 아이콘은 GitHub Primer Octicons(MIT)입니다.</p>
+    <p>Roof Sans는 Wanted Sans 1.003(Copyright © 2024 Wanted Lab, Inc., The Wanted Sans Project Authors)과 Pretendard JP 1.309(Copyright © 2021, 2023 Kil Hyung-jin; Adobe; The Inter Project Authors; The M+ FONTS Project Authors)에 Source Han Sans CN 2.005(Copyright 2014–2025 Adobe)를 더한 폰트입니다. 리브애니웨어가 바꾸고 더한 부분은 Copyright 2026 LiveAnywhere Inc.입니다. 폰트는 <a href="https://github.com/live-anywhere/roof-sans/blob/main/OFL.txt">SIL Open Font License 1.1</a>로, 빌드 코드와 이 페이지는 <a href="https://github.com/live-anywhere/roof-sans/blob/main/LICENSE">MIT 라이선스</a>로 배포합니다.</p>
+    <p>Wanted Sans와 Wanted 로고는 Wanted Lab, Inc.의 상표입니다. Pretendard는 Kil Hyung-jin의, Inter는 rsms의, Source는 Adobe의 상표입니다. Roof Sans에는 Wanted 로고 글리프가 없습니다.</p>
+    <p>이 페이지의 글자는 모두 실제 Roof Sans 파일(RoofSansVariable, WOFF2로 압축)로 그렸습니다. 아이콘은 GitHub Primer Octicons(Copyright (c) 2026 GitHub Inc., <a href="https://github.com/primer/octicons/blob/main/LICENSE">MIT 라이선스</a>)이며, 라이선스 전문은 이 페이지의 소스에 있습니다.</p>
   </div>
 </footer>
 

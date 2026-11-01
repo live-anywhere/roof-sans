@@ -59,3 +59,6 @@ def test_page_links_font_and_fills_markers(roof_path, tmp_path):
     assert "6,763" in page and "3,008" in page and "5,034" in page
     assert "TextStyle(fontFamily: 'RoofSans', locale: Locale('zh', 'CN'))" in page
     assert 'id="panel-features"' in page and 'href="#features"' in page
+    # Notices: LiveAnywhere's copyright, the upstream trademarks, and the Octicons MIT license in full.
+    assert "Copyright 2026 LiveAnywhere Inc." in page and "Wanted Lab, Inc.의 상표" in page
+    assert "Copyright (c) 2026 GitHub Inc." in page and "Permission is hereby granted, free of charge" in page

@@ -37,14 +37,14 @@ WOFF2_NAME = "RoofSansVariable.woff2"
 
 # Numbers the page states, as (covered, total). Keep them in sync with specimen.html.
 PAGE_FACTS = {
-    "code points": (24978, None),
-    "glyphs": (28404, None),
+    "code points": (24974, None),
+    "glyphs": (28400, None),
     # The page's axis range, sliders, weights tab counter, and "이름 있는 굵기 7개" (Regular 400 … ExtraBlack 1000).
     "wght minimum": (400, None),
     "wght maximum": (1000, None),
     "named weights": (7, None),
-    # Distinct GSUB and GPOS feature tags: the features tab counter and "OpenType 기능이 67개".
-    "OpenType features": (67, None),
+    # Distinct GSUB and GPOS feature tags: the features tab counter and "OpenType 기능이 66개".
+    "OpenType features": (66, None),
     "Hangul syllables": (11172, 11172),
     "KS X 1001 hanja": (4888, 4888),
     "JIS X 0208 level 1 kanji": (2965, 2965),
