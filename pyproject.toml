@@ -2,6 +2,9 @@
 name = "roofsans"
 version = "1.2.0"
 description = "Reproducible build of the Roof Sans variable font"
+# The build code. The font it builds is under the SIL OFL 1.1 (OFL.txt).
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = "==3.12.*"
 dependencies = [
     "fonttools==4.60.2",
