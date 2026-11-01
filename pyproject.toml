@@ -1,6 +1,6 @@
 [project]
 name = "roofsans"
-version = "1.0.0"
+version = "1.1.0"
 description = "Reproducible build of the Roof Sans variable font"
 requires-python = "==3.12.*"
 dependencies = [
