@@ -8,7 +8,7 @@ All values are in font units (2048 per em) unless stated otherwise. "t" is the n
 
 ## 1. Inputs and pinning
 
-`inputs.lock.json` pins seven files. Each entry has the upstream repository, the path, a `raw.githubusercontent.com` URL at the full 40-character commit, and the SHA-256. The last three came with the Simplified Chinese extension (section 12).
+`inputs.lock.json` pins ten files. Each entry has the upstream repository, the path, a `raw.githubusercontent.com` URL at the full 40-character commit, and the SHA-256. `shs_cn`, `shs_jp`, and `shs_license` came with the Simplified Chinese extension (section 12). The three `slices_*` files are Google Fonts slicing strategies; only the web build reads them (section 13).
 
 | Name | File | Commit | SHA-256 | Bytes |
 | --- | --- | --- | --- | --- |
@@ -19,6 +19,9 @@ All values are in font units (2048 per em) unless stated otherwise. "t" is the n
 | `shs_cn` | Source Han Sans `SourceHanSansCN-VF.ttf` (2.005, `Variable/TTF/Subset/`) | `a4f7cf94edfb9d7ffbdfc4841de276358bd7e0f2` | `25a01e41…f2ba0b` | 17,749,860 |
 | `shs_jp` | Source Han Sans `SourceHanSansJP-VF.ttf` (2.005, same folder) | `a4f7cf9…` | `4acc3492…7f55bbc` | 9,564,672 |
 | `shs_license` | Source Han Sans `LICENSE.txt` | `a4f7cf9…` | `fcac737e…c2bac5a2` | 4,463 |
+| `slices_ja` | nam-files `slices/japanese_default.txt` | `2a68014b16056e965c18fd47de1f3fde9a5b0095` | `3032f27d…b8509d` | 893,039 |
+| `slices_ko` | nam-files `slices/korean_default.txt` | `2a68014…` | `100b9a96…64807b` | 876,086 |
+| `slices_zhs` | nam-files `slices/simplified-chinese_default.txt` | `2a68014…` | `cd022036…22c2c1` | 889,189 |
 
 `roofsans-fetch` (`src/roofsans/inputs.py`) fills `inputs/` in lock order:
 
@@ -26,7 +29,7 @@ All values are in font units (2048 per em) unless stated otherwise. "t" is the n
 2. Otherwise, with `--from-refs DIR`, the file is copied from `DIR/<repo>/<path>` when it exists there.
 3. Otherwise it is downloaded from the lock URL.
 
-The data goes to a temporary file in `inputs/`, is checked, and is then moved into place. A mismatch removes the temporary file and raises `InputChecksumError`. Nothing is written under `refs/`. The build itself only reads `inputs/`. The test fixture `inputs` calls the same function with `refs/` as the copy source, so tests copy from `refs/` when it exists and download otherwise.
+The data goes to a temporary file in `inputs/`, is checked, and is then moved into place. A mismatch removes the temporary file and raises `InputChecksumError`. Nothing is written under `refs/`. The build itself only reads `inputs/`. `ensure_files(names)` fetches only the named entries; `roofsans-web` uses it so the web build does not download the font inputs. The test fixture `inputs` calls the same function with `refs/` as the copy source, so tests copy from `refs/` when it exists and download otherwise.
 
 Python dependencies are pinned with `==` in `pyproject.toml` and locked in `uv.lock`: Python 3.12 (3.12.13 in the current `.venv`), fontTools 4.60.2, skia-python 144.1, uharfbuzz 0.57.0, opentype-sanitizer 9.2.0, pytest 9.2.0, brotli 1.2.1, and the build backend uv_build 0.11.27. brotli was added for the specimen page: fontTools needs it to write WOFF2, which keeps the self-contained page near 5 MB instead of 16 MB with the TTF. The plan's selection counts were measured with Python 3.9's Unicode 13.0 data; Python 3.12's Unicode 15.0 data gives the same count for every rule.
 
@@ -480,3 +483,12 @@ The outliers at 400 come from small shape differences between Pretendard's Sourc
 - Reviews: a Codex builder check of the design; a Claude review of the implementation (no blocker; its findings are fixed or recorded above).
 - Visual review (Acceptance 17): the specimen sheets at 400, 700, and 1000 show no jump in size, position, or weight between C1 hanzi and present hanzi under `zh-CN`.
 - Flutter web (Acceptance 18, Flutter 3.44.9, CanvasKit): `TextStyle(locale: Locale('zh', 'CN'))` applies the C2 forms and the Chinese punctuation; untagged Chinese text draws every hanzi from Roof Sans with the Japanese forms; line metrics still match PretendardJP. Android is still outstanding (section 11).
+
+## 13. Web distribution
+
+`roofsans-web` (`src/roofsans/web.py`) writes `dist/web/`: the whole font as WOFF2, a dynamic subset of 245 WOFF2 files, and a CSS file for each. The design, the split, the measured download sizes, and the known cross-file limits are in `docs/ROOF_SANS_WEB_DISTRIBUTION.md`. Facts the tests rely on:
+
+- The split reads only the built font and the three `slices_*` inputs. It does not change the font, so the font's SHA-256 stays `da7a7fe8…e75b87d`.
+- The output is deterministic: two runs give byte-identical files. `test_committed_dist_matches_a_fresh_build` compares a fresh build of the committed font with the committed `dist/web/`, so a font change without a new `roofsans-web` run fails the tests.
+- Each subset file's cmap is its `unicode-range` plus the bidi mirror of any bracket in it (fontTools' default `bidi_closure`), so a mirrored bracket in right-to-left text comes from the same file.
+- Each subset file also holds the variation sequences (format 14 cmap) of its base characters. Requesting only the bases dropped all 524 sequences; `subset_request` adds the selectors.

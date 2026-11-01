@@ -1,6 +1,6 @@
 # Roof Sans
 
-Roof Sans is a single variable font (`wght` 400–1000) for the LiveAnywhere Flutter app. It replaces the static PretendardJP files the app ships today.
+Roof Sans is a single variable font (`wght` 400–1000) for the LiveAnywhere Flutter app and web pages. It replaces the static PretendardJP files the app ships today.
 
 It is **Wanted Sans as the base, with Pretendard JP filling every character Wanted Sans lacks**:
 
@@ -9,7 +9,7 @@ It is **Wanted Sans as the base, with Pretendard JP filling every character Want
 - The GB 2312 hanzi Pretendard JP lacks (3,260), and Simplified Chinese forms for 2,212 hanzi it has, come from Source Han Sans CN, scaled and weighted to match Pretendard JP's kanji. The Chinese forms apply only to text tagged Chinese.
 - Everything else Pretendard JP adds (Vietnamese and other Latin letters, Greek, Cyrillic, IPA, combining marks, arrows, math, unit squares, enclosed numbers, fractions) is rebuilt from Wanted Sans parts or matched to Wanted Sans's heights, weights, and symbol axes, so it does not stand out next to Wanted Sans text.
 
-The output is `fonts/RoofSansVariable.ttf`. The design is in `docs/ROOF_SANS_DESIGN.md`; the Simplified Chinese extension and its reasons are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`. The decisions and measured values from the build are in `docs/ROOF_SANS_BUILD_NOTES.md`.
+The output is `fonts/RoofSansVariable.ttf`, plus web fonts in `dist/web/` (see "Web usage"). The design is in `docs/ROOF_SANS_DESIGN.md`; the Simplified Chinese extension and its reasons are in `docs/ROOF_SANS_SIMPLIFIED_CHINESE_DESIGN.md`. The decisions and measured values from the build are in `docs/ROOF_SANS_BUILD_NOTES.md`.
 
 ## Build
 
@@ -22,7 +22,7 @@ uv run roofsans-build
 uv run pytest
 ```
 
-- `uv run roofsans-fetch` downloads the pinned input fonts (Wanted Sans, Pretendard JP, and the Source Han Sans CN and JP subsets) and their license files into `inputs/` and checks each file's SHA-256 against `inputs.lock.json`. A file already in `inputs/` with the right checksum is reused.
+- `uv run roofsans-fetch` downloads the pinned input fonts (Wanted Sans, Pretendard JP, and the Source Han Sans CN and JP subsets), their license files, and the Google Fonts slicing files the web build uses into `inputs/`, and checks each file's SHA-256 against `inputs.lock.json`. A file already in `inputs/` with the right checksum is reused.
 - If you have the upstream repositories checked out under `refs/wanted-sans` and `refs/pretendard` at the pinned commits, copy those inputs from there instead of downloading them. The Source Han Sans files are still downloaded unless `refs/source-han-sans` exists:
 
   ```sh
@@ -30,6 +30,7 @@ uv run pytest
   ```
 
 - `uv run roofsans-build` writes `fonts/RoofSansVariable.ttf`, `fonts/OFL.txt`, and `OFL.txt`. It takes about 20 seconds. The build is deterministic: the same inputs give a byte-identical font.
+- `uv run roofsans-web` writes `dist/web/` from `fonts/RoofSansVariable.ttf`: the font as one WOFF2 file and as a dynamic subset of 245 WOFF2 files, each with its CSS. It takes about 40 seconds. Run it after every font build and commit `dist/web/` with the font; the tests fail while it is stale.
 - `uv run roofsans-build --without-chinese --out <path>` builds the font without the Simplified Chinese extension. It reproduces the font from before the extension byte for byte, and the tests use it as the "before" font.
 - `uv run pytest` runs the unit tests and the acceptance tests. The acceptance tests build their own copies of the font into `build/test/` and `build/test-baseline/`. The full run takes about 5 minutes.
 
@@ -43,6 +44,24 @@ open build/site/index.html
 ```
 
 The script embeds `fonts/RoofSansVariable.ttf` as WOFF2, so `index.html` (about 5 MB) works offline as one file. It also checks that the numbers the page states (code points, glyphs, Hangul, hanja and kanji coverage, language counts) still match the font, and stops with the list of numbers to update if they do not. The language lists come from `site/languages.json`, produced with Hyperglot 0.8.2 on this font.
+
+## Web usage
+
+Load the dynamic subset from jsDelivr and use the family `Roof Sans`:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/live-anywhere/roof-sans@v1.0.0/dist/web/roofsans-dynamic-subset.css">
+```
+
+```css
+body { font-family: 'Roof Sans', sans-serif; }
+```
+
+- The font is split into 245 small WOFF2 files, each listed with a `unicode-range`. The browser downloads only the files that hold characters on the page: a Korean UI sentence needs 8 files (170 KB), where the whole font is 5.74 MB.
+- Weights 400–1000 come from the variable axis (`font-weight: 400 1000`). Weights below 400 render as 400.
+- Language forms follow the HTML `lang` attribute: `lang="ja"` for Japanese punctuation, `lang="zh-CN"` for Simplified Chinese forms, `lang="ko"` for Korean hanja forms.
+- `roofsans.css` loads the whole font as one file instead.
+- Shaping rules do not cross file boundaries. For example, a colon or ellipsis right after Hangul keeps its baseline position, and kerning between basic and extended Latin letters (such as `T` + `ō`) is lost. Use `roofsans.css` where that matters. `docs/ROOF_SANS_WEB_DISTRIBUTION.md` lists the limits, the measured sizes, and how the split is made.
 
 ## Flutter usage
 
