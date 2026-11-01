@@ -4,8 +4,9 @@
 ``RoofSansVariable.woff2`` next to the page, fills in the language lists from
 ``languages.json`` and the version, release, and file-size markers, and writes
 ``index.html``. Before writing, it checks that the coverage numbers the page states still
-hold for the font; if the font changed, it stops and names the numbers to update in
-``specimen.html``.
+hold for the font, and that the OpenType features tab describes every feature the font
+has (``data-feature`` attributes); if the font changed, it stops and names what to update
+in ``specimen.html``.
 
 The page loads the font file by a relative URL, so open it through a web server:
 
@@ -42,6 +43,8 @@ PAGE_FACTS = {
     "wght minimum": (400, None),
     "wght maximum": (1000, None),
     "named weights": (7, None),
+    # Distinct GSUB and GPOS feature tags: the features tab counter and "OpenType 기능이 67개".
+    "OpenType features": (67, None),
     "Hangul syllables": (11172, 11172),
     "KS X 1001 hanja": (4888, 4888),
     "JIS X 0208 level 1 kanji": (2965, 2965),
@@ -52,6 +55,8 @@ PAGE_FACTS = {
 }
 # Language counts the page states, per Hyperglot script name.
 PAGE_LANGUAGE_COUNTS = {"Latin": 483, "Cyrillic": 77}
+# Each row of the OpenType features tab names the tags it describes, space-separated.
+FEATURE_ATTR = re.compile(r'data-feature="([^"]+)"')
 
 
 def _is_han(cp: int) -> bool:
@@ -70,6 +75,38 @@ def _double_byte_set(codec: str, lead_bytes: range, trail_bytes) -> set[int]:
             if len(text) == 1:
                 chars.add(ord(text))
     return chars
+
+
+def font_features(font: TTFont) -> set[str]:
+    """The GSUB and GPOS feature tags of the font."""
+    return {
+        record.FeatureTag
+        for table in ("GSUB", "GPOS")
+        if table in font
+        for record in font[table].table.FeatureList.FeatureRecord
+    }
+
+
+def documented_features(page: str) -> list[str]:
+    """The feature tags the page describes, in page order, with repeats."""
+    return [tag for match in FEATURE_ATTR.finditer(page) for tag in match.group(1).split()]
+
+
+def feature_problems(font: TTFont, page: str) -> list[str]:
+    """Describe every difference between the font's features and the ones the page describes."""
+    documented = documented_features(page)
+    in_font = font_features(font)
+    problems = []
+    repeated = sorted({tag for tag in documented if documented.count(tag) > 1})
+    missing = sorted(in_font - set(documented))
+    extra = sorted(set(documented) - in_font)
+    if repeated:
+        problems.append(f"features described more than once: {' '.join(repeated)}")
+    if missing:
+        problems.append(f"features the font has but the page does not describe: {' '.join(missing)}")
+    if extra:
+        problems.append(f"features the page describes but the font does not have: {' '.join(extra)}")
+    return problems
 
 
 def measure_facts(font: TTFont) -> dict[str, tuple[int, int | None]]:
@@ -92,6 +129,7 @@ def measure_facts(font: TTFont) -> dict[str, tuple[int, int | None]]:
         "wght minimum": (round(axis.minValue), None),
         "wght maximum": (round(axis.maxValue), None),
         "named weights": (len(font["fvar"].instances), None),
+        "OpenType features": (len(font_features(font)), None),
     }
     for name, chars in sets.items():
         han = {cp for cp in chars if name == "Hangul syllables" or _is_han(cp)}
@@ -139,17 +177,18 @@ def write_woff2(font_path: Path, out: Path) -> None:
 def build_site(roof: Path, out_dir: Path) -> Path:
     languages = json.loads(LANGUAGES_PATH.read_text(encoding="utf-8"))
     font = TTFont(roof)
-    problems = stale_facts(font, languages)
+    page = TEMPLATE_PATH.read_text(encoding="utf-8")
+    problems = stale_facts(font, languages) + feature_problems(font, page)
     if problems:
         raise SystemExit(
-            "specimen.html states numbers that no longer match the font. Update the page text and "
-            "PAGE_FACTS in site/build_site.py (and regenerate languages.json with Hyperglot if the "
-            "language counts changed):\n  " + "\n  ".join(problems)
+            "specimen.html no longer matches the font. Update the page text and PAGE_FACTS in "
+            "site/build_site.py, describe added or removed OpenType features in the features tab "
+            "(data-feature attributes), and regenerate languages.json with Hyperglot if the "
+            "language counts changed:\n  " + "\n  ".join(problems)
         )
     out_dir.mkdir(parents=True, exist_ok=True)
     woff2 = out_dir / WOFF2_NAME
     write_woff2(roof, woff2)
-    page = TEMPLATE_PATH.read_text(encoding="utf-8")
     replacements = {
         "__LATIN_LIST__": ", ".join(html.escape(n) for n in languages["scripts"]["Latin"]),
         "__CYRILLIC_LIST__": ", ".join(html.escape(n) for n in languages["scripts"]["Cyrillic"]),

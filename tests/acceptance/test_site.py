@@ -33,6 +33,18 @@ def test_stale_fact_is_reported(roof_path, monkeypatch):
     assert len(problems) == 1 and problems[0].startswith("glyphs:")
 
 
+def test_page_describes_every_feature(roof_path):
+    page = build_site.TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert build_site.feature_problems(TTFont(roof_path), page) == []
+
+
+def test_undescribed_feature_is_reported(roof_path):
+    page = build_site.TEMPLATE_PATH.read_text(encoding="utf-8")
+    assert 'data-feature="case"' in page
+    problems = build_site.feature_problems(TTFont(roof_path), page.replace('data-feature="case"', ""))
+    assert problems == ["features the font has but the page does not describe: case"]
+
+
 def test_page_links_font_and_fills_markers(roof_path, tmp_path):
     page = build_site.build_site(roof_path, tmp_path).read_text(encoding="utf-8")
     assert (tmp_path / build_site.WOFF2_NAME).read_bytes()[:4] == b"wOF2"
@@ -46,3 +58,4 @@ def test_page_links_font_and_fills_markers(roof_path, tmp_path):
     assert 'data-sample="zh"' in page
     assert "6,763" in page and "3,008" in page and "5,034" in page
     assert "TextStyle(fontFamily: 'RoofSans', locale: Locale('zh', 'CN'))" in page
+    assert 'id="panel-features"' in page and 'href="#features"' in page
