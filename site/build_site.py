@@ -30,6 +30,10 @@ DEFAULT_ROOF = SITE_DIR.parent / "fonts" / "RoofSansVariable.ttf"
 PAGE_FACTS = {
     "code points": (24978, None),
     "glyphs": (28404, None),
+    # The page's axis label, sliders, and "이름 있는 굵기 10개" (Thin 100 … ExtraBlack 1000).
+    "wght minimum": (100, None),
+    "wght maximum": (1000, None),
+    "named weights": (10, None),
     "Hangul syllables": (11172, 11172),
     "KS X 1001 hanja": (4888, 4888),
     "JIS X 0208 level 1 kanji": (2965, 2965),
@@ -73,9 +77,13 @@ def measure_facts(font: TTFont) -> dict[str, tuple[int, int | None]]:
         "GB 2312 level 2 hanzi": set(gb2312_levels()[1]),
         "Big5 frequent hanzi": _double_byte_set("big5", range(0xA4, 0xC7), big5_trail),
     }
+    (axis,) = (a for a in font["fvar"].axes if a.axisTag == "wght")
     facts: dict[str, tuple[int, int | None]] = {
         "code points": (len(cmap), None),
         "glyphs": (len(font.getGlyphOrder()), None),
+        "wght minimum": (round(axis.minValue), None),
+        "wght maximum": (round(axis.maxValue), None),
+        "named weights": (len(font["fvar"].instances), None),
     }
     for name, chars in sets.items():
         han = {cp for cp in chars if name == "Hangul syllables" or _is_han(cp)}

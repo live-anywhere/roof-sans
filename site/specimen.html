@@ -8,7 +8,7 @@
 @font-face {
   font-family: "Roof Sans";
   src: url("data:font/woff2;base64,__FONT_DATA__") format("woff2");
-  font-weight: 400 1000;
+  font-weight: 100 1000;
   font-style: normal;
   font-display: block;
 }
@@ -221,8 +221,8 @@ footer p { max-width: 90ch; }
 <div class="wrap">
   <header class="hero" id="top">
     <div class="top">
-      <span class="label">가변 폰트 · wght 400–1000</span>
-      <span class="label">Version 1.000 · SIL OFL 1.1</span>
+      <span class="label">가변 폰트 · wght 100–1000</span>
+      <span class="label">Version 1.100 · SIL OFL 1.1</span>
     </div>
     <h1 id="hero-word">Roof Sans</h1>
     <p class="sub" id="hero-sub">한글과 라틴은 원티드 산스, 한자와 가나는 프리텐다드 JP, 중국어 간체는 소스 한 산스</p>
@@ -231,16 +231,16 @@ footer p { max-width: 90ch; }
         <label class="label" for="hero-w">굵기 축 (wght)</label>
         <output id="hero-out" for="hero-w">700 · Bold</output>
       </div>
-      <input id="hero-w" type="range" min="400" max="1000" step="1" value="700" aria-describedby="hero-out">
+      <input id="hero-w" type="range" min="100" max="1000" step="1" value="700" aria-describedby="hero-out">
       <div class="ticks" aria-hidden="true">
-        <span>400 Regular</span><span>500</span><span>600</span><span>700 Bold</span><span>800</span><span>900</span><span>1000</span>
+        <span>100 Thin</span><span>200</span><span>300</span><span>400 Regular</span><span>500</span><span>600</span><span>700 Bold</span><span>800</span><span>900</span><span>1000</span>
       </div>
     </div>
     <div class="facts">
       <span><b>24,978</b> 코드포인트</span>
       <span><b>28,404</b> 글리프</span>
       <span><b>2048</b> UPM</span>
-      <span>이름 있는 굵기 <b>7</b>개</span>
+      <span>이름 있는 굵기 <b>10</b>개</span>
       <span>한글 <b>11,172</b>자 전부</span>
       <span>지원 언어 <b>560</b>여 개</span>
     </div>
@@ -261,7 +261,7 @@ footer p { max-width: 90ch; }
       <div class="controls">
         <div class="control">
           <div class="label"><label for="t-w">굵기</label><output id="t-w-out" for="t-w">700</output></div>
-          <input id="t-w" type="range" min="400" max="1000" step="1" value="700">
+          <input id="t-w" type="range" min="100" max="1000" step="1" value="700">
         </div>
         <div class="control">
           <div class="label"><label for="t-s">크기</label><output id="t-s-out" for="t-s">44px</output></div>
@@ -340,9 +340,10 @@ footer p { max-width: 90ch; }
   </section>
 
   <section aria-labelledby="wf-title">
-    <span class="label">이름 있는 굵기 7개</span>
+    <span class="label">이름 있는 굵기 10개</span>
     <div class="body">
-      <h2 id="wf-title">Regular부터 ExtraBlack까지</h2>
+      <h2 id="wf-title">Thin부터 ExtraBlack까지</h2>
+      <p>원티드 산스에는 Regular(400)보다 가는 굵기가 없습니다. Thin·ExtraLight·Light(100–300)는 원티드 산스의 글자마다 400에서 550으로 가는 변화를 반대쪽으로 이어서 만들었고, 한글 획의 양이 같은 굵기의 프리텐다드 JP와 같아지는 지점에 맞췄습니다. 그래서 한자와 가나가 한글 옆에서 같은 굵기로 보입니다.</p>
       <div class="waterfall" id="waterfall"></div>
     </div>
   </section>
@@ -393,6 +394,7 @@ footer p { max-width: 90ch; }
       <h2 id="mix-title">섞어 써도 높이와 굵기가 튀지 않습니다</h2>
       <p>원티드 산스에 없는 그리스·키릴 문자는 프리텐다드에서 가져와 x-높이 1032, 대문자 높이 1448, 획 굵기를 원티드 산스에 맞췄습니다. 베트남어는 원티드 산스의 기본 글자와 부호를 조합했습니다.</p>
       <div class="mix">
+        <div class="row"><span class="label">100</span><span class="s" style="font-weight:100">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
         <div class="row"><span class="label">400</span><span class="s" style="font-weight:400">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
         <div class="row"><span class="label">700</span><span class="s" style="font-weight:700">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
         <div class="row"><span class="label">1000</span><span class="s" style="font-weight:1000">Hoxen Жажда Москва λαβγδεζ Tiếng Việt</span></div>
@@ -438,7 +440,7 @@ footer p { max-width: 90ch; }
 )</code></pre>
       <ul class="notes">
         <li>Flutter 3.41 이상에서는 <code>FontWeight</code>가 wght 축 값으로 전달됩니다. 그보다 오래된 버전에서는 <code>fontVariations: [FontVariation('wght', 700)]</code>을 함께 지정하세요.</li>
-        <li>굵기 축은 400부터 시작합니다. <code>w100</code>–<code>w300</code>은 400으로 그려집니다.</li>
+        <li>굵기 축은 100(Thin)부터 1000(ExtraBlack)까지입니다. <code>w100</code>–<code>w300</code>은 Thin·ExtraLight·Light로 그려집니다.</li>
         <li>일본식 괄호가 필요하면 <code>TextStyle(locale: Locale('ja', 'JP'))</code>를 지정하세요. Flutter 웹에서는 앱 로케일만으로는 적용되지 않았습니다.</li>
         <li>중국어 간체는 <code>TextStyle(fontFamily: 'RoofSans', locale: Locale('zh', 'CN'))</code>으로 지정하세요. 한자와 문장부호에 중국어 자형이 적용됩니다. Flutter 웹에서는 <code>TextStyle</code>에 로케일을 지정해야 하며, Android는 아직 검증하지 않았습니다.</li>
         <li>줄 높이는 PretendardJP와 같습니다(hhea 1950 / −494).</li>
@@ -455,7 +457,7 @@ footer p { max-width: 90ch; }
 
 <script>
 (() => {
-  const names = { 400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black", 1000: "ExtraBlack" };
+  const names = { 100: "Thin", 200: "ExtraLight", 300: "Light", 400: "Regular", 500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black", 1000: "ExtraBlack" };
   const nameFor = (w) => names[w] ? `${w} · ${names[w]}` : String(w);
   const fill = (el) => {
     const p = ((el.value - el.min) / (el.max - el.min)) * 100;
@@ -480,7 +482,7 @@ footer p { max-width: 90ch; }
   if (!reduce) {
     animating = true;
     const start = performance.now();
-    const keys = [[0, 700], [900, 1000], [1900, 400], [2700, 700]];
+    const keys = [[0, 700], [900, 1000], [2200, 100], [3200, 700]];
     const step = (now) => {
       if (!animating) return;
       const t = now - start;
