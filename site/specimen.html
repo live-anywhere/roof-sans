@@ -286,6 +286,33 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
 .glyph-grid .Box-header { padding: 8px 16px; color: var(--fg-muted); font-size: 12px; }
 .glyph-grid .s { padding: 16px; font-size: clamp(22px, 2.6vw, 28px); font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
 
+/* OpenType features: one row per feature, the default rendering beside the feature turned on */
+.ft-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 8px 24px; }
+.ft-meta { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.ft-meta h3 { font-size: 14px; font-weight: 600; }
+.ft-meta .en { font-size: 12px; color: var(--fg-muted); }
+.ft-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ft-tag {
+  font-family: var(--mono); font-size: 12px; font-weight: 600; line-height: 20px;
+  padding: 0 6px; border-radius: 6px; background: var(--accent-muted); color: var(--accent);
+}
+.ft-body { display: grid; gap: 10px; min-width: 0; }
+.ft-body > p { color: var(--fg-muted); max-width: 80ch; }
+.ft-body code { font-size: 85%; padding: 0.1em 0.4em; border-radius: 6px; background: var(--counter); }
+.ft-cmp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: 6px; }
+.ft-cmp.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ft-cmp > div { padding: 8px 12px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.ft-cmp > div + div { border-left: 1px solid var(--border); }
+.ft-s { font-size: clamp(20px, 2.4vw, 26px); font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+.ft-s.hanja { font-size: clamp(26px, 3.4vw, 36px); }
+.ft-s mark { background: var(--attention-muted); color: inherit; border-radius: 2px; box-shadow: inset 0 -2px 0 var(--attention); }
+.cv-grid { overflow: hidden; border-radius: 0 0 6px 6px; }
+.cv-grid > div { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); margin: 0 -1px -1px 0; }
+.cv { display: grid; gap: 6px; padding: 12px 16px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.cv-g { display: flex; align-items: baseline; gap: 10px; font-size: 44px; font-weight: 500; line-height: 1.2; }
+.cv-g .arr { font-size: 16px; color: var(--fg-muted); }
+.cv-k { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); }
+
 /* Sidebar */
 .sidebar { min-width: 0; }
 .BorderGrid-row { padding-bottom: 24px; }
@@ -320,6 +347,13 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
   .axis-word { padding: 16px; }
   .axis { padding: 0 16px 16px; }
   .samples { margin-left: 0; }
+  .ft-row { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 479px) {
+  .ft-cmp, .ft-cmp.three { grid-template-columns: minmax(0, 1fr); }
+  .ft-cmp > div + div { border-left: 0; border-top: 1px solid var(--border); }
+  .cv-grid > div { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .cv-g { font-size: 36px; }
 }
 </style>
 </head>
@@ -362,6 +396,7 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
       <a class="UnderlineNav-item" href="#languages">지원 언어 <span class="Counter">560+</span></a>
       <a class="UnderlineNav-item" href="#locales">한·중·일 차이</a>
       <a class="UnderlineNav-item" href="#symbols">기호</a>
+      <a class="UnderlineNav-item" href="#features">OpenType 기능 <span class="Counter">67</span></a>
       <a class="UnderlineNav-item" href="#usage">사용법</a>
     </nav>
   </div>
@@ -579,6 +614,631 @@ details p { margin-top: 8px; color: var(--fg-muted); line-height: 1.7; }
         <div class="Box"><div class="Box-header">분수 · 위아래 첨자</div><div class="s">½ ⅓ ¼ ⅚ x² x⁺ x⁽ⁿ⁾ H₂O</div></div>
         <div class="Box"><div class="Box-header">단위 · 전각</div><div class="s">5㎏ 30㎡ 12㎞ Ⅳ № ＡＢＣ１２３！？</div></div>
         <div class="Box"><div class="Box-header">통화</div><div class="s">₩128,000 $9.99 €12 ¥500 ₫</div></div>
+      </div>
+    </section>
+
+    <!-- OpenType 기능: build_site.py checks that the data-feature attributes name every feature in the font, each once. -->
+    <section class="panel" id="panel-features" aria-label="OpenType 기능" hidden>
+      <article class="Box" aria-labelledby="h-ft">
+        <div class="Box-header file">
+          <svg class="octicon" aria-hidden="true"><use href="#i-book"/></svg>OpenType 기능
+        </div>
+        <div class="markdown-body">
+          <h2 id="h-ft" style="margin-top:0">기능 켜기</h2>
+          <p>Roof Sans에는 OpenType 기능이 67개 있습니다. 커닝, 결합 부호 위치, 언어별 자형처럼 글을 바르게 그리는 데 필요한 8개는 기본으로 켜져 있습니다. 나머지는 꺼져 있고, 필요한 곳에서 네 글자 태그로 켭니다.</p>
+          <p>아래 예시는 왼쪽이 기본 상태, 오른쪽이 그 기능을 켠 상태입니다. 모두 이 페이지의 Roof Sans로 그렸고, 바뀌는 글자는 색으로 표시했습니다.</p>
+          <div class="code"><pre><code>.title { font-feature-settings: "case"; }
+.price { font-feature-settings: "tnum", "zero"; }</code></pre><button class="btn copy" type="button" aria-label="복사"><svg class="octicon idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="octicon ok" aria-hidden="true"><use href="#i-check"/></svg></button></div>
+          <p>Flutter에서는 <code>TextStyle</code>의 <code>fontFeatures</code>로 켭니다.</p>
+          <div class="code"><pre><code>Text(
+  '(SALE) ₩12,000',
+  style: TextStyle(
+    fontFamily: 'RoofSans',
+    fontFeatures: [
+      FontFeature.enable('case'),
+      FontFeature.enable('tnum'),
+    ],
+  ),
+)</code></pre><button class="btn copy" type="button" aria-label="복사"><svg class="octicon idle" aria-hidden="true"><use href="#i-copy"/></svg><svg class="octicon ok" aria-hidden="true"><use href="#i-check"/></svg></button></div>
+          <ul>
+            <li>여러 기능은 쉼표로 이어 씁니다. CSS의 <code>font-feature-settings</code>를 자식 요소에서 다시 지정하면 부모의 값에 더해지지 않고 통째로 바뀝니다. 그래서 자식 요소에는 필요한 기능을 모두 다시 적어야 합니다.</li>
+            <li>숫자와 합자 몇 가지는 CSS 표준 속성으로도 켤 수 있습니다. <code>font-variant-numeric</code>의 <code>tabular-nums</code>(tnum), <code>slashed-zero</code>(zero), <code>diagonal-fractions</code>(frac), <code>ordinal</code>(ordn), <code>font-variant-ligatures</code>의 <code>discretionary-ligatures</code>(dlig), <code>font-variant-east-asian</code>의 <code>full-width</code>(fwid), <code>proportional-width</code>(pwid), <code>jis78</code>, <code>jis83</code>, <code>jis90</code>입니다.</li>
+            <li>기본으로 켜진 기능은 값을 0으로 주면 꺼집니다(예: <code>"liga" 0</code>). 맨 아래 상자에 모아 두었습니다.</li>
+            <li>동적 서브셋 CSS로 불러와도 같은 기능을 쓸 수 있습니다. 다만 사용법 탭에서 설명한 것처럼, 파일 경계를 넘는 문맥 규칙은 적용되지 않을 수 있습니다.</li>
+          </ul>
+        </div>
+      </article>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">대문자와 문장부호</h2>
+          <p class="desc">한글 옆의 문장부호와, 대문자·숫자 옆의 쌍점·하이픈·가운뎃점은 기본으로 대문자 높이에 맞춰집니다. 아래 두 기능은 괄호 같은 나머지 문장부호까지, 소문자 옆에서도 같은 높이로 올립니다.</p>
+        </div>
+        <div class="Box-row ft-row" data-feature="case">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">case</code></div>
+            <h3>대문자용 문장부호</h3>
+            <span class="en">Case-sensitive forms</span>
+          </div>
+          <div class="ft-body">
+            <p>괄호, 대괄호, 중괄호, 꺾쇠표(« »), ¿, 하이픈과 대시, 수학 기호 등 41자를 대문자 높이로 올립니다. 대문자로만 쓴 제목, 버튼, 표 머리글에 씁니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>(</mark>SALE<mark>)</mark> <mark>[</mark>NEW<mark>]</mark> <mark>{</mark>API<mark>}</mark> <mark>«</mark>HOT<mark>»</mark> <mark>¿</mark>QUÉ?</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'case'"><mark>(</mark>SALE<mark>)</mark> <mark>[</mark>NEW<mark>]</mark> <mark>{</mark>API<mark>}</mark> <mark>«</mark>HOT<mark>»</mark> <mark>¿</mark>QUÉ?</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss05">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss05</code></div>
+            <h3>한국 현지화</h3>
+            <span class="en">Korea localization</span>
+          </div>
+          <div class="ft-body">
+            <p>원티드 산스에서 이어받은 스타일 세트로, <code>case</code>와 같은 문장부호 41자를 대문자 높이로 올립니다. 한글 문장 속 영문 표기(e-mail 등)의 문장부호를 한글 높이에 맞출 때 씁니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">e<mark>-</mark>mail x<mark>×</mark>y <mark>(</mark>beta<mark>)</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss05'">e<mark>-</mark>mail x<mark>×</mark>y <mark>(</mark>beta<mark>)</mark></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">숫자</h2>
+          <p class="desc">숫자는 기본으로 글자마다 폭이 다른 비례폭입니다. 첨자처럼 일부 글자에만 쓰는 기능은 그 글자만 감싸서 켭니다.</p>
+        </div>
+        <div class="Box-row ft-row" data-feature="tnum pnum">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">tnum</code><code class="ft-tag">pnum</code></div>
+            <h3>고정폭 숫자</h3>
+            <span class="en">Tabular figures</span>
+          </div>
+          <div class="ft-body">
+            <p>숫자 10자의 폭을 같게 맞춥니다. 표나 가격처럼 자릿수를 세로로 맞춰야 하는 곳에 씁니다. <code>pnum</code>은 기본값인 비례폭 숫자로 되돌립니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">11,111<br>88,888</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'tnum'">11,111<br>88,888</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="zero">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">zero</code></div>
+            <h3>빗금 친 0</h3>
+            <span class="en">Slashed zero</span>
+          </div>
+          <div class="ft-body">
+            <p>0에 빗금을 넣어 영문 O와 구별합니다. ⓪, ⁰, ₀도 바뀝니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">2<mark>0</mark>26 <mark>0</mark>O <mark>⓪</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'zero'">2<mark>0</mark>26 <mark>0</mark>O <mark>⓪</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="frac">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">frac</code></div>
+            <h3>분수</h3>
+            <span class="en">Fractions</span>
+          </div>
+          <div class="ft-body">
+            <p>숫자 사이에 빗금(/)을 쓴 글자열을 분수 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>1/2</mark> <mark>3/4</mark> <mark>15/16</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'frac'"><mark>1/2</mark> <mark>3/4</mark> <mark>15/16</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="numr dnom">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">numr</code><code class="ft-tag">dnom</code></div>
+            <h3>분자·분모</h3>
+            <span class="en">Numerators, Denominators</span>
+          </div>
+          <div class="ft-body">
+            <p>분수의 위쪽 글자(<code>numr</code>)와 아래쪽 글자(<code>dnom</code>)입니다. 숫자와 영문 소문자가 바뀝니다. 보통은 <code>frac</code>을 쓰고, 분수를 직접 짤 때 씁니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>3</mark>/<mark>4</mark> <mark>x</mark>/<mark>y</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s"><mark style="font-feature-settings:'numr'">3</mark>/<mark style="font-feature-settings:'dnom'">4</mark> <mark style="font-feature-settings:'numr'">x</mark>/<mark style="font-feature-settings:'dnom'">y</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="sups">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">sups</code></div>
+            <h3>위 첨자</h3>
+            <span class="en">Superscripts</span>
+          </div>
+          <div class="ft-body">
+            <p>숫자와 영문 소문자를 위 첨자로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">m<mark>2</mark> E=mc<mark>2</mark> 1<mark>st</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s">m<mark style="font-feature-settings:'sups'">2</mark> E=mc<mark style="font-feature-settings:'sups'">2</mark> 1<mark style="font-feature-settings:'sups'">st</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="subs sinf">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">subs</code><code class="ft-tag">sinf</code></div>
+            <h3>아래 첨자</h3>
+            <span class="en">Subscripts, Scientific inferiors</span>
+          </div>
+          <div class="ft-body">
+            <p>숫자와 영문 소문자를 아래 첨자로 바꿉니다. 두 기능의 결과는 같습니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">H<mark>2</mark>O CO<mark>2</mark> x<mark>i</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s">H<mark style="font-feature-settings:'subs'">2</mark>O CO<mark style="font-feature-settings:'subs'">2</mark> x<mark style="font-feature-settings:'subs'">i</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ordn">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ordn</code></div>
+            <h3>서수</h3>
+            <span class="en">Ordinals</span>
+          </div>
+          <div class="ft-body">
+            <p>숫자 바로 뒤의 a와 o를 스페인어·포르투갈어의 서수 표기(ª, º)로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>1a</mark> <mark>2o</mark> <mark>3a</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ordn'"><mark>1a</mark> <mark>2o</mark> <mark>3a</mark></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">라틴 글자 모양</h2>
+          <p class="desc">영문 글자와 숫자의 모양을 바꿉니다. 스타일 세트(ss)는 관련된 글자 여러 개를 한 번에 바꾸고, 악센트가 붙은 글자와 원문자·첨자도 함께 바꿉니다. 이름 아래의 영문은 폰트 파일에 저장된 이름입니다.</p>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss01">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss01</code></div>
+            <h3>지오메트릭 모양</h3>
+            <span class="en">Geometric forms</span>
+          </div>
+          <div class="ft-body">
+            <p>j, t, u, Q, ?와 숫자 1, 2, 6, 7, 9를 기하학적인 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>Qu</mark>ie<mark>t</mark> <mark>ju</mark>mps<mark>?</mark> <mark>12679</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss01'"><mark>Qu</mark>ie<mark>t</mark> <mark>ju</mark>mps<mark>?</mark> <mark>12679</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss02">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss02</code></div>
+            <h3>일반 숫자</h3>
+            <span class="en">Common numerics</span>
+          </div>
+          <div class="ft-body">
+            <p>숫자 1, 2, 4, 7을 흔히 보는 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>1247</mark> <mark>½</mark> <mark>¼</mark> <mark>①②④⑦</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss02'"><mark>1247</mark> <mark>½</mark> <mark>¼</mark> <mark>①②④⑦</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss03">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss03</code></div>
+            <h3>꾸밈 문자</h3>
+            <span class="en">Unique forms</span>
+          </div>
+          <div class="ft-body">
+            <p>a, e, f, g, r, ?와 숫자 2, 3을 개성 있는 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">L<mark>arge</mark> <mark>f</mark>i<mark>g</mark>u<mark>re?</mark> <mark>23</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss03'">L<mark>arge</mark> <mark>f</mark>i<mark>g</mark>u<mark>re?</mark> <mark>23</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss04">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss04</code></div>
+            <h3>어센더 판독성 향상</h3>
+            <span class="en">Legible ascender</span>
+          </div>
+          <div class="ft-body">
+            <p>b, d, h, k, l의 위로 솟은 획(어센더) 모양을 바꿔 알아보기 쉽게 합니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>b</mark>o<mark>ld</mark> <mark>h</mark>i<mark>k</mark>e</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss04'"><mark>b</mark>o<mark>ld</mark> <mark>h</mark>i<mark>k</mark>e</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss06">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss06</code></div>
+            <h3>가독성 향상</h3>
+            <span class="en">High legibility</span>
+          </div>
+          <div class="ft-body">
+            <p>I, J, a, l과 숫자 1, 3, 6, 7, 9를 서로 헷갈리지 않는 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>Ill</mark> <mark>Ja</mark>i<mark>l</mark> <mark>13679</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss06'"><mark>Ill</mark> <mark>Ja</mark>i<mark>l</mark> <mark>13679</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss07">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss07</code></div>
+            <h3>이층 구조 a</h3>
+            <span class="en">Double-storey a</span>
+          </div>
+          <div class="ft-body">
+            <p>a를 본문에 어울리는 이층 구조로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">b<mark>a</mark>n<mark>a</mark>n<mark>a</mark> d<mark>a</mark>t<mark>a</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss07'">b<mark>a</mark>n<mark>a</mark>n<mark>a</mark> d<mark>a</mark>t<mark>a</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss08">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss08</code></div>
+            <h3>이층 구조 3</h3>
+            <span class="en">Double-storey 3</span>
+          </div>
+          <div class="ft-body">
+            <p>3을 이층 구조로 바꿔 다른 숫자와 더 잘 구별되게 합니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>3</mark> <mark>333</mark> <mark>¾</mark> <mark>③</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss08'"><mark>3</mark> <mark>333</mark> <mark>¾</mark> <mark>③</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss09">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss09</code></div>
+            <h3>지오메트릭 Q</h3>
+            <span class="en">Geometric Q</span>
+          </div>
+          <div class="ft-body">
+            <p>Q를 기하학적인 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>Q</mark>uiz <mark>Q</mark>ueen <mark>Ⓠ</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss09'"><mark>Q</mark>uiz <mark>Q</mark>ueen <mark>Ⓠ</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="salt">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">salt</code></div>
+            <h3>대체 모양</h3>
+            <span class="en">Stylistic alternates</span>
+          </div>
+          <div class="ft-body">
+            <p>Q와 a를 대체 모양으로 바꿉니다. <code>ss07</code>과 <code>ss09</code>를 함께 켠 것과 같습니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s"><mark>Q</mark>u<mark>a</mark>lity d<mark>a</mark>t<mark>a</mark></div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'salt'"><mark>Q</mark>u<mark>a</mark>lity d<mark>a</mark>t<mark>a</mark></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="dlig">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">dlig</code></div>
+            <h3>선택 합자</h3>
+            <span class="en">Discretionary ligatures</span>
+          </div>
+          <div class="ft-body">
+            <p>ff, fi, fl, ffi, ffl을 한 글자로 합칩니다. 기본 상태에서는 이 글자들을 합치지 않습니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">a<mark>ffi</mark>nity <mark>fl</mark>ow o<mark>ffi</mark>ce</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'dlig'">a<mark>ffi</mark>nity <mark>fl</mark>ow o<mark>ffi</mark>ce</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">글자 하나씩 바꾸기 (cv01–cv22)</h2>
+          <p class="desc">문자 변형(cv)은 글자 하나만 바꿉니다. 스타일 세트 가운데 일부 글자만 바꾸고 싶을 때 씁니다. 각 칸의 오른쪽 글자가 그 기능을 켠 모양입니다.</p>
+        </div>
+        <div class="cv-grid"><div>
+          <div class="cv" data-feature="cv01"><div class="cv-g"><span>j</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv01'">j</span></div><div class="cv-k"><code class="ft-tag">cv01</code>지오메트릭 j</div></div>
+          <div class="cv" data-feature="cv02"><div class="cv-g"><span>t</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv02'">t</span></div><div class="cv-k"><code class="ft-tag">cv02</code>지오메트릭 t</div></div>
+          <div class="cv" data-feature="cv03"><div class="cv-g"><span>a</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv03'">a</span></div><div class="cv-k"><code class="ft-tag">cv03</code>이층 구조 a</div></div>
+          <div class="cv" data-feature="cv04"><div class="cv-g"><span>u</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv04'">u</span></div><div class="cv-k"><code class="ft-tag">cv04</code>지오메트릭 u</div></div>
+          <div class="cv" data-feature="cv05"><div class="cv-g"><span>J</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv05'">J</span></div><div class="cv-k"><code class="ft-tag">cv05</code>구별하기 쉬운 J</div></div>
+          <div class="cv" data-feature="cv06"><div class="cv-g"><span>Q</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv06'">Q</span></div><div class="cv-k"><code class="ft-tag">cv06</code>지오메트릭 Q</div></div>
+          <div class="cv" data-feature="cv07"><div class="cv-g"><span>1</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv07'">1</span></div><div class="cv-k"><code class="ft-tag">cv07</code>곧은 1</div></div>
+          <div class="cv" data-feature="cv08"><div class="cv-g"><span>2</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv08'">2</span></div><div class="cv-k"><code class="ft-tag">cv08</code>곧은 2</div></div>
+          <div class="cv" data-feature="cv09"><div class="cv-g"><span>3</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv09'">3</span></div><div class="cv-k"><code class="ft-tag">cv09</code>이층 구조 3</div></div>
+          <div class="cv" data-feature="cv10"><div class="cv-g"><span>4</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv10'">4</span></div><div class="cv-k"><code class="ft-tag">cv10</code>닫힌 4</div></div>
+          <div class="cv" data-feature="cv11"><div class="cv-g"><span>69</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv11'">69</span></div><div class="cv-k"><code class="ft-tag">cv11</code>곧은 6·9</div></div>
+          <div class="cv" data-feature="cv12"><div class="cv-g"><span>7</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv12'">7</span></div><div class="cv-k"><code class="ft-tag">cv12</code>곧은 7</div></div>
+          <div class="cv" data-feature="cv13"><div class="cv-g"><span>?</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv13'">?</span></div><div class="cv-k"><code class="ft-tag">cv13</code>지오메트릭 ?</div></div>
+          <div class="cv" data-feature="cv14"><div class="cv-g"><span>2</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv14'">2</span></div><div class="cv-k"><code class="ft-tag">cv14</code>꾸밈 2</div></div>
+          <div class="cv" data-feature="cv15"><div class="cv-g"><span>r</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv15'">r</span></div><div class="cv-k"><code class="ft-tag">cv15</code>꾸밈 r</div></div>
+          <div class="cv" data-feature="cv16"><div class="cv-g"><span>l</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv16'">l</span></div><div class="cv-k"><code class="ft-tag">cv16</code>구별하기 쉬운 l</div></div>
+          <div class="cv" data-feature="cv17"><div class="cv-g"><span>1</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv17'">1</span></div><div class="cv-k"><code class="ft-tag">cv17</code>구별하기 쉬운 1</div></div>
+          <div class="cv" data-feature="cv18"><div class="cv-g"><span>I</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv18'">I</span></div><div class="cv-k"><code class="ft-tag">cv18</code>구별하기 쉬운 I</div></div>
+          <div class="cv" data-feature="cv19"><div class="cv-g"><span>f</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv19'">f</span></div><div class="cv-k"><code class="ft-tag">cv19</code>꾸밈 f</div></div>
+          <div class="cv" data-feature="cv20"><div class="cv-g"><span>g</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv20'">g</span></div><div class="cv-k"><code class="ft-tag">cv20</code>꾸밈 g</div></div>
+          <div class="cv" data-feature="cv21"><div class="cv-g"><span>a</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv21'">a</span></div><div class="cv-k"><code class="ft-tag">cv21</code>꾸밈 a</div></div>
+          <div class="cv" data-feature="cv22"><div class="cv-g"><span>e</span><span class="arr" aria-hidden="true">→</span><span style="font-feature-settings:'cv22'">e</span></div><div class="cv-k"><code class="ft-tag">cv22</code>꾸밈 e</div></div>
+        </div></div>
+      </div>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">원문자와 아이콘</h2>
+          <p class="desc">원문자와 네모 문자의 모양, 원티드 산스 아이콘의 크기를 바꿉니다.</p>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss11">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss11</code></div>
+            <h3>외곽선 심벌</h3>
+            <span class="en">Outlined symbols</span>
+          </div>
+          <div class="ft-body">
+            <p>채워진 원문자와 네모 문자를 외곽선 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">❶❷❸ 🅐🅑🅒</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss11'">❶❷❸ 🅐🅑🅒</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss12">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss12</code></div>
+            <h3>원형 심벌</h3>
+            <span class="en">Circle symbols</span>
+          </div>
+          <div class="ft-body">
+            <p>네모 문자를 원문자로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">🄰🄱🄲 🅲🅳🅴</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss12'">🄰🄱🄲 🅲🅳🅴</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss13">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss13</code></div>
+            <h3>사각형 심벌</h3>
+            <span class="en">Square symbols</span>
+          </div>
+          <div class="ft-body">
+            <p>원문자를 네모 문자로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">①②③ ❶❷❸ ⒶⒷⒸ</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss13'">①②③ ❶❷❸ ⒶⒷⒸ</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss14">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss14</code></div>
+            <h3>채워진 심벌</h3>
+            <span class="en">Filled symbols</span>
+          </div>
+          <div class="ft-body">
+            <p>외곽선 원문자와 네모 문자를 채워진 모양으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">①②③ 🄰🄱🄲 ⒶⒷⒸ</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" style="font-feature-settings:'ss14'">①②③ 🄰🄱🄲 ⒶⒷⒸ</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss15 ss16 ss10">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss15</code><code class="ft-tag">ss16</code><code class="ft-tag">ss10</code></div>
+            <h3>작은·큰 아이콘</h3>
+            <span class="en">Small, Large, Medium symbols</span>
+          </div>
+          <div class="ft-body">
+            <p>원티드 산스에서 이어받은 아이콘 22자(보충 사용자 정의 영역, U+100000–U+100479)를 작게(<code>ss15</code>) 또는 크게(<code>ss16</code>) 그립니다. <code>ss10</code>은 아이콘을 기본 크기로 두는 묶음이라 켜도 모양이 바뀌지 않습니다.</p>
+            <div class="ft-cmp three">
+              <div><span class="tag">기본</span><div class="ft-s">&#x10012B; &#x100185; &#x100184; &#x1002B4; &#x1002C3; &#x1001FE;</div></div>
+              <div><span class="tag"><code>ss15</code></span><div class="ft-s" style="font-feature-settings:'ss15'">&#x10012B; &#x100185; &#x100184; &#x1002B4; &#x1002C3; &#x1001FE;</div></div>
+              <div><span class="tag"><code>ss16</code></span><div class="ft-s" style="font-feature-settings:'ss16'">&#x10012B; &#x100185; &#x100184; &#x1002B4; &#x1002C3; &#x1001FE;</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">한자와 일본어</h2>
+          <p class="desc">한자와 가나, 전각 글자에 쓰는 기능입니다. 아래 예시는 모두 <code>lang="ja"</code>로 지정했습니다. 언어에 따라 바뀌는 자형은 한·중·일 차이 탭에 있습니다.</p>
+        </div>
+        <div class="Box-row ft-row" data-feature="ss20">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ss20</code></div>
+            <h3>한국식 한자</h3>
+            <span class="en">Korean localization</span>
+          </div>
+          <div class="ft-body">
+            <p>한자 537자를 한국식 자형으로 바꿉니다. <code>lang="ko"</code>를 지정했을 때와 같은 자형이며, 언어를 지정할 수 없는 곳에서 씁니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s hanja" lang="ja">福神社祖祝祈祥漢情精</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s hanja" lang="ja" style="font-feature-settings:'ss20'">福神社祖祝祈祥漢情精</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="jp78">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">jp78</code></div>
+            <h3>JIS78 자형</h3>
+            <span class="en">JIS78 forms</span>
+          </div>
+          <div class="ft-body">
+            <p>한자를 일본 공업 규격 JIS C 6226-1978의 자형으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s hanja" lang="ja">侠剥噛嚢填屡</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s hanja" lang="ja" style="font-feature-settings:'jp78'">侠剥噛嚢填屡</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="jp83">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">jp83</code></div>
+            <h3>JIS83 자형</h3>
+            <span class="en">JIS83 forms</span>
+          </div>
+          <div class="ft-body">
+            <p>한자를 JIS X 0208-1983의 자형으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s hanja" lang="ja">辻逗祇遡鯖餅</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s hanja" lang="ja" style="font-feature-settings:'jp83'">辻逗祇遡鯖餅</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="jp90">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">jp90</code></div>
+            <h3>JIS90 자형</h3>
+            <span class="en">JIS90 forms</span>
+          </div>
+          <div class="ft-body">
+            <p>한자를 JIS X 0208-1990의 자형으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s hanja" lang="ja">倦僅兎叉噂屑</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s hanja" lang="ja" style="font-feature-settings:'jp90'">倦僅兎叉噂屑</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="nlck">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">nlck</code></div>
+            <h3>인쇄 표준 자형</h3>
+            <span class="en">NLC kanji forms</span>
+          </div>
+          <div class="ft-body">
+            <p>한자를 일본 국어심의회가 2000년에 정한 「표외한자자체표」의 인쇄 표준 자형으로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s hanja" lang="ja">倶呑嘘曽焔涜</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s hanja" lang="ja" style="font-feature-settings:'nlck'">倶呑嘘曽焔涜</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="fwid">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">fwid</code></div>
+            <h3>전각</h3>
+            <span class="en">Full widths</span>
+          </div>
+          <div class="ft-body">
+            <p>라틴 문자, 숫자, 문장부호, 공백을 한자와 같은 폭의 전각 글자로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s" lang="ja">ABC 123 !?</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" lang="ja" style="font-feature-settings:'fwid'">ABC 123 !?</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="pwid">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">pwid</code></div>
+            <h3>비례폭</h3>
+            <span class="en">Proportional widths</span>
+          </div>
+          <div class="ft-body">
+            <p>전각 라틴 문자, 숫자, 문장부호를 보통 폭의 글자로 바꿉니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s" lang="ja">ＡＢＣ１２３！？</div></div>
+              <div><span class="tag">켠 상태</span><div class="ft-s" lang="ja" style="font-feature-settings:'pwid'">ＡＢＣ１２３！？</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="Box">
+        <div class="Box-header">
+          <h2 class="Box-title">기본으로 켜진 기능과 그 밖의 기능</h2>
+          <p class="desc"><code>aalt</code>를 뺀 아래 기능은 따로 지정하지 않아도 적용됩니다. 끄려면 값을 0으로 줍니다.</p>
+        </div>
+        <div class="Box-row ft-row" data-feature="kern">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">kern</code></div>
+            <h3>커닝</h3>
+            <span class="en">Kerning</span>
+          </div>
+          <div class="ft-body">
+            <p>글자 쌍 사이의 간격을 조정합니다. CSS에서는 <code>font-kerning: none</code>으로도 끕니다.</p>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="mark">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">mark</code></div>
+            <h3>결합 부호 위치</h3>
+            <span class="en">Mark positioning</span>
+          </div>
+          <div class="ft-body">
+            <p>악센트 같은 결합 부호를 글자의 알맞은 자리에 붙입니다. 러시아어 강세 표시(а́)나 베트남어처럼 부호를 따로 입력한 글자에 쓰입니다.</p>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="ccmp">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">ccmp</code></div>
+            <h3>글자 조합</h3>
+            <span class="en">Glyph composition</span>
+          </div>
+          <div class="ft-body">
+            <p>글자와 결합 부호를 알맞은 글리프로 합치거나 나눕니다. 예를 들어 A 뒤에 동그라미 결합 부호(U+20DD)를 쓰면 Ⓐ로 그립니다.</p>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="locl">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">locl</code></div>
+            <h3>언어별 자형</h3>
+            <span class="en">Localized forms</span>
+          </div>
+          <div class="ft-body">
+            <p><code>lang</code> 속성에 따라 자형을 바꿉니다. 한국어·일본어·중국어 간체의 차이는 한·중·일 차이 탭에 있습니다. 라틴 문자에서는 루마니아어·몰도바어(ş → ș), 폴란드어, 카탈루냐어, 네덜란드어, 튀르키예어, 아제르바이잔어, 카자흐어, 타타르어, 크림타타르어의 현지 자형이 있습니다.</p>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="calt clig">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">calt</code><code class="ft-tag">clig</code></div>
+            <h3>문맥 대체</h3>
+            <span class="en">Contextual alternates</span>
+          </div>
+          <div class="ft-body">
+            <p>앞뒤 글자를 보고 모양을 바꿉니다. 대문자·숫자·한글 옆의 쌍점, 하이픈, 가운뎃점, @, 수학 기호를 대문자 높이로 올리고, 한글 옆의 말줄임표를 가운데로 올립니다. 대문자 I 옆의 l은 <code>ss04</code> 모양으로 바꿔 I와 구별되게 합니다. 두 태그가 같은 규칙을 쓰므로, 끌 때는 <code>"calt" 0, "clig" 0</code>을 함께 지정합니다.</p>
+            <div class="ft-cmp">
+              <div><span class="tag">기본</span><div class="ft-s">시간: 오후 10:30 잠시만요… A-Z Illinois</div></div>
+              <div><span class="tag">끈 상태</span><div class="ft-s" style="font-feature-settings:'calt' 0, 'clig' 0">시간: 오후 10:30 잠시만요… A-Z Illinois</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="liga">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">liga</code></div>
+            <h3>기본 합자</h3>
+            <span class="en">Standard ligatures</span>
+          </div>
+          <div class="ft-body">
+            <p>원티드 산스에서 이어받은 로고 합자만 있습니다. <code>wanted_logo</code>라고 쓰면 원티드 로고 한 글자(U+F0000)로 바뀌므로, 이 글자열을 그대로 보여 줘야 하는 곳에서는 <code>"liga" 0</code>으로 끕니다. fi, fl 같은 라틴 합자는 <code>dlig</code>에 있습니다.</p>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="rlig">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">rlig</code></div>
+            <h3>굵기별 대체</h3>
+            <span class="en">Required ligatures</span>
+          </div>
+          <div class="ft-body">
+            <p>굵기 축 값에 따라 일부 글자를 굵은 굵기에 맞춘 모양으로 바꿉니다. $, ¢, Q는 굵기 650부터 바뀌고, 가나 일부(ぜ, ば, ア 등)는 굵기 구간마다 차례로 바뀝니다. 끄지 않고 쓰도록 만든 기능입니다.</p>
+          </div>
+        </div>
+        <div class="Box-row ft-row" data-feature="aalt">
+          <div class="ft-meta">
+            <div class="ft-tags"><code class="ft-tag">aalt</code></div>
+            <h3>모든 대체 글자</h3>
+            <span class="en">Access all alternates</span>
+          </div>
+          <div class="ft-body">
+            <p>글자마다 쓸 수 있는 대체 글자를 모아 둔 기능입니다. 디자인 앱이 대체 글자 목록을 보여 줄 때 쓰며, 본문에 켜는 기능이 아닙니다. 기본으로 꺼져 있습니다.</p>
+          </div>
+        </div>
       </div>
     </section>
 
